@@ -13,7 +13,7 @@ const sections: { id: SentinelSection; label: string; icon: typeof LayoutDashboa
   { id: "controles", label: "Controles", icon: Settings, separated: true },
 ];
 
-export function SentinelSidebar({ activeSection, onSectionChange, nominalCount, exceptionCount }: { activeSection: SentinelSection; onSectionChange: (section: SentinelSection) => void; nominalCount: number; exceptionCount: number }) {
+export function SentinelSidebar({ activeSection, onSectionChange, nominalCount, exceptionCount, fleetStopped = false }: { activeSection: SentinelSection; onSectionChange: (section: SentinelSection) => void; nominalCount: number; exceptionCount: number; fleetStopped?: boolean }) {
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[220px] flex-col border-r border-[#1E2235] bg-[#0D0F1A] px-3 py-4">
       <div>
@@ -21,9 +21,9 @@ export function SentinelSidebar({ activeSection, onSectionChange, nominalCount, 
           <div className="flex h-8 w-8 items-center justify-center rounded-data border border-primary/30 bg-primary/10 text-primary"><Command className="h-4 w-4" /></div>
           <h1 className="font-accent text-lg font-semibold text-foreground">Sentinel OS</h1>
         </div>
-        <div className="mt-4 flex items-center gap-2 rounded-data border border-ok/20 bg-ok/10 px-3 py-2 font-display text-xs text-ok">
-          <span className="h-2 w-2 animate-status-pulse rounded-full bg-ok" />
-          <span>{nominalCount}/50 agentes nominales</span>
+        <div className={cn("mt-4 flex items-center gap-2 rounded-data border px-3 py-2 font-display text-xs", fleetStopped ? "border-critical/30 bg-critical/15 text-critical" : "border-ok/20 bg-ok/10 text-ok")}>
+          <span className={cn("h-2 w-2 animate-status-pulse rounded-full", fleetStopped ? "bg-critical" : "bg-ok")} />
+          <span>{fleetStopped ? "FLOTA DETENIDA" : `${nominalCount}/50 agentes nominales`}</span>
         </div>
       </div>
 
