@@ -5,9 +5,10 @@ import { EmergencyStop } from "@/components/controls/EmergencyStop";
 import { GlobalControls } from "@/components/controls/GlobalControls";
 import { DecisionAuditPanel } from "@/components/audit/DecisionAuditPanel";
 import { OperatorSummary } from "@/components/dashboard/OperatorSummary";
-import { ExceptionFeed } from "@/components/exceptions/ExceptionFeed";
-import { FleetMonitor } from "@/components/fleet/FleetMonitor";
+import { ExceptionsWorkbench } from "@/components/exceptions/ExceptionsWorkbench";
+import { FleetMapSection } from "@/components/fleet/FleetMapSection";
 import { SentinelSidebar, type SentinelSection } from "@/components/layout/SentinelSidebar";
+import { useAgentStore } from "@/store/agentStore";
 import type { Agent } from "@/types/agent";
 
 const sectionTitles: Record<SentinelSection, string> = {
@@ -25,6 +26,7 @@ function formatTime(date: Date) {
 export function SentinelShell({ agents }: { agents: Agent[] }) {
   const [activeSection, setActiveSection] = useState<SentinelSection>("resumen");
   const [now, setNow] = useState(() => new Date());
+  const selectAgent = useAgentStore((state) => state.selectAgent);
   const exceptionCount = agents.filter((agent) => agent.status === "intervention_required" || agent.status === "circuit_open" || agent.status === "suspended").length;
   const nominalCount = agents.filter((agent) => agent.status === "running" || agent.status === "idle").length;
   const hasCriticalAgents = agents.some((agent) => agent.status === "intervention_required" || agent.status === "circuit_open" || agent.risk_level === "critical");
@@ -49,8 +51,8 @@ export function SentinelShell({ agents }: { agents: Agent[] }) {
           {activeSection === "resumen" && (
             <OperatorSummary agents={agents} onViewExceptions={() => setActiveSection("excepciones")} />
           )}
-          {activeSection === "flota" && <FleetMonitor agents={agents} />}
-          {activeSection === "excepciones" && <ExceptionFeed />}
+          {activeSection === "flota" && <FleetMapSection agents={agents} onOpenAudit={() => setActiveSection("auditoria")} />}
+          {activeSection === "excepciones" && <ExceptionsWorkbench agents={agents} onOpenAudit={(agentId) => { selectAgent(agentId); setActiveSection("auditoria"); }} />}
           {activeSection === "auditoria" && <DecisionAuditPanel agents={agents} />}
           {activeSection === "controles" && <GlobalControls />}
         </section>
