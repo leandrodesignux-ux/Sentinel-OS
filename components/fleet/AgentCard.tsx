@@ -42,11 +42,15 @@ export function AgentCard({ agent }: { agent: Agent }) {
   const selectAgent = useAgentStore((state) => state.selectAgent);
   const selectedAgentId = useAgentStore((state) => state.selectedAgentId);
   const emergencyHalt = useAgentStore((state) => state.emergencyHalt);
+  const activeScenario = useAgentStore((state) => state.activeScenario);
   const Icon = typeIcons[agent.type];
   const isIntervention = agent.status === "intervention_required";
   const isSelected = selectedAgentId === agent.id;
   const haltIndex = emergencyHalt.affectedAgentIds.indexOf(agent.id);
   const isHalted = emergencyHalt.active && haltIndex >= 0;
+  const scenarioIndex = activeScenario?.affectedAgentIds.indexOf(agent.id) ?? -1;
+  const inScenarioCascade = activeScenario?.mode === "price_loop" && scenarioIndex >= 0;
+  const hasLegalFlag = activeScenario?.mode === "screening_bias" && agent.id === "AGT-048";
 
   return (
     <Tooltip>
@@ -57,13 +61,15 @@ export function AgentCard({ agent }: { agent: Agent }) {
             scale: isIntervention ? 1.05 : 1,
             opacity: isHalted ? 0.38 : 1,
             filter: isHalted ? "grayscale(1)" : "grayscale(0)",
-            borderColor: STATUS_COLORS[agent.status],
+            borderColor: inScenarioCascade ? "var(--status-critical)" : STATUS_COLORS[agent.status],
           }}
-          transition={{ duration: 0.18, delay: isHalted ? haltIndex * 0.05 : 0 }}
+          transition={{ duration: 0.18, delay: inScenarioCascade ? scenarioIndex * 0.2 : isHalted ? haltIndex * 0.05 : 0 }}
           onClick={() => selectAgent(agent.id)}
           className={cn(
             "relative h-20 w-16 rounded-data border bg-card/80 p-1.5 text-left transition hover:z-10 hover:shadow-glow",
             isIntervention && "animate-critical-breach",
+            inScenarioCascade && "animate-critical-breach bg-critical/20 text-critical",
+            hasLegalFlag && "border-warn bg-warn/15 text-warn shadow-danger",
             isHalted && "bg-muted text-foreground/40",
             isSelected && "ring-1 ring-primary",
             statusTone[agent.status],
@@ -79,7 +85,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
           </div>
           <div className="mt-1 flex items-center justify-between font-display text-[9px]">
             <span className={cn(confidence > 90 ? "text-ok" : confidence >= 80 ? "text-warn" : "text-critical")}>{confidence}</span>
-            {agent.economic_risk.amount > 50000 && <span className="rounded-badge bg-critical/15 px-1 text-critical">{impact}K</span>}
+            {hasLegalFlag ? <span className="rounded-badge bg-warn/25 px-1 text-[8px] text-warn">LEGAL FLAG</span> : agent.economic_risk.amount > 50000 && <span className="rounded-badge bg-critical/15 px-1 text-critical">{impact}K</span>}
           </div>
         </motion.button>
       </TooltipTrigger>

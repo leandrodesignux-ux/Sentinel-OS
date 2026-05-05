@@ -7,6 +7,8 @@ export interface AgentException {
   reason: string;
   economicImpact: number;
   timestamp: string;
+  scenario?: "price_loop" | "screening_bias";
+  affectedAgentIds?: string[];
 }
 
 export type EmergencyScope = "all" | "critical" | "sales" | "asset_mgmt" | "maintenance" | "screening";
@@ -20,6 +22,12 @@ export type EmergencyHalt = {
   undoExpiresAt?: string;
 };
 
+export type ActiveScenario = {
+  mode: "price_loop" | "screening_bias";
+  affectedAgentIds: string[];
+  startedAt: string;
+} | null;
+
 type AgentStore = {
   agents: Agent[];
   exceptions: AgentException[];
@@ -27,8 +35,13 @@ type AgentStore = {
   selectedAgentId?: string;
   emergencyHalt: EmergencyHalt;
   circuitBreakers: Record<string, CircuitBreakerLevel>;
+  activeScenario: ActiveScenario;
   setThreshold: (threshold: number) => void;
   selectAgent: (agentId: string) => void;
+  activatePriceLoopScenario: () => void;
+  activateScreeningBiasScenario: () => void;
+  containScenarioFamily: () => void;
+  forceScreeningHITL: () => void;
   triggerEmergencyHalt: (scope: EmergencyScope) => void;
   reactivateFleet: () => void;
   setCircuitBreakerLevel: (agentId: string, level: CircuitBreakerLevel) => void;
@@ -55,6 +68,7 @@ export const useAgentStore = create<AgentStore>((set) => ({
   selectedAgentId: initialAgents[0]?.id,
   emergencyHalt: { active: false, scope: "all", affectedAgentIds: [] },
   circuitBreakers: {},
+  activeScenario: null,
   setThreshold: (threshold) =>
     set((state) => {
       const now = new Date().toISOString();
@@ -80,6 +94,105 @@ export const useAgentStore = create<AgentStore>((set) => ({
       return { agents, exceptions, threshold };
     }),
   selectAgent: (agentId) => set({ selectedAgentId: agentId }),
+  activatePriceLoopScenario: () =>
+    set((state) => {
+      const affectedAgentIds = ["AGT-007", "AGT-008", "AGT-009", "AGT-010", "AGT-011", "AGT-012", "AGT-013", "AGT-014", "AGT-015", "AGT-016", "AGT-017", "AGT-018", "AGT-019"];
+      const now = new Date().toISOString();
+
+      return {
+        activeScenario: { mode: "price_loop", affectedAgentIds, startedAt: now },
+        selectedAgentId: "AGT-007",
+        agents: state.agents.map((agent) => {
+          if (!affectedAgentIds.includes(agent.id)) return agent;
+
+          return {
+            ...agent,
+            status: "intervention_required",
+            confidence_score: Math.max(0.52, agent.confidence_score - 0.22),
+            economic_risk: {
+              ...agent.economic_risk,
+              amount: agent.id === "AGT-007" ? 2_300_000 : Math.round(agent.economic_risk.amount * 1.2),
+              category: "contract",
+              affected_assets: Math.max(agent.economic_risk.affected_assets, 12),
+            },
+            risk_level: "critical",
+            exception_reason: "CASCADA DETECTADA - Price feedback loop: dato corrupto aumentó precio 20% y fue replicado por dependientes.",
+            blast_radius: affectedAgentIds.filter((id) => id !== agent.id),
+          };
+        }),
+        exceptions: [{
+          agentId: "AGT-007",
+          reason: "CASCADA DETECTADA - 13 agentes afectados - $2.3M en riesgo",
+          economicImpact: 2_300_000,
+          timestamp: now,
+          scenario: "price_loop",
+          affectedAgentIds,
+        }, ...state.exceptions],
+      };
+    }),
+  activateScreeningBiasScenario: () =>
+    set((state) => {
+      const affectedAgentIds = ["AGT-048"];
+      const now = new Date().toISOString();
+
+      return {
+        activeScenario: { mode: "screening_bias", affectedAgentIds, startedAt: now },
+        selectedAgentId: "AGT-048",
+        agents: state.agents.map((agent) => {
+          if (agent.id !== "AGT-048") return agent;
+
+          return {
+            ...agent,
+            status: "intervention_required",
+            confidence_score: 0.91,
+            economic_risk: {
+              ...agent.economic_risk,
+              amount: 680000,
+              category: "legal",
+              affected_assets: 5,
+            },
+            risk_level: "critical",
+            exception_reason: "Fair Housing Act potencial violación: tasa de rechazo 73% vs. baseline 22%.",
+            blast_radius: ["AGT-046", "AGT-047", "AGT-049", "AGT-050"],
+          };
+        }),
+        exceptions: [{
+          agentId: "AGT-048",
+          reason: "Fair Housing Act potencial violación",
+          economicImpact: 680000,
+          timestamp: now,
+          scenario: "screening_bias",
+          affectedAgentIds,
+        }, ...state.exceptions],
+      };
+    }),
+  containScenarioFamily: () =>
+    set((state) => {
+      const affected = state.activeScenario?.affectedAgentIds ?? [];
+
+      return {
+        activeScenario: null,
+        agents: state.agents.map((agent) => affected.includes(agent.id) ? { ...agent, status: "monitoring", confidence_score: Math.max(agent.confidence_score, 0.82) } : agent),
+        exceptions: state.exceptions.filter((exception) => exception.scenario !== state.activeScenario?.mode),
+      };
+    }),
+  forceScreeningHITL: () =>
+    set((state) => ({
+      agents: state.agents.map((agent) => agent.type === "screening" ? { ...agent, status: "intervention_required", exception_reason: "Forced HITL 100% for screening decisions after Fair Housing flag." } : agent),
+      exceptions: [
+        ...state.agents
+          .filter((agent) => agent.type === "screening")
+          .map((agent) => ({
+            agentId: agent.id,
+            reason: "Screening HITL 100% enforced",
+            economicImpact: agent.economic_risk.amount,
+            timestamp: new Date().toISOString(),
+            scenario: "screening_bias" as const,
+            affectedAgentIds: [agent.id],
+          })),
+        ...state.exceptions,
+      ].slice(0, 50),
+    })),
   triggerEmergencyHalt: (scope) =>
     set((state) => {
       const affectedAgents = state.agents.filter((agent) => {
