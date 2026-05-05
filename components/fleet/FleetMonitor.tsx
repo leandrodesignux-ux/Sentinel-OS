@@ -7,7 +7,7 @@ import type { Agent } from "@/types/agent";
 
 export function FleetMonitor({ agents }: { agents: Agent[] }) {
   return (
-    <section className="overflow-x-auto rounded-data border bg-card/60 p-3 backdrop-blur">
+    <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-data border bg-card/60 p-3 backdrop-blur">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <h2 className="font-accent text-xl">Fleet tactical map</h2>
@@ -18,7 +18,9 @@ export function FleetMonitor({ agents }: { agents: Agent[] }) {
           <TooltipContent>Click any agent tile to inspect the exception packet.</TooltipContent>
         </Tooltip>
       </div>
-      <AgentGrid agents={agents} />
+      <div className="min-h-0 overflow-hidden">
+        <AgentGrid agents={agents} />
+      </div>
     </section>
   );
 }

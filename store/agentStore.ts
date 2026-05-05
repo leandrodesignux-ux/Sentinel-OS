@@ -7,7 +7,7 @@ export interface AgentException {
   reason: string;
   economicImpact: number;
   timestamp: string;
-  scenario?: "price_loop" | "screening_bias";
+  scenario?: "price_loop" | "screening_bias" | "retry_storm";
   affectedAgentIds?: string[];
 }
 
@@ -23,7 +23,7 @@ export type EmergencyHalt = {
 };
 
 export type ActiveScenario = {
-  mode: "price_loop" | "screening_bias";
+  mode: "price_loop" | "screening_bias" | "retry_storm";
   affectedAgentIds: string[];
   startedAt: string;
 } | null;
@@ -40,6 +40,7 @@ type AgentStore = {
   selectAgent: (agentId: string) => void;
   activatePriceLoopScenario: () => void;
   activateScreeningBiasScenario: () => void;
+  activateRetryStormScenario: () => void;
   containScenarioFamily: () => void;
   forceScreeningHITL: () => void;
   triggerEmergencyHalt: (scope: EmergencyScope) => void;
@@ -162,6 +163,43 @@ export const useAgentStore = create<AgentStore>((set) => ({
           economicImpact: 680000,
           timestamp: now,
           scenario: "screening_bias",
+          affectedAgentIds,
+        }, ...state.exceptions],
+      };
+    }),
+  activateRetryStormScenario: () =>
+    set((state) => {
+      const affectedAgentIds = ["AGT-040"];
+      const now = new Date().toISOString();
+
+      return {
+        activeScenario: { mode: "retry_storm", affectedAgentIds, startedAt: now },
+        selectedAgentId: "AGT-040",
+        circuitBreakers: { ...state.circuitBreakers, "AGT-040": 2 },
+        agents: state.agents.map((agent) => {
+          if (agent.id !== "AGT-040") return agent;
+
+          return {
+            ...agent,
+            status: "monitoring",
+            confidence_score: 0.74,
+            economic_risk: {
+              ...agent.economic_risk,
+              amount: 120000,
+              category: "maintenance",
+              affected_assets: 6,
+            },
+            risk_level: "high",
+            exception_reason: "Budget cap al 50% - Retry storm contra HVAC provider. State Freeze aplicado automáticamente.",
+            blast_radius: ["AGT-039", "AGT-041", "AGT-042"],
+          };
+        }),
+        exceptions: [{
+          agentId: "AGT-040",
+          reason: "Budget cap al 50% - Requiere aprobación para continuar",
+          economicImpact: 120000,
+          timestamp: now,
+          scenario: "retry_storm",
           affectedAgentIds,
         }, ...state.exceptions],
       };

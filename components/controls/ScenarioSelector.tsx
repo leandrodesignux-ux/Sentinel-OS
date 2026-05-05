@@ -7,6 +7,7 @@ export function ScenarioSelector() {
   const activeScenario = useAgentStore((state) => state.activeScenario);
   const activatePriceLoopScenario = useAgentStore((state) => state.activatePriceLoopScenario);
   const activateScreeningBiasScenario = useAgentStore((state) => state.activateScreeningBiasScenario);
+  const activateRetryStormScenario = useAgentStore((state) => state.activateRetryStormScenario);
   const containScenarioFamily = useAgentStore((state) => state.containScenarioFamily);
   const forceScreeningHITL = useAgentStore((state) => state.forceScreeningHITL);
 
@@ -22,6 +23,9 @@ export function ScenarioSelector() {
         </button>
         <button onClick={activateScreeningBiasScenario} className="w-full rounded-badge border border-warn/40 bg-warn/10 px-3 py-2 text-left font-display text-xs text-warn">
           Escenario 2 · Fair Housing Flag
+        </button>
+        <button onClick={activateRetryStormScenario} className="w-full rounded-badge border border-warn/40 bg-warn/10 px-3 py-2 text-left font-display text-xs text-warn">
+          Escenario 3 · Retry Storm HVAC
         </button>
         {activeScenario?.mode === "price_loop" && (
           <button onClick={containScenarioFamily} className="w-full rounded-badge border border-ok/40 bg-ok/10 px-3 py-2 text-left font-display text-xs text-ok">

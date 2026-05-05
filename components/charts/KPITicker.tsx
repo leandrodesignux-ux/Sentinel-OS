@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { useAgentStore } from "@/store/agentStore";
 import { cn } from "@/lib/utils";
 import type { Agent } from "@/types/agent";
@@ -60,7 +61,7 @@ export function KPITicker({ agents }: { agents: Agent[] }) {
             <span className="truncate text-foreground/45">{kpi.label}</span>
             <span className={cn("h-1.5 w-1.5 rounded-full", kpi.status === "nominal" ? "bg-ok" : kpi.status === "warning" ? "bg-warn" : "bg-critical")} />
           </div>
-          <p className={cn("mt-1 text-sm", kpi.status === "nominal" ? "text-ok" : kpi.status === "warning" ? "text-warn" : "text-critical")}>{kpi.value} {kpi.trend === "down" && "↓"}</p>
+          <motion.p key={`${kpi.label}-${kpi.value}`} initial={{ rotateX: -90, opacity: 0 }} animate={{ rotateX: 0, opacity: 1 }} transition={{ duration: 0.28 }} className={cn("mt-1 text-sm", kpi.status === "nominal" ? "text-ok" : kpi.status === "warning" ? "text-warn" : "text-critical")}>{kpi.value} {kpi.trend === "down" && "↓"}</motion.p>
           <span className="text-[10px] text-foreground/40">target {kpi.target}</span>
         </div>
       ))}
