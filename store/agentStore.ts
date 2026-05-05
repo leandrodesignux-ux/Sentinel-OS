@@ -13,7 +13,9 @@ type AgentStore = {
   agents: Agent[];
   exceptions: AgentException[];
   threshold: number;
+  selectedAgentId?: string;
   setThreshold: (threshold: number) => void;
+  selectAgent: (agentId: string) => void;
   updateAgent: (agentId: string, patch: Partial<Agent>) => void;
   addException: (exception: AgentException) => void;
   triggerCascade: (agentId: string, confidenceDrop: number) => void;
@@ -25,7 +27,9 @@ export const useAgentStore = create<AgentStore>((set) => ({
   agents: initialAgents,
   exceptions: [],
   threshold: 72,
+  selectedAgentId: initialAgents[0]?.id,
   setThreshold: (threshold) => set({ threshold }),
+  selectAgent: (agentId) => set({ selectedAgentId: agentId }),
   updateAgent: (agentId, patch) =>
     set((state) => ({
       agents: state.agents.map((agent) => (agent.id === agentId ? { ...agent, ...patch } : agent)),

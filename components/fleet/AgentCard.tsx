@@ -1,53 +1,92 @@
 "use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Building2, ClipboardCheck, Home, Wrench } from "lucide-react";
+import { motion } from "framer-motion";
 import { ConfidenceSparkline } from "@/components/charts/ConfidenceSparkline";
 import { StatusPulse } from "@/components/fleet/StatusPulse";
-import { DecisionAudit } from "@/components/audit/DecisionAudit";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { confidencePercent } from "@/lib/utils/confidenceUtils";
-import { economicImpactK, isCriticalAgent } from "@/lib/utils/riskUtils";
+import { economicImpactK } from "@/lib/utils/riskUtils";
 import { cn } from "@/lib/utils";
+import { useAgentStore } from "@/store/agentStore";
 import type { Agent } from "@/types/agent";
 
+const STATUS_COLORS = {
+  idle: "var(--status-nominal)",
+  running: "var(--text-accent)",
+  monitoring: "var(--status-warning)",
+  intervention_required: "var(--status-critical)",
+  circuit_open: "var(--status-critical)",
+  suspended: "var(--status-offline)",
+};
+
 const statusTone = {
-  idle: "border-ok/25 bg-ok/8 text-ok",
-  running: "border-primary/30 bg-primary/10 text-primary",
-  monitoring: "border-warn/35 bg-warn/10 text-warn",
-  intervention_required: "animate-critical-breach border-critical/70 bg-critical/15 text-critical",
-  circuit_open: "animate-critical-breach border-critical/80 bg-critical/20 text-critical",
-  suspended: "border-border bg-muted text-foreground/50",
+  idle: "bg-ok/8 text-ok",
+  running: "bg-primary/10 text-primary",
+  monitoring: "bg-warn/10 text-warn",
+  intervention_required: "bg-critical/15 text-critical shadow-danger",
+  circuit_open: "bg-critical/20 text-critical shadow-danger",
+  suspended: "bg-muted text-foreground/50",
+};
+
+const typeIcons = {
+  sales: Building2,
+  asset_mgmt: Home,
+  maintenance: Wrench,
+  screening: ClipboardCheck,
 };
 
 export function AgentCard({ agent }: { agent: Agent }) {
   const confidence = confidencePercent(agent);
   const impact = economicImpactK(agent);
+  const selectAgent = useAgentStore((state) => state.selectAgent);
+  const selectedAgentId = useAgentStore((state) => state.selectedAgentId);
+  const Icon = typeIcons[agent.type];
+  const isIntervention = agent.status === "intervention_required";
+  const isSelected = selectedAgentId === agent.id;
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <button className={cn("group min-h-32 rounded-data border bg-card/70 p-2.5 text-left transition duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-glow", statusTone[agent.status])}>
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <p className="font-display text-sm tracking-tight text-foreground">{agent.id}</p>
-              <p className="mt-1 text-xs text-foreground/55">{agent.name} / {agent.metadata.region}</p>
-            </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <motion.button
+          layout
+          animate={{
+            scale: isIntervention ? 1.05 : 1,
+            borderColor: STATUS_COLORS[agent.status],
+          }}
+          transition={{ duration: 0.18 }}
+          onClick={() => selectAgent(agent.id)}
+          className={cn(
+            "relative h-20 w-16 rounded-data border bg-card/80 p-1.5 text-left transition hover:z-10 hover:shadow-glow",
+            isIntervention && "animate-critical-breach",
+            isSelected && "ring-1 ring-primary",
+            statusTone[agent.status],
+          )}
+        >
+          <div className="flex items-center justify-between">
+            <Icon className="h-3.5 w-3.5" />
             <StatusPulse status={agent.status} />
           </div>
-          <div className="mt-2 text-current">
+          <p className="mt-1 truncate font-display text-[10px] text-foreground">{agent.id}</p>
+          <div className="mt-1 h-5 text-current">
             <ConfidenceSparkline agent={agent} />
           </div>
-          <div className="mt-2 grid grid-cols-3 gap-1.5 font-display text-[11px]">
-            <div><span className="text-foreground/45">RISK</span><p>{agent.risk_level}</p></div>
-            <div><span className="text-foreground/45">CONF</span><p className={cn(confidence > 90 ? "text-ok" : confidence >= 80 ? "text-warn" : "text-critical")}>{confidence}%</p></div>
-            <div><span className="text-foreground/45">USD</span><p>{impact}K</p></div>
+          <div className="mt-1 flex items-center justify-between font-display text-[9px]">
+            <span className={cn(confidence > 90 ? "text-ok" : confidence >= 80 ? "text-warn" : "text-critical")}>{confidence}</span>
+            {agent.economic_risk.amount > 50000 && <span className="rounded-badge bg-critical/15 px-1 text-critical">{impact}K</span>}
           </div>
-        </button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogTitle className="font-accent text-2xl">Exception packet: {agent.id}</DialogTitle>
-        <DialogDescription className="text-foreground/60">{agent.name} / {agent.current_task.description}</DialogDescription>
-        <DecisionAudit agent={agent} compact={!isCriticalAgent(agent)} />
-      </DialogContent>
-    </Dialog>
+        </motion.button>
+      </TooltipTrigger>
+      <TooltipContent className="w-72">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between"><span className="font-display text-primary">{agent.name}</span><span>{confidence}%</span></div>
+          <p className="text-xs text-foreground/65">{agent.current_task.description}</p>
+          <div className="grid grid-cols-2 gap-2 font-display text-xs">
+            <span className="text-foreground/45">Economic risk</span><span className="text-critical">${impact}K</span>
+            <span className="text-foreground/45">Status</span><span>{agent.status}</span>
+          </div>
+        </div>
+      </TooltipContent>
+    </Tooltip>
   );
 }

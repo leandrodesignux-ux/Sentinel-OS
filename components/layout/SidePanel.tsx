@@ -1,12 +1,16 @@
 "use client";
 
 import { Bot, RadioTower, ShieldCheck, Siren, Zap } from "lucide-react";
+import { DecisionAudit } from "@/components/audit/DecisionAudit";
 import { GlobalControls } from "@/components/controls/GlobalControls";
+import { useAgentStore } from "@/store/agentStore";
 import type { Agent } from "@/types/agent";
 
 export function SidePanel({ agents }: { agents: Agent[] }) {
   const monitoring = agents.filter((agent) => agent.status === "monitoring").length;
   const suspended = agents.filter((agent) => agent.status === "suspended").length;
+  const selectedAgentId = useAgentStore((state) => state.selectedAgentId);
+  const selectedAgent = agents.find((agent) => agent.id === selectedAgentId) ?? agents[0];
 
   return (
     <aside className="space-y-3">
@@ -29,6 +33,15 @@ export function SidePanel({ agents }: { agents: Agent[] }) {
           ))}
         </div>
       </div>
+      {selectedAgent && (
+        <div className="max-h-[520px] overflow-y-auto rounded-data border bg-card/70 p-3">
+          <div className="mb-3">
+            <h2 className="font-accent text-lg">Decision audit</h2>
+            <p className="font-display text-xs text-primary">{selectedAgent.id} / {selectedAgent.name}</p>
+          </div>
+          <DecisionAudit agent={selectedAgent} />
+        </div>
+      )}
       <div className="rounded-data border bg-card/70 p-3">
         <div className="flex items-center gap-3"><Bot className="h-5 w-5 text-primary" /><h2 className="font-accent text-lg">Operator mandate</h2></div>
         <p className="mt-3 text-sm leading-6 text-foreground/60">Intervene only when confidence, anomaly score, policy exposure, or cascade risk crosses the operating envelope.</p>
