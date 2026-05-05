@@ -2,6 +2,7 @@ import { DependencyGraph } from "@/components/audit/DependencyGraph";
 import { DecisionLineage } from "@/components/audit/DecisionLineage";
 import { ProvenanceCard } from "@/components/audit/ProvenanceCard";
 import { XAIPanel } from "@/components/audit/XAIPanel";
+import { CircuitBreaker } from "@/components/controls/CircuitBreaker";
 import { economicImpactK } from "@/lib/utils/riskUtils";
 import type { Agent } from "@/types/agent";
 
@@ -23,6 +24,7 @@ export function DecisionAudit({ agent, compact = false }: { agent: Agent; compac
         <ProvenanceCard agent={agent} />
         <XAIPanel agent={agent} />
       </div>
+      <CircuitBreaker agentId={agent.id} />
     </div>
   );
 }

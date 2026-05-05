@@ -1,18 +1,22 @@
 "use client";
 
 import { useCallback } from "react";
-import { useAgentStore } from "@/store/agentStore";
+import { useAgentStore, type CircuitBreakerLevel } from "@/store/agentStore";
 
 export function useCircuitBreaker(agentId: string) {
-  const updateAgent = useAgentStore((state) => state.updateAgent);
+  const setCircuitBreakerLevel = useAgentStore((state) => state.setCircuitBreakerLevel);
 
   const openCircuit = useCallback(() => {
-    updateAgent(agentId, { status: "circuit_open" });
-  }, [agentId, updateAgent]);
+    setCircuitBreakerLevel(agentId, 3);
+  }, [agentId, setCircuitBreakerLevel]);
 
   const suspend = useCallback(() => {
-    updateAgent(agentId, { status: "suspended" });
-  }, [agentId, updateAgent]);
+    setCircuitBreakerLevel(agentId, 4);
+  }, [agentId, setCircuitBreakerLevel]);
 
-  return { openCircuit, suspend };
+  const setLevel = useCallback((level: CircuitBreakerLevel) => {
+    setCircuitBreakerLevel(agentId, level);
+  }, [agentId, setCircuitBreakerLevel]);
+
+  return { openCircuit, setLevel, suspend };
 }

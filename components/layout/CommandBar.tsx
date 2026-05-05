@@ -18,7 +18,7 @@ export function CommandBar({ agents }: { agents: Agent[] }) {
         </div>
         <p className="mt-2 text-sm text-foreground/58">One human operator supervising 50 autonomous PropTech agents.</p>
       </div>
-      <div className="w-full max-w-xl space-y-3">
+      <div className="w-full max-w-5xl space-y-3">
         <FleetHealthBar agents={agents} />
         <KPITicker agents={agents} />
       </div>

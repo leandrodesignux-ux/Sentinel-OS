@@ -41,9 +41,12 @@ export function AgentCard({ agent }: { agent: Agent }) {
   const impact = economicImpactK(agent);
   const selectAgent = useAgentStore((state) => state.selectAgent);
   const selectedAgentId = useAgentStore((state) => state.selectedAgentId);
+  const emergencyHalt = useAgentStore((state) => state.emergencyHalt);
   const Icon = typeIcons[agent.type];
   const isIntervention = agent.status === "intervention_required";
   const isSelected = selectedAgentId === agent.id;
+  const haltIndex = emergencyHalt.affectedAgentIds.indexOf(agent.id);
+  const isHalted = emergencyHalt.active && haltIndex >= 0;
 
   return (
     <Tooltip>
@@ -52,13 +55,16 @@ export function AgentCard({ agent }: { agent: Agent }) {
           layout
           animate={{
             scale: isIntervention ? 1.05 : 1,
+            opacity: isHalted ? 0.38 : 1,
+            filter: isHalted ? "grayscale(1)" : "grayscale(0)",
             borderColor: STATUS_COLORS[agent.status],
           }}
-          transition={{ duration: 0.18 }}
+          transition={{ duration: 0.18, delay: isHalted ? haltIndex * 0.05 : 0 }}
           onClick={() => selectAgent(agent.id)}
           className={cn(
             "relative h-20 w-16 rounded-data border bg-card/80 p-1.5 text-left transition hover:z-10 hover:shadow-glow",
             isIntervention && "animate-critical-breach",
+            isHalted && "bg-muted text-foreground/40",
             isSelected && "ring-1 ring-primary",
             statusTone[agent.status],
           )}
