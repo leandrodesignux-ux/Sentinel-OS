@@ -9,7 +9,7 @@ import type { Agent, AgentType } from "@/types/agent";
 const cbLevels: { level: CircuitBreakerLevel; label: string; tone: string }[] = [
   { level: 1, label: "Solo lectura", tone: "border-amber-300/40 bg-amber-300/10 text-amber-200" },
   { level: 2, label: "Congelar estado", tone: "border-warn/40 bg-warn/10 text-warn" },
-  { level: 3, label: "Revocar acceso APIs", tone: "border-orange-500/40 bg-orange-500/10 text-orange-300" },
+  { level: 3, label: "Revocar acceso a interfaces", tone: "border-orange-500/40 bg-orange-500/10 text-orange-300" },
   { level: 4, label: "Suspensión completa", tone: "border-critical/40 bg-critical/10 text-critical" },
 ];
 
@@ -17,7 +17,7 @@ const typeLabels: Record<AgentType, string> = {
   sales: "Ventas",
   asset_mgmt: "Activos",
   maintenance: "Mantenimiento",
-  screening: "Screening",
+  screening: "Evaluación",
 };
 
 export function ControlsSection({ agents }: { agents: Agent[] }) {
@@ -29,7 +29,7 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
   const [reactivationConfirmation, setReactivationConfirmation] = useState("");
   const [overlay, setOverlay] = useState(false);
   const [toastCountdown, setToastCountdown] = useState<number | null>(null);
-  const [thresholds, setThresholds] = useState({ ventas: 82, activos: 86, mantenimiento: 78, screening: 91 });
+  const [thresholds, setThresholds] = useState({ ventas: 82, activos: 86, mantenimiento: 78, evaluación: 91 });
   const circuitBreakers = useAgentStore((state) => state.circuitBreakers);
   const activeScenario = useAgentStore((state) => state.activeScenario);
   const setCircuitBreakerLevel = useAgentStore((state) => state.setCircuitBreakerLevel);
@@ -123,12 +123,12 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
         </section>
 
         <section className="rounded-data border border-[#1E2235] bg-card/70 p-4">
-          <h2 className="font-accent text-xl">Simulación de fallos — solo para testing</h2>
+          <h2 className="font-accent text-xl">Simulación de fallos — solo para pruebas</h2>
           <div className="mt-3 flex gap-2 rounded-data border border-warn/40 bg-warn/15 p-3 text-sm text-warn"><AlertTriangle className="h-4 w-4 shrink-0" />Activar un escenario afectará datos reales de la flota. Usar solo en entorno de pruebas.</div>
           <div className="mt-4 grid gap-3">
             {[
               { mode: "price_loop", title: "Bucle de precios", description: "Propaga aumento corrupto de precio a dependientes.", action: activatePriceLoopScenario },
-              { mode: "screening_bias", title: "Alerta Fair Housing", description: "Simula sesgo estadístico en screening.", action: activateScreeningBiasScenario },
+              { mode: "screening_bias", title: "Alerta de vivienda justa", description: "Simula sesgo estadístico en evaluación.", action: activateScreeningBiasScenario },
               { mode: "retry_storm", title: "Tormenta de reintentos HVAC", description: "Dispara consumo acelerado de presupuesto.", action: activateRetryStormScenario },
             ].map((scenario) => {
               const active = activeScenario?.mode === scenario.mode;

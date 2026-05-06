@@ -53,6 +53,12 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
 
   return (
     <TooltipProvider>
+      {emergencyHalt.active && (
+        <div className="fixed left-3 top-[72px] z-40 flex w-[196px] items-center gap-2 rounded-data border border-critical/30 bg-critical/15 px-3 py-2 font-display text-xs text-critical">
+          <span className="h-2 w-2 animate-status-pulse rounded-full bg-critical" />
+          <span>FLOTA DETENIDA</span>
+        </div>
+      )}
       <main className="ml-[220px] flex h-screen flex-col overflow-hidden">
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-[#1E2235] bg-background/85 px-5 backdrop-blur">
           <div className="flex items-center gap-3">
