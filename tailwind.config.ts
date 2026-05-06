@@ -30,9 +30,15 @@ const config: Config = {
         glow: "0 0 36px hsl(var(--primary) / 0.18)",
         danger: "0 0 40px hsl(var(--critical) / 0.22)",
       },
+      fontSize: {
+        hero: ["clamp(2rem, 4vw, 3.5rem)", { lineHeight: "1", letterSpacing: "-0.02em" }],
+        data: ["clamp(1.25rem, 2vw, 1.75rem)", { lineHeight: "1.1", letterSpacing: "-0.01em" }],
+      },
       borderRadius: {
-        data: "6px",
+        card: "12px",
+        data: "8px",
         badge: "4px",
+        pill: "100px",
       },
       keyframes: {
         statusPulse: {

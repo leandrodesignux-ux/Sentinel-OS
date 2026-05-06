@@ -2,7 +2,6 @@
 
 import { AlertTriangle } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
-import { cn } from "@/lib/utils";
 import { economicImpactK } from "@/lib/utils/riskUtils";
 import type { Agent } from "@/types/agent";
 
@@ -16,15 +15,48 @@ const activityData = [
   { hora: "ahora", resueltas: 12, nuevas: 4 },
 ];
 
-function KpiCard({ label, value, meta, tone, suffix }: { label: string; value: string; meta: string; tone: "ok" | "warn" | "primary"; suffix?: string }) {
+function KpiCard({
+  label, value, unit, meta, metaOk, trend, trendOk, accent
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  meta: string;
+  metaOk: boolean;
+  trend?: string;
+  trendOk?: boolean;
+  accent?: "ok" | "warn" | "critical" | "accent";
+}) {
+  const accentColor = {
+    ok: "var(--status-nominal)",
+    warn: "var(--status-warning)",
+    critical: "var(--status-critical)",
+    accent: "var(--status-accent)",
+  }[accent ?? "ok"];
+
   return (
-    <div className="rounded-[8px] border border-[#1E2235] bg-[#131625] p-4">
-      <p className="text-xs text-foreground/45">{label}</p>
-      <div className="mt-2 flex items-center gap-2">
-        <p className={cn("font-display text-[28px] font-medium leading-none", tone === "ok" && "text-ok", tone === "warn" && "text-warn", tone === "primary" && "text-primary")}>{value}</p>
-        {suffix && <span className="font-display text-xs text-ok">{suffix}</span>}
+    <div className="relative flex min-h-[140px] flex-col justify-between overflow-hidden rounded-card border border-[var(--bg-border)] bg-[var(--bg-surface)] p-6">
+      <div className="absolute left-6 right-6 top-0 h-[2px] rounded-full" style={{ background: accentColor }} />
+      <p className="mt-2 text-xs font-medium uppercase tracking-widest text-[var(--text-muted)]">
+        {label}
+      </p>
+      <div className="mt-4 flex items-end gap-2">
+        <span className="font-display font-medium leading-none" style={{ fontSize: "clamp(2rem, 3.5vw, 3rem)", color: accentColor, letterSpacing: "-0.02em" }}>
+          {value}
+        </span>
+        {unit && (
+          <span className="mb-1 font-display text-base text-[var(--text-secondary)]">{unit}</span>
+        )}
+        {trend && (
+          <span className={`mb-1 font-display text-sm ${trendOk ? "text-[var(--status-nominal)]" : "text-[var(--status-critical)]"}`}>
+            {trend}
+          </span>
+        )}
       </div>
-      <p className="mt-2 text-[11px] text-foreground/40">meta {meta}</p>
+      <div className="mt-4 flex items-center gap-2">
+        <span className={`h-1.5 w-1.5 rounded-full ${metaOk ? "bg-[var(--status-nominal)]" : "bg-[var(--status-warning)]"}`} />
+        <p className="text-[11px] text-[var(--text-muted)]">meta {meta}</p>
+      </div>
     </div>
   );
 }
@@ -38,48 +70,95 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
   return (
     <div className="h-full min-h-0 space-y-4 overflow-y-auto">
       <div className="grid grid-cols-4 gap-4">
-        <KpiCard label="Tasa de excepción" value="8.3%" meta="<10%" tone="ok" suffix="↓ mejorando" />
-        <KpiCard label="Ejecución autónoma" value="91.7%" meta=">90%" tone="ok" suffix="nominal" />
-        <KpiCard label="Tiempo de resolución" value="4.2s" meta="<10s" tone="primary" />
-        <div className="rounded-[8px] border border-[#1E2235] bg-[#131625] p-4">
-          <p className="text-xs text-foreground/45">Salud de flota</p>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-warn" />
-            <p className="font-display text-[28px] font-medium leading-none text-warn">47/50</p>
-          </div>
-          <p className="mt-2 text-[11px] text-foreground/40">meta &gt;45</p>
-        </div>
+        <KpiCard label="Tasa de excepción" value="8.3" unit="%" meta="<10%" metaOk trend="↓" trendOk accent="ok" />
+        <KpiCard label="Ejecución autónoma" value="91.7" unit="%" meta=">90%" metaOk accent="accent" />
+        <KpiCard label="Tiempo resolución" value="4.2" unit="s" meta="<10s" metaOk accent="accent" />
+        <KpiCard label="Salud de flota" value="47" unit="/50" meta=">45" metaOk={false} trend="▲" trendOk={false} accent="warn" />
       </div>
 
-      <div className="grid min-h-0 grid-cols-[3fr_2fr] gap-4">
-        <section className="rounded-data border border-[#1E2235] bg-card/70 p-4">
-          <h3 className="font-accent text-lg">Actividad de flota últimas 2 horas</h3>
-          <div className="mt-4 h-[160px] min-h-[160px] min-w-0">
+      <div className="grid grid-cols-[3fr_2fr] gap-4">
+        <section className="rounded-card border border-[var(--bg-border)] bg-[var(--bg-surface)] p-6">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h3 className="font-accent text-base font-medium text-[var(--text-primary)]">
+                Actividad de flota
+              </h3>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Últimas 2 horas · actualización en vivo</p>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-[var(--text-secondary)]">
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block h-2 w-6 rounded-full bg-[var(--status-nominal)] opacity-70" />
+                Resueltas
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block h-2 w-6 rounded-full bg-[var(--status-warning)] opacity-70" />
+                Nuevas
+              </span>
+            </div>
+          </div>
+          <div className="mb-4 flex items-baseline gap-3">
+            <span className="font-display text-5xl font-medium leading-none text-[var(--status-nominal)]">
+              12
+            </span>
+            <span className="text-sm text-[var(--text-secondary)]">excepciones resueltas hoy</span>
+          </div>
+          <div className="h-[140px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={activityData} margin={{ left: 0, right: 0, top: 8, bottom: 0 }}>
-                <Tooltip contentStyle={{ background: "#131625", border: "1px solid #1E2235", borderRadius: 8 }} labelStyle={{ color: "#9CA3AF" }} />
-                <Area type="monotone" dataKey="resueltas" name="excepciones resueltas" stroke="var(--status-nominal)" fill="var(--status-nominal)" fillOpacity={0.16} strokeWidth={2} />
-                <Area type="monotone" dataKey="nuevas" name="nuevas excepciones" stroke="var(--status-warning)" fill="var(--status-warning)" fillOpacity={0.16} strokeWidth={2} />
+              <AreaChart data={activityData} margin={{ left: 0, right: 0, top: 4, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="gradNominal" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--status-nominal)" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="var(--status-nominal)" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="gradWarning" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--status-warning)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="var(--status-warning)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--bg-elevated)",
+                    border: "1px solid var(--bg-border)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                  labelStyle={{ color: "var(--text-secondary)" }}
+                />
+                <Area type="monotone" dataKey="resueltas" name="Resueltas" stroke="var(--status-nominal)" fill="url(#gradNominal)" strokeWidth={1.5} dot={false} />
+                <Area type="monotone" dataKey="nuevas" name="Nuevas" stroke="var(--status-warning)" fill="url(#gradWarning)" strokeWidth={1.5} dot={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </section>
 
-        <section className="rounded-data border border-[#1E2235] bg-card/70 p-4">
-          <h3 className="font-accent text-lg">Excepciones activas ahora</h3>
-          <div className="mt-4 space-y-2">
+        <section className="flex flex-col rounded-card border border-[var(--bg-border)] bg-[var(--bg-surface)] p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-accent text-base font-medium">Excepciones activas</h3>
+            <span className="rounded-pill bg-[var(--status-critical)]/15 px-2.5 py-1 font-display text-xs text-[var(--status-critical)]">
+              {activeExceptions.length} ahora
+            </span>
+          </div>
+          <div className="flex-1 space-y-3">
             {activeExceptions.slice(0, 4).map((agent) => (
-              <div key={agent.id} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-data border border-[#1E2235] bg-background/45 p-2">
-                <span className="h-2 w-2 animate-status-pulse rounded-full bg-critical" />
-                <div className="min-w-0">
-                  <p className="font-display text-xs text-foreground">{agent.id}</p>
-                  <p className="truncate text-xs text-foreground/50">{agent.exception_reason ?? agent.current_task.description}</p>
+              <div key={agent.id} className="flex cursor-pointer items-center gap-3 rounded-data border border-[var(--bg-border)] bg-[var(--bg-elevated)] p-3 transition-colors hover:border-[var(--status-critical)]/40">
+                <span className="h-2 w-2 flex-shrink-0 animate-status-pulse rounded-full bg-[var(--status-critical)]" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-xs font-medium text-[var(--text-primary)]">{agent.id}</p>
+                  <p className="mt-0.5 truncate text-[11px] text-[var(--text-muted)]">
+                    {agent.exception_reason ?? agent.current_task.description}
+                  </p>
                 </div>
-                <span className="font-display text-xs text-critical">${economicImpactK(agent)}K</span>
+                <div className="flex-shrink-0 text-right">
+                  <p className="font-display text-sm font-medium text-[var(--status-critical)]">
+                    ${economicImpactK(agent)}K
+                  </p>
+                </div>
               </div>
             ))}
           </div>
-          <button onClick={onViewExceptions} className="mt-4 font-display text-xs text-primary hover:text-primary/80">Ver todas →</button>
+          <button onClick={onViewExceptions} className="mt-4 text-left font-display text-xs text-[var(--text-accent)] transition-colors hover:text-[var(--text-accent)]/80">
+            Ver todas las excepciones →
+          </button>
         </section>
       </div>
 
