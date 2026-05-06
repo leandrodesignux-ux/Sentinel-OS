@@ -1,22 +1,14 @@
-"use client";
-
 import { SentinelShell } from "@/components/layout/SentinelShell";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { useAgentSimulation } from "@/lib/hooks/useAgentSimulation";
-import { useAgentStore } from "@/store/agentStore";
+import { SentinelSidebar, type SentinelSection } from "@/components/layout/SentinelSidebar";
 
-export default function Home() {
-  const agents = useAgentStore((state) => state.agents);
+const validSections: SentinelSection[] = ["resumen", "flota", "excepciones", "auditoria", "controles"];
 
-  useAgentSimulation({
-    tickInterval: 2000,
-    volatility: "medium",
-    scenarioMode: "normal",
-  });
-
+export default function Home({ searchParams }: { searchParams?: { section?: string } }) {
+  const section = validSections.includes(searchParams?.section as SentinelSection) ? (searchParams?.section as SentinelSection) : "resumen";
   return (
-    <TooltipProvider>
-      <SentinelShell agents={agents} />
-    </TooltipProvider>
+    <div className="min-h-screen bg-grid bg-[size:42px_42px]">
+      <SentinelSidebar activeSection={section} />
+      <SentinelShell initialSection={section} />
+    </div>
   );
 }

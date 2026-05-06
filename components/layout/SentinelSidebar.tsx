@@ -1,6 +1,5 @@
-"use client";
-
 import { AlertTriangle, Command, FileSearch, LayoutDashboard, LogOut, Map, Settings } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export type SentinelSection = "resumen" | "flota" | "excepciones" | "auditoria" | "controles";
@@ -13,7 +12,7 @@ const sections: { id: SentinelSection; label: string; icon: typeof LayoutDashboa
   { id: "controles", label: "Controles", icon: Settings, separated: true },
 ];
 
-export function SentinelSidebar({ activeSection, onSectionChange, nominalCount, exceptionCount, fleetStopped = false }: { activeSection: SentinelSection; onSectionChange: (section: SentinelSection) => void; nominalCount: number; exceptionCount: number; fleetStopped?: boolean }) {
+export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCount = 38, fleetStopped = false }: { activeSection: SentinelSection; nominalCount?: number; exceptionCount?: number; fleetStopped?: boolean }) {
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[220px] flex-col border-r border-[#1E2235] bg-[#0D0F1A] px-3 py-4">
       <div>
@@ -34,10 +33,10 @@ export function SentinelSidebar({ activeSection, onSectionChange, nominalCount, 
 
           return (
             <div key={section.id} className={section.separated ? "border-t border-[#1E2235] pt-3" : undefined}>
-              <button onClick={() => onSectionChange(section.id)} className={cn("flex w-full items-center justify-between rounded-data px-3 py-2 text-left font-display text-sm transition", active ? "bg-primary/15 text-primary" : "text-foreground/58 hover:bg-white/5 hover:text-foreground")}>
+              <Link href={`/?section=${section.id}`} className={cn("flex w-full items-center justify-between rounded-data px-3 py-2 text-left font-display text-sm transition", active ? "bg-primary/15 text-primary" : "text-foreground/58 hover:bg-white/5 hover:text-foreground")}>
                 <span className="flex items-center gap-3"><Icon className="h-4 w-4" />{section.label}</span>
                 {section.id === "excepciones" && exceptionCount > 0 && <span className="rounded-full bg-critical px-1.5 py-0.5 text-[10px] text-white">{exceptionCount}</span>}
-              </button>
+              </Link>
             </div>
           );
         })}
