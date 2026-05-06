@@ -3,57 +3,79 @@
 @tailwind utilities;
 
 :root {
-  --bg-void: #070810;
-  --bg-surface: #0D0F1A;
-  --bg-elevated: #131625;
-  --bg-border: #1E2235;
-  --status-nominal: #00D4A1;
-  --status-warning: #F59E0B;
-  --status-critical: #EF4444;
-  --status-offline: #374151;
-  --text-primary: #E2E8F0;
-  --text-secondary: #64748B;
-  --text-muted: #334155;
-  --text-accent: #38BDF8;
-  --conf-high: #00D4A1;
-  --conf-mid: #F59E0B;
-  --conf-low: #EF4444;
-  --glow-critical: 0 0 20px rgba(239, 68, 68, 0.3);
-  --glow-nominal: 0 0 12px rgba(0, 212, 161, 0.2);
-  --background: 235 39% 5%;
-  --foreground: 214 32% 91%;
-  --card: 232 33% 8%;
-  --border: 228 28% 16%;
-  --input: 228 28% 16%;
-  --ring: 199 89% 60%;
-  --primary: 199 89% 60%;
-  --secondary: 230 31% 11%;
-  --destructive: 0 84% 60%;
-  --muted: 215 28% 17%;
-  --accent: 199 89% 60%;
-  --ok: 165 100% 42%;
-  --warn: 38 92% 50%;
-  --critical: 0 84% 60%;
+  /* Fondos — escala de oscuridad */
+  --bg-void: #080909;
+  --bg-canvas: #0C0E0F;
+  --bg-surface: #111314;
+  --bg-elevated: #181A1B;
+  --bg-hover: #1E2122;
+  --bg-border: #252829;
+
+  /* Sistema semántico */
+  --status-nominal: #4FFFB0;
+  --status-warning: #F5A623;
+  --status-critical: #FF4545;
+  --status-offline: #3A3D3F;
+  --status-accent: #60C8FF;
+
+  /* Tipografía */
+  --text-primary: #F0F2F0;
+  --text-secondary: #8A9090;
+  --text-muted: #454A4A;
+  --text-accent: #60C8FF;
+
+  /* Confianza */
+  --conf-high: #4FFFB0;
+  --conf-mid: #F5A623;
+  --conf-low: #FF4545;
+
+  /* Shadcn tokens */
+  --background: 165 6% 6%;
+  --foreground: 160 10% 94%;
+  --card: 165 6% 8%;
+  --border: 160 4% 16%;
+  --input: 160 4% 16%;
+  --ring: 195 100% 68%;
+  --primary: 195 100% 68%;
+  --secondary: 165 6% 10%;
+  --destructive: 0 84% 62%;
+  --muted: 165 6% 13%;
+  --accent: 195 100% 68%;
+  --ok: 152 100% 66%;
+  --warn: 37 91% 55%;
+  --critical: 0 84% 62%;
 }
 
-* {
-  border-color: hsl(var(--border));
-}
-
-html {
-  background: hsl(var(--background));
-}
+* { border-color: hsl(var(--border)); }
+html { background: var(--bg-void); }
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 20% 10%, hsl(var(--primary) / 0.12), transparent 24rem),
-    radial-gradient(circle at 85% 15%, hsl(var(--accent) / 0.12), transparent 26rem),
-    hsl(var(--background));
-  color: hsl(var(--foreground));
+  background: var(--bg-canvas);
+  color: var(--text-primary);
   font-family: var(--font-inter), Inter, sans-serif;
 }
 
-::selection {
-  background: hsl(var(--primary) / 0.3);
+/* CLASE UTILITARIA: números grandes expresivos */
+.stat-hero {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
+
+/* Card base con fondo oscuro limpio */
+.card-surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+/* Barra de acento superior (como la referencia) */
+.card-accent-top {
+  border-top: 2px solid var(--status-nominal);
+}
+
+::selection { background: hsl(var(--primary) / 0.25); }
