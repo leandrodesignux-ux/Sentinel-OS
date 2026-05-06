@@ -47,11 +47,16 @@ const config: Config = {
           "0%, 100%": { opacity: "0.42" },
           "50%": { opacity: "1" },
         },
+        pulseRed: {
+          "0%, 100%": { borderColor: "#EF4444", opacity: "1" },
+          "50%": { borderColor: "#EF4444", opacity: "0.3" },
+        },
       },
       animation: {
         "status-pulse": "statusPulse 1.8s ease-in-out infinite",
         "critical-breach": "criticalBreach 1.4s ease-in-out infinite",
         "signal-blink": "signalBlink 1.1s steps(2, end) infinite",
+        "pulse-red": "pulseRed 0.8s ease-in-out infinite",
       },
       backgroundImage: {
         grid: "linear-gradient(hsl(var(--border) / .22) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border) / .22) 1px, transparent 1px)",

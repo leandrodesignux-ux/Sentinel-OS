@@ -130,6 +130,9 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: { agents: Agent[]; 
   const activeExceptions = agents.filter((agent) => agent.status === "intervention_required" || agent.status === "circuit_open" || agent.status === "suspended");
   const visibleExceptions = sortAgents(activeExceptions.filter((agent) => showResolved || !resolvedIds.includes(agent.id)), sortMode);
   const groups = Object.entries(groupExceptionsByKind(visibleExceptions)).filter(([, groupedAgents]) => groupedAgents.length > 3) as [ExceptionKind, Agent[]][];
+  const groupedAgentIds = new Set(groups.flatMap(([, groupedAgents]) => groupedAgents.map((agent) => agent.id)));
+  const standaloneExceptions = visibleExceptions.filter((agent) => !groupedAgentIds.has(agent.id));
+  const pendingCount = activeExceptions.filter((agent) => !resolvedIds.includes(agent.id)).length;
 
   function resolveAgents(targets: Agent[]) {
     setResolvedIds((current) => Array.from(new Set([...current, ...targets.map((agent) => agent.id)])));
@@ -139,7 +142,7 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: { agents: Agent[]; 
     <div className="flex h-full min-h-0 flex-col gap-4">
       <header className="flex items-center gap-4">
         <h2 className="font-accent text-2xl">Cola de excepciones</h2>
-        <span className="rounded-badge bg-critical px-2 py-1 font-display text-xs text-white">{activeExceptions.length} pendientes</span>
+        <span className="rounded-badge bg-critical px-2 py-1 font-display text-xs text-white">{pendingCount} pendientes</span>
         <div className="ml-auto flex items-center gap-3">
           <label className="flex items-center gap-2 font-display text-xs text-foreground/55">
             Ordenar por:
@@ -164,7 +167,7 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: { agents: Agent[]; 
         ) : (
           <>
             {groups.map(([kind, groupedAgents]) => <BatchResolutionCard key={kind} kind={kind} agents={groupedAgents} onResolve={resolveAgents} />)}
-            {visibleExceptions.map((agent) => (
+            {standaloneExceptions.map((agent) => (
               <ExceptionWorkCard key={agent.id} agent={agent} resolved={resolvedIds.includes(agent.id)} onResolve={() => resolveAgents([agent])} onReject={() => resolveAgents([agent])} onAudit={() => onOpenAudit(agent.id)} />
             ))}
           </>
