@@ -3,51 +3,53 @@
 @tailwind utilities;
 
 :root {
-  /* Fondos — escala de oscuridad */
-  --bg-void: #080909;
-  --bg-canvas: #0C0E0F;
-  --bg-surface: #111314;
-  --bg-elevated: #181A1B;
-  --bg-hover: #1E2122;
-  --bg-border: #252829;
+  /* Fondo y superficies — blanco y gris muy suave */
+  --bg-void: #F8F9FA;
+  --bg-canvas: #F4F5F7;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-hover: #F0F2F5;
+  --bg-border: #E4E7EC;
+  --bg-border-strong: #CDD2DA;
 
-  /* Sistema semántico */
-  --status-nominal: #4FFFB0;
-  --status-warning: #F5A623;
-  --status-critical: #FF4545;
-  --status-offline: #3A3D3F;
-  --status-accent: #60C8FF;
+  /* Semánticos — más suaves, profesionales */
+  --status-nominal: #12B76A;
+  --status-warning: #F79009;
+  --status-critical: #F04438;
+  --status-offline: #98A2B3;
+  --status-accent: #2E90FA;
 
-  /* Tipografía */
-  --text-primary: #F0F2F0;
-  --text-secondary: #8A9090;
-  --text-muted: #454A4A;
-  --text-accent: #60C8FF;
+  /* Textos */
+  --text-primary: #101828;
+  --text-secondary: #475467;
+  --text-muted: #98A2B3;
+  --text-accent: #2E90FA;
 
   /* Confianza */
-  --conf-high: #4FFFB0;
-  --conf-mid: #F5A623;
-  --conf-low: #FF4545;
+  --conf-high: #12B76A;
+  --conf-mid: #F79009;
+  --conf-low: #F04438;
 
-  /* Shadcn tokens */
-  --background: 165 6% 6%;
-  --foreground: 160 10% 94%;
-  --card: 165 6% 8%;
-  --border: 160 4% 16%;
-  --input: 160 4% 16%;
-  --ring: 195 100% 68%;
-  --primary: 195 100% 68%;
-  --secondary: 165 6% 10%;
-  --destructive: 0 84% 62%;
-  --muted: 165 6% 13%;
-  --accent: 195 100% 68%;
-  --ok: 152 100% 66%;
-  --warn: 37 91% 55%;
-  --critical: 0 84% 62%;
+  /* Shadcn tokens para white mode */
+  --background: 210 20% 98%;
+  --foreground: 220 26% 6%;
+  --card: 0 0% 100%;
+  --border: 220 13% 90%;
+  --input: 220 13% 90%;
+  --ring: 213 94% 58%;
+  --primary: 213 94% 58%;
+  --secondary: 210 20% 96%;
+  --destructive: 4 86% 58%;
+  --muted: 210 20% 96%;
+  --accent: 213 94% 58%;
+  --ok: 145 60% 38%;
+  --warn: 36 91% 50%;
+  --critical: 4 86% 58%;
 }
 
 * { border-color: hsl(var(--border)); }
-html { background: var(--bg-void); }
+
+html { background: var(--bg-canvas); }
 
 body {
   min-height: 100vh;
@@ -56,26 +58,20 @@ body {
   font-family: var(--font-inter), Inter, sans-serif;
 }
 
-/* CLASE UTILITARIA: números grandes expresivos */
 .stat-hero {
   font-family: var(--font-jetbrains-mono), monospace;
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 500;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1;
 }
 
-/* Card base con fondo oscuro limpio */
 .card-surface {
   background: var(--bg-surface);
   border: 1px solid var(--bg-border);
   border-radius: 12px;
   padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(16,24,40,0.06), 0 1px 2px rgba(16,24,40,0.04);
 }
 
-/* Barra de acento superior (como la referencia) */
-.card-accent-top {
-  border-top: 2px solid var(--status-nominal);
-}
-
-::selection { background: hsl(var(--primary) / 0.25); }
+::selection { background: hsl(var(--primary) / 0.15); }
