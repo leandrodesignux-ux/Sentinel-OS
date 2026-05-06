@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { EmergencyStop } from "@/components/controls/EmergencyStop";
 import { ControlsSection } from "@/components/controls/ControlsSection";
@@ -15,11 +14,19 @@ import { useAgentSimulation } from "@/lib/hooks/useAgentSimulation";
 import { useAgentStore } from "@/store/agentStore";
 
 const sectionTitles: Record<SentinelSection, string> = {
-  resumen: "Resumen operativo",
-  flota: "Mapa de flota",
-  excepciones: "Excepciones",
-  auditoria: "Auditoría de decisiones",
-  controles: "Controles globales",
+  resumen: "Panel principal",
+  flota: "Mis agentes",
+  excepciones: "Para revisar",
+  auditoria: "Historial de decisiones",
+  controles: "Configuración",
+};
+
+const sectionSubtitles: Record<SentinelSection, string> = {
+  resumen: "Resumen de actividad de tu flota de IA",
+  flota: "50 agentes trabajando en tiempo real",
+  excepciones: "Decisiones que necesitan tu criterio",
+  auditoria: "Rastro completo de cada acción tomada",
+  controles: "Ajusta el comportamiento de tus agentes",
 };
 
 function formatTime(date: Date) {
@@ -59,14 +66,18 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
           <span>FLOTA DETENIDA</span>
         </div>
       )}
-      <main className="ml-[220px] flex h-screen flex-col overflow-hidden">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-[#1E2235] bg-background/85 px-5 backdrop-blur">
-          <div className="flex items-center gap-3">
-            <h2 className="font-accent text-xl text-foreground">{sectionTitles[activeSection]}</h2>
-            {emergencyHalt.active && <span className="inline-flex items-center gap-2 rounded-badge border border-critical/40 bg-critical/15 px-3 py-1 font-display text-xs text-critical"><AlertTriangle className="h-3.5 w-3.5" /> Parada de flota activa</span>}
+      <main className="ml-[240px] flex h-screen flex-col overflow-hidden">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--bg-border)] bg-white px-6">
+          <div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+              {sectionTitles[activeSection]}
+            </h2>
+            <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+              {sectionSubtitles[activeSection]}
+            </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="font-display text-sm text-foreground/55">{formatTime(now)}</span>
+            <span className="text-sm text-[var(--text-muted)]">{formatTime(now)}</span>
             {hasCriticalAgents && <EmergencyStop />}
           </div>
         </header>

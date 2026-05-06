@@ -34,12 +34,12 @@ const typeLabels = {
 };
 
 const statusLabels = {
-  idle: "en espera",
-  running: "nominal",
-  monitoring: "monitoreando",
-  intervention_required: "intervención",
-  circuit_open: "cortacircuito",
-  suspended: "inactivo",
+  idle: "En espera",
+  running: "Trabajando",
+  monitoring: "Bajo observación",
+  intervention_required: "Necesita tu atención",
+  circuit_open: "Necesita tu atención",
+  suspended: "Pausado",
 };
 
 export function AgentCard({ agent }: { agent: Agent }) {
@@ -125,7 +125,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
           </div>
           <div>
             <div className="mb-1 flex justify-between text-xs">
-              <span className="text-[var(--text-muted)]">Confianza</span>
+              <span className="text-[var(--text-muted)]">Seguridad de la decisión</span>
               <span className="font-display" style={{ color: confidence > 90 ? "var(--conf-high)" : confidence >= 80 ? "var(--conf-mid)" : "var(--conf-low)" }}>
                 {confidence}%
               </span>
@@ -142,7 +142,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
           </div>
           <p className="text-xs text-[var(--text-secondary)]">{agent.current_task.description}</p>
           <div className="grid grid-cols-2 gap-y-1.5 text-xs">
-            <span className="text-[var(--text-muted)]">Riesgo económico</span>
+            <span className="text-[var(--text-muted)]">Dinero en juego</span>
             <span className="font-display text-right text-[var(--status-critical)]">${impact}K</span>
             <span className="text-[var(--text-muted)]">Estado</span>
             <span className="text-right">{statusLabels[agent.status]}</span>
