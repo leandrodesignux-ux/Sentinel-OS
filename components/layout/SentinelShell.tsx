@@ -9,6 +9,7 @@ import { OperatorSummary } from "@/components/dashboard/OperatorSummary";
 import { ExceptionsWorkbench } from "@/components/exceptions/ExceptionsWorkbench";
 import { FleetMapSection } from "@/components/fleet/FleetMapSection";
 import type { SentinelSection } from "@/components/layout/SentinelSidebar";
+import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAgentSimulation } from "@/lib/hooks/useAgentSimulation";
 import { useAgentStore } from "@/store/agentStore";
@@ -35,6 +36,7 @@ function formatTime(date: Date) {
 
 export function SentinelShell({ initialSection }: { initialSection: SentinelSection }) {
   const [activeSection, setActiveSection] = useState<SentinelSection>(initialSection);
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const [now, setNow] = useState(() => new Date());
   const router = useRouter();
   const agents = useAgentStore((state) => state.agents);
@@ -60,6 +62,7 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
 
   return (
     <TooltipProvider>
+      {showOnboarding && <OnboardingFlow onComplete={() => setShowOnboarding(false)} />}
       {emergencyHalt.active && (
         <div className="fixed left-3 top-[72px] z-40 flex w-[196px] items-center gap-2 rounded-data border border-critical/30 bg-critical/15 px-3 py-2 font-display text-xs text-critical">
           <span className="h-2 w-2 animate-status-pulse rounded-full bg-critical" />
