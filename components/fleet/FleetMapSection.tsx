@@ -54,7 +54,7 @@ function confidenceColor(confidence: number) {
   return "#F04438";
 }
 
-function FleetMapCard({ agent, selected, onSelect }: { agent: Agent; selected: boolean; onSelect: () => void }) {
+function FleetMapCard({ agent, selected, onSelect, index = 0 }: { agent: Agent; selected: boolean; onSelect: () => void; index?: number }) {
   const Icon = typeIcons[agent.type];
   const confidence = confidencePercent(agent);
   const intervention = agent.status === "intervention_required" || agent.status === "circuit_open";
@@ -281,7 +281,7 @@ export function FleetMapSection({ agents, onOpenAudit }: { agents: Agent[]; onOp
       <div className="grid min-h-0 flex-1 grid-cols-[1fr_240px] gap-4">
         <section className="overflow-auto rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)]">
           <div className="grid grid-cols-5 gap-2 xl:grid-cols-10">
-            {visibleAgents.map((agent) => <FleetMapCard key={agent.id} agent={agent} selected={selectedAgent?.id === agent.id} onSelect={() => selectAgent(agent.id)} />)}
+            {visibleAgents.map((agent, index) => <FleetMapCard key={agent.id} agent={agent} index={index} selected={selectedAgent?.id === agent.id} onSelect={() => selectAgent(agent.id)} />)}
           </div>
         </section>
 

@@ -1,17 +1,12 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Check, Clock, Flag } from "lucide-react";
 import { Building2, Home, Users, Wrench } from "lucide-react";
 import { economicImpactK } from "@/lib/utils/riskUtils";
 import { cn } from "@/lib/utils";
 import type { Agent } from "@/types/agent";
-
-const exceptionVariants: Variants = {
-  enter: { x: 100, opacity: 0 },
-  center: { x: 0, opacity: 1, transition: { type: "spring", stiffness: 300 } },
-  exit: { x: -50, opacity: 0 },
-};
 
 const typeIcons = {
   sales: Building2,
@@ -35,6 +30,9 @@ const typeLabels = {
 };
 
 export function ExceptionCard({ agent, onApprove, onViewDetail }: { agent: Agent; onApprove?: () => void; onViewDetail?: () => void }) {
+  const [isExiting, setIsExiting] = useState(false);
+  const [approved, setApproved] = useState(false);
+  
   const Icon = typeIcons[agent.type];
   const accent = typeAccentColors[agent.type];
   const impact = economicImpactK(agent);
@@ -47,51 +45,77 @@ export function ExceptionCard({ agent, onApprove, onViewDetail }: { agent: Agent
     medium: { bg: "bg-blue-50 text-blue-700 border-blue-200", label: "Bajo riesgo" },
   }[impactLevel];
 
+  const handleApprove = () => {
+    setApproved(true);
+    setIsExiting(true);
+    setTimeout(() => {
+      onApprove?.();
+    }, 150);
+  };
+
+  const handleReject = () => {
+    setApproved(false);
+    setIsExiting(true);
+    setTimeout(() => {
+      onViewDetail?.();
+    }, 150);
+  };
+
   return (
-    <motion.div initial="enter" animate="center" exit="exit" variants={exceptionVariants} className="bg-white rounded-[20px] border border-[var(--bg-border)] shadow-[var(--shadow-card)] p-5">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold text-white" style={{ backgroundColor: accent.accent }}>
-            {initials}
+    <AnimatePresence>
+      {!isExiting && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, x: approved ? 40 : -40 }}
+          transition={{ duration: 0.15 }}
+          className="bg-white rounded-[20px] border border-[var(--bg-border)] shadow-[var(--shadow-card)] p-5"
+        >
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold text-white" style={{ backgroundColor: accent.accent }}>
+                {initials}
+              </div>
+              <div>
+                <p className="text-[14px] font-medium text-[var(--text-primary)]">{agent.name}</p>
+                <p className="text-[12px] text-[var(--text-muted)]">{typeLabels[agent.type]}</p>
+              </div>
+            </div>
+            <div className={cn("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium", impactBadge.bg)}>
+              <Flag className="h-3.5 w-3.5" />
+              <span>${impact}K · {impactBadge.label}</span>
+            </div>
           </div>
-          <div>
-            <p className="text-[14px] font-medium text-[var(--text-primary)]">{agent.name}</p>
-            <p className="text-[12px] text-[var(--text-muted)]">{typeLabels[agent.type]}</p>
+
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-1.5 bg-[var(--bg-canvas)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-secondary)]">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>{agent.current_task.description}</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-[var(--bg-canvas)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-secondary)]">
+              <Clock className="h-3.5 w-3.5" />
+              <span>Hace {Math.max(1, parseInt(agent.id.replace("AGT-", "")) % 11)} min</span>
+            </div>
           </div>
-        </div>
-        <div className={cn("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium", impactBadge.bg)}>
-          <Flag className="h-3.5 w-3.5" />
-          <span>${impact}K · {impactBadge.label}</span>
-        </div>
-      </div>
 
-      <div className="flex items-center gap-2 mb-3">
-        <div className="flex items-center gap-1.5 bg-[var(--bg-canvas)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-secondary)]">
-          <Calendar className="h-3.5 w-3.5" />
-          <span>{agent.current_task.description}</span>
-        </div>
-        <div className="flex items-center gap-1.5 bg-[var(--bg-canvas)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-secondary)]">
-          <Clock className="h-3.5 w-3.5" />
-          <span>Hace {Math.max(1, parseInt(agent.id.replace("AGT-", "")) % 11)} min</span>
-        </div>
-      </div>
+          <h3 className="text-[15px] font-medium text-[var(--text-primary)] mb-1">
+            {agent.exception_reason ?? "Excepción detectada por el sistema"}
+          </h3>
+          <p className="text-[13px] text-[var(--text-secondary)] line-clamp-2 mb-4">
+            {agent.exception_reason ?? "La decisión excede el umbral operativo y requiere revisión humana antes de continuar."}
+          </p>
 
-      <h3 className="text-[15px] font-medium text-[var(--text-primary)] mb-1">
-        {agent.exception_reason ?? "Excepción detectada por el sistema"}
-      </h3>
-      <p className="text-[13px] text-[var(--text-secondary)] line-clamp-2 mb-4">
-        {agent.exception_reason ?? "La decisión excede el umbral operativo y requiere revisión humana antes de continuar."}
-      </p>
-
-      <div className="flex items-center gap-2">
-        <button onClick={onViewDetail} className="flex-1 rounded-xl border border-[var(--bg-border)] py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
-          Ver detalle
-        </button>
-        <button onClick={onApprove} className="flex-1 rounded-xl bg-[var(--status-nominal)] py-2 text-sm font-medium text-white hover:bg-green-600 transition-colors flex items-center justify-center gap-1.5">
-          <Check className="h-3.5 w-3.5" />
-          Aprobar
-        </button>
-      </div>
-    </motion.div>
+          <div className="flex items-center gap-2">
+            <button onClick={handleReject} className="flex-1 rounded-xl border border-[var(--bg-border)] py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors">
+              Ver detalle
+            </button>
+            <button onClick={handleApprove} className="flex-1 rounded-xl bg-[var(--status-nominal)] py-2 text-sm font-medium text-white hover:bg-green-600 transition-colors flex items-center justify-center gap-1.5">
+              <Check className="h-3.5 w-3.5" />
+              Aprobar
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

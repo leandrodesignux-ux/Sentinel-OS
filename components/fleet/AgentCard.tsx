@@ -42,7 +42,7 @@ const statusLabels = {
   suspended: "Pausado",
 };
 
-export function AgentCard({ agent }: { agent: Agent }) {
+export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }) {
   const confidence = confidencePercent(agent);
   const impact = economicImpactK(agent);
   const selectAgent = useAgentStore((state) => state.selectAgent);
@@ -65,13 +65,15 @@ export function AgentCard({ agent }: { agent: Agent }) {
       <TooltipTrigger asChild>
         <motion.button
           layout
+          initial={{ opacity: 0, y: 8 }}
           animate={{
-            scale: isIntervention ? 1.05 : 1,
             opacity: isHalted ? 0.38 : 1,
+            y: 0,
+            scale: isIntervention ? 1.05 : 1,
             filter: isHalted ? "grayscale(1)" : "grayscale(0)",
             borderColor: inScenarioCascade ? "var(--status-critical)" : STATUS_COLORS[agent.status],
           }}
-          transition={{ duration: 0.18, delay: inScenarioCascade ? scenarioIndex * 0.2 : isHalted ? haltIndex * 0.05 : 0 }}
+          transition={{ duration: 0.15, delay: index * 0.02 }}
           onClick={() => selectAgent(agent.id)}
           className={cn(
             "relative min-h-[80px] w-16 rounded-data border bg-[var(--bg-surface)] p-2 text-center transition-all duration-150 hover:shadow-[var(--shadow-card)] hover:scale-[1.02]",

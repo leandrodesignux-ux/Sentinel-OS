@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { EmergencyStop } from "@/components/controls/EmergencyStop";
 import { ControlsSection } from "@/components/controls/ControlsSection";
 import { DecisionAuditPanel } from "@/components/audit/DecisionAuditPanel";
@@ -86,13 +87,23 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
         </header>
 
         <section className="bg-[var(--bg-canvas)] min-h-0 flex-1 overflow-hidden p-4">
-          {activeSection === "resumen" && (
-            <OperatorSummary agents={agents} onViewExceptions={() => navigateSection("excepciones")} />
-          )}
-          {activeSection === "flota" && <FleetMapSection agents={agents} onOpenAudit={() => navigateSection("auditoria")} />}
-          {activeSection === "excepciones" && <ExceptionsWorkbench agents={agents} onOpenAudit={(agentId) => { selectAgent(agentId); navigateSection("auditoria"); }} />}
-          {activeSection === "auditoria" && <DecisionAuditPanel agents={agents} />}
-          {activeSection === "controles" && <ControlsSection agents={agents} />}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              {activeSection === "resumen" && (
+                <OperatorSummary agents={agents} onViewExceptions={() => navigateSection("excepciones")} />
+              )}
+              {activeSection === "flota" && <FleetMapSection agents={agents} onOpenAudit={() => navigateSection("auditoria")} />}
+              {activeSection === "excepciones" && <ExceptionsWorkbench agents={agents} onOpenAudit={(agentId) => { selectAgent(agentId); navigateSection("auditoria"); }} />}
+              {activeSection === "auditoria" && <DecisionAuditPanel agents={agents} />}
+              {activeSection === "controles" && <ControlsSection agents={agents} />}
+            </motion.div>
+          </AnimatePresence>
         </section>
       </main>
     </TooltipProvider>

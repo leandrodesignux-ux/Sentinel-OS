@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { Bell, Building2, Clock, Home, TrendingUp, Users, Wrench, Zap } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { economicImpactK } from "@/lib/utils/riskUtils";
 import type { Agent } from "@/types/agent";
 
@@ -59,13 +61,31 @@ function KpiCard({ label, value, subtitle, badge, link, accentColor, Icon, onLin
   const isWarning = link !== undefined;
   const valueSize = value.includes("/") ? "var(--text-kpi-sm)" : "var(--text-kpi)";
   
+  // Extract numeric value for animation
+  const numericValue = parseFloat(value.replace(/[^0-9.]/g, ''));
+  const animatedValue = useMotionValue(0);
+  const springValue = useSpring(animatedValue, { duration: 800, bounce: 0 });
+  
+  useEffect(() => {
+    animatedValue.set(numericValue);
+  }, [numericValue, animatedValue]);
+  
+  const displayValue = springValue.get();
+  const formattedValue = value.includes("/")
+    ? `${Math.round(displayValue)}/50`
+    : value.includes("%")
+    ? `${displayValue.toFixed(1)}%`
+    : value.includes("s")
+    ? `${displayValue.toFixed(1)}s`
+    : `${displayValue.toFixed(1)}%`;
+  
   return (
     <div className="bg-white rounded-[20px] border border-[var(--bg-border)] shadow-[var(--shadow-card)] p-6">
       <div className="flex items-center gap-2 mb-4">
         <Icon className="h-5 w-5 text-[var(--text-muted)]" />
         <p className="text-[12px] uppercase tracking-wider text-[var(--text-muted)]">{label}</p>
       </div>
-      <p className="font-mono font-bold leading-none" style={{ fontSize: valueSize, color: accentColor }}>{value}</p>
+      <p className="font-mono font-bold leading-none" style={{ fontSize: valueSize, color: accentColor }}>{formattedValue}</p>
       {badge && (
         <span className="mt-4 inline-flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
           ✓ {badge}

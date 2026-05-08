@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Bell, Check, Command, LayoutDashboard, Map, Shield } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const agentItems = [
@@ -61,6 +61,8 @@ function ProgressDots({ activeStep }: { activeStep: number }) {
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState(0);
+  const agentCount = useMotionValue(0);
+  const springCount = useSpring(agentCount, { duration: 2000, bounce: 0 });
 
   useEffect(() => {
     if (step === 0) {
@@ -69,10 +71,11 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
     }
 
     if (step === 1) {
+      agentCount.set(50);
       const timeout = setTimeout(() => setStep(2), 2500);
       return () => clearTimeout(timeout);
     }
-  }, [step]);
+  }, [step, agentCount]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 px-6 backdrop-blur-sm">
@@ -140,7 +143,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                 transition={{ duration: 2 }}
               />
             </div>
-            <p className="mt-2 text-xs text-gray-400">50 / 50 agentes activos</p>
+            <p className="mt-2 text-xs text-gray-400">{Math.round(springCount.get())} / 50 agentes activos</p>
             <ProgressDots activeStep={1} />
           </motion.div>
         )}
