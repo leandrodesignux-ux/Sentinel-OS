@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { Bell, Building2, Clock, Home, TrendingUp, Users, Wrench, Zap } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { economicImpactK } from "@/lib/utils/riskUtils";
 import type { Agent } from "@/types/agent";
 
@@ -49,50 +49,53 @@ function humanDescription(agent: Agent) {
 }
 
 function KpiCard({ label, value, subtitle, badge, link, accentColor, Icon, onLinkClick }: {
-  label: string;
-  value: string;
-  subtitle: string;
-  badge?: string;
-  link?: string;
-  accentColor: string;
-  Icon: typeof Zap;
-  onLinkClick?: () => void;
+  label: string; value: string; subtitle: string; badge?: string;
+  link?: string; accentColor: string; Icon: typeof Zap; onLinkClick?: () => void;
 }) {
-  const isWarning = link !== undefined;
-  const valueSize = value.includes("/") ? "var(--text-kpi-sm)" : "var(--text-kpi)";
-  
-  // Extract numeric value for animation
-  const numericValue = parseFloat(value.replace(/[^0-9.]/g, ''));
-  const animatedValue = useMotionValue(0);
-  const springValue = useSpring(animatedValue, { duration: 800, bounce: 0 });
-  
+  const numericStr = value.replace(/[^0-9.]/g, '');
+  const numeric = parseFloat(numericStr) || 0;
+  const suffix = value.replace(/[0-9.]/g, '');
+
+  const motionVal = useMotionValue(0);
+  const spring = useSpring(motionVal, { stiffness: 60, damping: 20 });
+  const display = useTransform(spring, (v) => {
+    if (suffix === '/50') return `${Math.round(v)}/50`;
+    if (suffix.includes('s')) return `${v.toFixed(1)}s`;
+    if (suffix.includes('%')) return `${v.toFixed(1)}%`;
+    return `${v.toFixed(1)}`;
+  });
+
   useEffect(() => {
-    animatedValue.set(numericValue);
-  }, [numericValue, animatedValue]);
-  
-  const displayValue = springValue.get();
-  const formattedValue = value.includes("/")
-    ? `${Math.round(displayValue)}/50`
-    : value.includes("%")
-    ? `${displayValue.toFixed(1)}%`
-    : value.includes("s")
-    ? `${displayValue.toFixed(1)}s`
-    : `${displayValue.toFixed(1)}%`;
-  
+    motionVal.set(numeric);
+  }, [numeric, motionVal]);
+
+  const isSlash = value.includes('/');
+  const fontSize = isSlash ? '36px' : '44px';
+
   return (
-    <div className="bg-white rounded-[20px] border border-[var(--bg-border)] shadow-[var(--shadow-card)] p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Icon className="h-5 w-5 text-[var(--text-muted)]" />
-        <p className="text-[12px] uppercase tracking-wider text-[var(--text-muted)]">{label}</p>
+    <div className="bg-white rounded-[20px] border border-[#E4E7EC] p-6 flex flex-col" style={{boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"}}>
+      <div className="flex items-center gap-2 mb-3">
+        <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{background: `${accentColor}15`}}>
+          <Icon className="h-3.5 w-3.5" style={{color: accentColor}} />
+        </div>
+        <p className="text-[11px] font-medium uppercase tracking-widest text-[#98A2B3]">{label}</p>
       </div>
-      <p className="font-mono font-bold leading-none" style={{ fontSize: valueSize, color: accentColor }}>{formattedValue}</p>
+      <motion.p
+        className="font-mono font-bold leading-none mb-3"
+        style={{ fontSize, color: accentColor }}
+      >
+        {display}
+      </motion.p>
+      <p className="text-[12px] text-[#98A2B3] leading-relaxed mb-3 flex-1">{subtitle}</p>
       {badge && (
-        <span className="mt-4 inline-flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
-          ✓ {badge}
+        <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-green-50 px-3 py-1.5 text-[11px] font-medium text-green-700 border border-green-100">
+          <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block"/>
+          {badge}
         </span>
       )}
       {link && (
-        <button onClick={onLinkClick} className="mt-4 inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors">
+        <button onClick={onLinkClick} className="inline-flex items-center gap-1.5 self-start rounded-full bg-amber-50 px-3 py-1.5 text-[11px] font-medium text-amber-700 border border-amber-100 hover:bg-amber-100 transition-colors">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 inline-block"/>
           {link}
         </button>
       )}
