@@ -1,7 +1,7 @@
 "use client";
 
 import { Bot, RadioTower, ShieldCheck, Siren, Zap } from "lucide-react";
-import { DecisionAudit } from "@/components/audit/DecisionAudit";
+import { DecisionAuditPanel } from "@/components/audit/DecisionAuditPanel";
 import { GlobalControls } from "@/components/controls/GlobalControls";
 import { useAgentStore } from "@/store/agentStore";
 import type { Agent } from "@/types/agent";
@@ -33,13 +33,9 @@ export function SidePanel({ agents }: { agents: Agent[] }) {
           ))}
         </div>
       </div>
-      {selectedAgent && (
+      {agents.length > 0 && (
         <div className="max-h-[520px] overflow-y-auto rounded-data border bg-white p-3">
-          <div className="mb-3">
-            <h2 className="font-accent text-lg">Decision audit</h2>
-            <p className="font-display text-xs text-[var(--status-accent)]">{selectedAgent.id} / {selectedAgent.name}</p>
-          </div>
-          <DecisionAudit agent={selectedAgent} />
+          <DecisionAuditPanel agents={agents} />
         </div>
       )}
       <div className="rounded-data border bg-white p-3">
