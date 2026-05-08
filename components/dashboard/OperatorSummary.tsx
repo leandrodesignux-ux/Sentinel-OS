@@ -56,19 +56,23 @@ function KpiCard({ label, value, subtitle, badge, link, accentColor, Icon, onLin
   Icon: typeof Zap;
   onLinkClick?: () => void;
 }) {
+  const isWarning = link !== undefined;
+  const valueSize = value.includes("/") ? "var(--text-kpi-sm)" : "var(--text-kpi)";
+  
   return (
-    <div className="relative overflow-hidden rounded-[20px] border border-[var(--bg-border)] bg-white p-5 shadow-[var(--shadow-card)]">
-      <Icon className="absolute right-4 top-4 h-12 w-12 opacity-15" style={{ color: accentColor }} />
-      <p className="text-sm font-medium text-[var(--text-secondary)]">{label}</p>
-      <p className="mt-2 text-4xl font-bold" style={{ color: accentColor }}>{value}</p>
-      <p className="mt-1 text-xs text-[var(--text-muted)]">{subtitle}</p>
+    <div className="bg-white rounded-[20px] border border-[var(--bg-border)] shadow-[var(--shadow-card)] p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Icon className="h-5 w-5 text-[var(--text-muted)]" />
+        <p className="text-[12px] uppercase tracking-wider text-[var(--text-muted)]">{label}</p>
+      </div>
+      <p className="font-mono font-bold leading-none" style={{ fontSize: valueSize, color: accentColor }}>{value}</p>
       {badge && (
-        <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+        <span className="mt-4 inline-flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
           ✓ {badge}
         </span>
       )}
       {link && (
-        <button onClick={onLinkClick} className="mt-3 text-xs font-medium text-[var(--status-warning)] hover:underline">
+        <button onClick={onLinkClick} className="mt-4 inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors">
           {link}
         </button>
       )}
