@@ -140,7 +140,7 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
       )}
 
       <div className="min-h-0 space-y-4 overflow-y-auto pr-1">
-        <section className="rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)]">
+        <section className="bg-white rounded-[20px] border border-[#E4E7EC] p-6" style={{boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"}}>
           <h2 className="font-semibold text-[var(--text-primary)] mb-1">Control individual de agentes</h2>
           <p className="text-sm text-[var(--text-muted)] mb-4">Ajusta el nivel de independencia de cada agente</p>
           
@@ -189,7 +189,7 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
           )}
         </section>
 
-        <section className="rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)] mt-4">
+        <section className="bg-white rounded-[20px] border border-[#E4E7EC] p-6 mt-4" style={{boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"}}>
           <div className="flex items-center gap-2 mb-2">
             <h3 className="font-semibold text-[var(--text-primary)]">Demostración en vivo</h3>
             <span className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5">Solo para demo</span>
@@ -272,7 +272,7 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
           )}
         </section>
 
-        <section className="rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)] mt-4">
+        <section className="bg-white rounded-[20px] border border-[#E4E7EC] p-6 mt-4" style={{boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"}}>
           <h3 className="font-semibold text-[var(--text-primary)] mb-3">Umbrales de aprobación por tipo</h3>
           <p className="text-sm text-[var(--text-muted)] mb-4">Cuánta seguridad necesita un agente para actuar solo</p>
           

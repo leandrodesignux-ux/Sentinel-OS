@@ -90,7 +90,7 @@ export function DecisionAuditPanel({ agents }: { agents: Agent[] }) {
 
   return (
     <div className="flex h-full gap-4">
-      <aside className="w-[35%] rounded-2xl border border-[var(--bg-border)] bg-white p-4 h-full overflow-y-auto shadow-sm">
+      <aside className="w-[35%] bg-white rounded-[20px] border border-[#E4E7EC] p-6 h-full overflow-y-auto" style={{boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"}}>
         <h3 className="font-semibold text-[var(--text-primary)] mb-3">
           Agentes con actividad
         </h3>
@@ -167,7 +167,7 @@ export function DecisionAuditPanel({ agents }: { agents: Agent[] }) {
                     <div className={cn("relative z-10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2", step.confidence > 0.9 ? "border-green-200 bg-green-50" : step.confidence >= 0.8 ? "border-yellow-200 bg-yellow-50" : "border-red-200 bg-red-50")}>
                       <span className="text-xs font-bold" style={{ color: confColor(step.confidence) }}>{index + 1}</span>
                     </div>
-                    <div className="flex-1 rounded-xl border border-[var(--bg-border)] bg-white p-3 shadow-sm">
+                    <div className="flex-1 rounded-xl border border-[#E4E7EC] bg-white p-4" style={{boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"}}>
                       <div className="flex items-center justify-between mb-1">
                         <p className="text-sm font-medium text-[var(--text-primary)]">{humanActionLabel(step.action)}</p>
                         <div className="flex items-center gap-2">
@@ -187,7 +187,7 @@ export function DecisionAuditPanel({ agents }: { agents: Agent[] }) {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[var(--bg-border)] bg-[var(--bg-canvas)] p-4">
+            <div className="rounded-[20px] border border-[#E4E7EC] bg-white p-6" style={{boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"}}>
               <h3 className="font-semibold text-[var(--text-primary)] mb-3">¿En qué información se basó?</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>

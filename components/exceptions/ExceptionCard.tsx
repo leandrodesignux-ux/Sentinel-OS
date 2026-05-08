@@ -98,11 +98,11 @@ export function ExceptionCard({ agent, onApprove, onViewDetail }: { agent: Agent
             </div>
           </div>
 
-          <h3 className="text-[15px] font-medium text-[var(--text-primary)] mb-1">
-            {agent.exception_reason ?? "Excepción detectada por el sistema"}
+          <h3 className="text-[15px] font-semibold text-[#101828] mb-1 leading-snug">
+            {agent.current_task.description}
           </h3>
-          <p className="text-[13px] text-[var(--text-secondary)] line-clamp-2 mb-4">
-            {agent.exception_reason ?? "La decisión excede el umbral operativo y requiere revisión humana antes de continuar."}
+          <p className="text-[13px] text-[#475467] line-clamp-2 mb-4 leading-relaxed">
+            {agent.exception_reason ?? "La decisión excede el umbral operativo y requiere revisión humana antes de continuar con la transacción."}
           </p>
 
           <div className="flex items-center gap-2">

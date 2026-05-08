@@ -91,3 +91,12 @@ body {
 .bg-card\/50, .bg-card\/70, .bg-card\/75 {
   background-color: white;
 }
+
+/* Scrollbar custom — más limpio */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D0D5DD; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #98A2B3; }
+
+/* Asegura que el fondo verde-gris se aplica al html también */
+html, body { background: #ECF0EA; }
