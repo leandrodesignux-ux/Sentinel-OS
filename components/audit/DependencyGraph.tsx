@@ -22,7 +22,7 @@ export function DependencyGraph({ agent }: { agent: Agent }) {
   }
 
   return (
-    <svg viewBox="0 0 680 260" className="h-64 w-full rounded-data border bg-background/60">
+    <svg viewBox="0 0 680 260" className="h-64 w-full rounded-data border bg-white">
       <defs>
         <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
           <path d="M0,0 L8,4 L0,8 Z" className="fill-primary" />
@@ -51,7 +51,7 @@ export function DependencyGraph({ agent }: { agent: Agent }) {
 
         return (
           <g key={`down-${node}`} className={cn(isCritical && inBlast && "animate-signal-blink")}>
-            <line x1="365" y1="130" x2="510" y2={y} stroke="currentColor" strokeWidth={weight} markerEnd="url(#arrow-red)" className={cn(inBlast ? "text-critical" : "text-critical/45")} />
+            <line x1="365" y1="130" x2="510" y2={y} stroke="currentColor" strokeWidth={weight} markerEnd="url(#arrow-red)" className={cn(inBlast ? "text-red-600" : "text-critical/45")} />
             <GraphNode x={570} y={y} label={node} subtitle={nodeLabel(node)} tone={inBlast ? "blast" : "downstream"} onClick={() => selectAgent(node)} />
           </g>
         );
@@ -74,8 +74,8 @@ function GraphNode({ x, y, label, subtitle, tone, onClick }: { x: number; y: num
   return (
     <g className="cursor-pointer" onClick={onClick} transform={`translate(${x} ${y})`}>
       <circle r={tone === "center" ? 24 : 18} className={circleClass} />
-      <text y={tone === "center" ? 4 : 3} textAnchor="middle" className="pointer-events-none fill-current font-display text-[10px] text-foreground">{label}</text>
-      <text y={tone === "center" ? 40 : 34} textAnchor="middle" className="pointer-events-none fill-current text-[9px] text-foreground/45">{subtitle.slice(0, 18)}</text>
+      <text y={tone === "center" ? 4 : 3} textAnchor="middle" className="pointer-events-none fill-current font-display text-[10px] text-[var(--text-primary)]">{label}</text>
+      <text y={tone === "center" ? 40 : 34} textAnchor="middle" className="pointer-events-none fill-current text-[9px] text-[var(--text-muted)]">{subtitle.slice(0, 18)}</text>
     </g>
   );
 }

@@ -12,28 +12,28 @@ export function ScenarioSelector() {
   const forceScreeningHITL = useAgentStore((state) => state.forceScreeningHITL);
 
   return (
-    <div className="rounded-data border bg-card/70 p-3">
+    <div className="rounded-data border bg-white p-3">
       <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2"><GitBranch className="h-4 w-4 text-warn" /><h2 className="font-accent text-sm">Scenario selector</h2></div>
-        {activeScenario && <span className="animate-signal-blink font-display text-[10px] text-critical">ACTIVE</span>}
+        <div className="flex items-center gap-2"><GitBranch className="h-4 w-4 text-yellow-700" /><h2 className="font-accent text-sm">Scenario selector</h2></div>
+        {activeScenario && <span className="animate-signal-blink font-display text-[10px] text-red-600">ACTIVE</span>}
       </div>
       <div className="space-y-2">
-        <button onClick={activatePriceLoopScenario} className="w-full rounded-badge border border-warn/40 bg-warn/10 px-3 py-2 text-left font-display text-xs text-warn">
+        <button onClick={activatePriceLoopScenario} className="w-full rounded-badge border border-warn/40 bg-warn/10 px-3 py-2 text-left font-display text-xs text-yellow-700">
           Escenario 1 · Price Feedback Loop
         </button>
-        <button onClick={activateScreeningBiasScenario} className="w-full rounded-badge border border-warn/40 bg-warn/10 px-3 py-2 text-left font-display text-xs text-warn">
+        <button onClick={activateScreeningBiasScenario} className="w-full rounded-badge border border-warn/40 bg-warn/10 px-3 py-2 text-left font-display text-xs text-yellow-700">
           Escenario 2 · Fair Housing Flag
         </button>
-        <button onClick={activateRetryStormScenario} className="w-full rounded-badge border border-warn/40 bg-warn/10 px-3 py-2 text-left font-display text-xs text-warn">
+        <button onClick={activateRetryStormScenario} className="w-full rounded-badge border border-warn/40 bg-warn/10 px-3 py-2 text-left font-display text-xs text-yellow-700">
           Escenario 3 · Retry Storm HVAC
         </button>
         {activeScenario?.mode === "price_loop" && (
-          <button onClick={containScenarioFamily} className="w-full rounded-badge border border-ok/40 bg-ok/10 px-3 py-2 text-left font-display text-xs text-ok">
+          <button onClick={containScenarioFamily} className="w-full rounded-badge border border-green-200 bg-green-50 px-3 py-2 text-left font-display text-xs text-green-700">
             Contener familia · {activeScenario.affectedAgentIds.length} agentes
           </button>
         )}
         {activeScenario?.mode === "screening_bias" && (
-          <button onClick={forceScreeningHITL} className="w-full rounded-badge border border-critical/40 bg-critical/10 px-3 py-2 text-left font-display text-xs text-critical">
+          <button onClick={forceScreeningHITL} className="w-full rounded-badge border border-critical/40 bg-critical/10 px-3 py-2 text-left font-display text-xs text-red-600">
             Forzar HITL 100% para screening
           </button>
         )}

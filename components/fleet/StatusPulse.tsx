@@ -2,12 +2,12 @@ import type { AgentStatus } from "@/types/agent";
 import { cn } from "@/lib/utils";
 
 const statusClass: Record<AgentStatus, string> = {
-  idle: "bg-ok text-ok",
-  running: "bg-primary text-primary",
-  monitoring: "bg-warn text-warn",
-  intervention_required: "bg-critical text-critical",
-  circuit_open: "bg-critical text-critical",
-  suspended: "bg-muted text-foreground/50",
+  idle: "bg-ok text-green-700",
+  running: "bg-primary text-[var(--status-accent)]",
+  monitoring: "bg-warn text-yellow-700",
+  intervention_required: "bg-critical text-red-600",
+  circuit_open: "bg-critical text-red-600",
+  suspended: "bg-muted text-[var(--text-muted)]",
 };
 
 export function StatusPulse({ status }: { status: AgentStatus }) {

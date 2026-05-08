@@ -11,10 +11,10 @@ export function FleetMonitor({ agents }: { agents: Agent[] }) {
       <div className="mb-3 flex items-center justify-between">
         <div>
           <h2 className="font-accent text-xl">Mapa táctico de flota</h2>
-          <p className="text-sm text-foreground/50">Cuadrícula operativa: 50 agentes, selección por tarjeta y auditoría detallada.</p>
+          <p className="text-sm text-[var(--text-muted)]">Cuadrícula operativa: 50 agentes, selección por tarjeta y auditoría detallada.</p>
         </div>
         <Tooltip>
-          <TooltipTrigger><Eye className="h-5 w-5 text-primary" /></TooltipTrigger>
+          <TooltipTrigger><Eye className="h-5 w-5 text-[var(--status-accent)]" /></TooltipTrigger>
           <TooltipContent>Selecciona una tarjeta para inspeccionar el paquete de decisión.</TooltipContent>
         </Tooltip>
       </div>

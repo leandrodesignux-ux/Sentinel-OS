@@ -14,9 +14,9 @@ export function DecisionAudit({ agent, compact = false }: { agent: Agent; compac
         <Metric label="Confidence" value={`${Math.round(agent.confidence_score * 100)}%`} />
         <Metric label="Assets" value={agent.economic_risk.affected_assets.toString()} />
       </div>
-      <div className="rounded-data border bg-background/60 p-3">
-        <p className="font-accent text-sm text-foreground">Recommended operator action</p>
-        <p className="mt-2 text-sm text-foreground/65">{agent.exception_reason ?? "Continue monitoring current task until confidence or risk exits nominal envelope."}</p>
+      <div className="rounded-data border bg-white p-3">
+        <p className="font-accent text-sm text-[var(--text-primary)]">Recommended operator action</p>
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">{agent.exception_reason ?? "Continue monitoring current task until confidence or risk exits nominal envelope."}</p>
       </div>
       <DecisionLineage agent={agent} />
       {!compact && <DependencyGraph agent={agent} />}
@@ -31,9 +31,9 @@ export function DecisionAudit({ agent, compact = false }: { agent: Agent; compac
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-data border bg-card/75 p-3">
-      <p className="text-xs uppercase tracking-[0.24em] text-foreground/45">{label}</p>
-      <p className="mt-1 font-display text-2xl text-primary">{value}</p>
+    <div className="rounded-data border bg-white p-3">
+      <p className="text-xs uppercase tracking-[0.24em] text-[var(--text-muted)]">{label}</p>
+      <p className="mt-1 font-display text-2xl text-[var(--status-accent)]">{value}</p>
     </div>
   );
 }

@@ -48,21 +48,21 @@ function FleetMapCard({ agent, selected, onSelect }: { agent: Agent; selected: b
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button onClick={onSelect} className={cn("flex h-20 w-16 flex-col justify-between rounded-[8px] border border-[#1E2235] bg-[#131625] p-1.5 text-left transition hover:border-primary/60", intervention && "animate-critical-breach border-critical", selected && "ring-1 ring-primary")}> 
+        <button onClick={onSelect} className={cn("flex h-20 w-16 flex-col justify-between rounded-[8px] border border-[var(--bg-border)] bg-white p-1.5 text-left transition hover:border-primary/60", intervention && "animate-critical-breach border-critical", selected && "ring-1 ring-primary")}> 
           <div className="flex items-start justify-between gap-1">
-            <span className="font-display text-[10px] leading-none text-foreground/80">{agent.id}</span>
+            <span className="font-display text-[10px] leading-none text-[var(--text-primary)]">{agent.id}</span>
             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: statusColor(agent) }} />
           </div>
-          <Icon className="mx-auto h-4 w-4 text-foreground/65" />
-          <span className={cn("font-display text-[11px] leading-none", confidence >= 90 ? "text-ok" : confidence >= 80 ? "text-warn" : "text-critical")}>{confidence}%</span>
+          <Icon className="mx-auto h-4 w-4 text-[var(--text-secondary)]" />
+          <span className={cn("font-display text-[11px] leading-none", confidence >= 90 ? "text-green-700" : confidence >= 80 ? "text-yellow-700" : "text-red-600")}>{confidence}%</span>
         </button>
       </TooltipTrigger>
       <TooltipContent className="w-72">
         <div className="space-y-2 text-xs">
-          <p className="font-display text-primary">{agent.name}</p>
-          <p><span className="text-foreground/45">Tarea:</span> {agent.current_task.description}</p>
-          <p><span className="text-foreground/45">Riesgo económico:</span> <span className="text-critical">${economicImpactK(agent)}K</span></p>
-          <p><span className="text-foreground/45">Última acción:</span> {agent.metadata.last_human_touch}</p>
+          <p className="font-display text-[var(--status-accent)]">{agent.name}</p>
+          <p><span className="text-[var(--text-muted)]">Tarea:</span> {agent.current_task.description}</p>
+          <p><span className="text-[var(--text-muted)]">Riesgo económico:</span> <span className="text-red-600">${economicImpactK(agent)}K</span></p>
+          <p><span className="text-[var(--text-muted)]">Última acción:</span> {agent.metadata.last_human_touch}</p>
         </div>
       </TooltipContent>
     </Tooltip>
@@ -93,16 +93,16 @@ export function FleetMapSection({ agents, onOpenAudit }: { agents: Agent[]; onOp
       <header className="flex items-start justify-between gap-4">
         <div>
           <h2 className="font-accent text-2xl">Mapa de flota</h2>
-          <p className="mt-1 text-sm text-foreground/50">Vista de misión — 50 agentes, cuadrícula 64×80px</p>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Vista de misión — 50 agentes, cuadrícula 64×80px</p>
         </div>
         <div className="flex items-center gap-2">
-          <select className="rounded-badge border border-[#1E2235] bg-[#131625] px-3 py-2 font-display text-xs" value="all" disabled><option>Todos</option></select>
-          <select className="rounded-badge border border-[#1E2235] bg-[#131625] px-3 py-2 font-display text-xs" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as AgentType | "all")}>
+          <select className="rounded-badge border border-[var(--bg-border)] bg-white px-3 py-2 font-display text-xs" value="all" disabled><option>Todos</option></select>
+          <select className="rounded-badge border border-[var(--bg-border)] bg-white px-3 py-2 font-display text-xs" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as AgentType | "all")}>
             <option value="all">Tipo</option>
             {Object.entries(typeLabels).map(([type, label]) => <option key={type} value={type}>{label}</option>)}
           </select>
-          <button onClick={() => setAlertOnly((value) => !value)} className={cn("rounded-badge border border-[#1E2235] px-3 py-2 font-display text-xs", alertOnly ? "bg-critical/15 text-critical" : "bg-[#131625] text-foreground/70")}>Solo con alerta</button>
-          <div className="flex items-center gap-2 rounded-badge border border-[#1E2235] bg-[#131625] px-3 py-2">
+          <button onClick={() => setAlertOnly((value) => !value)} className={cn("rounded-badge border border-[var(--bg-border)] px-3 py-2 font-display text-xs", alertOnly ? "bg-critical/15 text-red-600" : "bg-white text-foreground/70")}>Solo con alerta</button>
+          <div className="flex items-center gap-2 rounded-badge border border-[var(--bg-border)] bg-white px-3 py-2">
             <Search className="h-3.5 w-3.5 text-foreground/40" />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar AGT-..." className="w-28 bg-transparent font-display text-xs outline-none placeholder:text-foreground/35" />
           </div>
@@ -110,43 +110,43 @@ export function FleetMapSection({ agents, onOpenAudit }: { agents: Agent[]; onOp
       </header>
 
       <div className="grid min-h-0 flex-1 grid-cols-[1fr_240px] gap-4">
-        <section className="min-h-0 overflow-auto rounded-data border border-[#1E2235] bg-card/50 p-4">
+        <section className="min-h-0 overflow-auto rounded-data border border-[var(--bg-border)] bg-white p-4">
           <div className="grid grid-cols-5 gap-2 xl:grid-cols-10">
             {visibleAgents.map((agent) => <FleetMapCard key={agent.id} agent={agent} selected={selectedAgent?.id === agent.id} onSelect={() => selectAgent(agent.id)} />)}
           </div>
         </section>
 
-        <aside className="rounded-data border border-[#1E2235] bg-[#131625] p-4">
+        <aside className="rounded-data border border-[var(--bg-border)] bg-white p-4">
           <h3 className="font-accent text-lg">Resumen del agente</h3>
           {selectedAgent && (
             <div className="mt-4 space-y-3 text-sm">
               <div>
-                <p className="font-display text-primary">{selectedAgent.id}</p>
-                <p className="text-foreground/55">{selectedAgent.name}</p>
+                <p className="font-display text-[var(--status-accent)]">{selectedAgent.id}</p>
+                <p className="text-[var(--text-secondary)]">{selectedAgent.name}</p>
               </div>
               <div className="grid grid-cols-2 gap-2 font-display text-xs">
-                <span className="text-foreground/45">Tipo</span><span>{typeLabels[selectedAgent.type]}</span>
-                <span className="text-foreground/45">Estado</span><span>{statusLabel(selectedAgent)}</span>
-                <span className="text-foreground/45">Confianza</span><span>{confidencePercent(selectedAgent)}%</span>
-                <span className="text-foreground/45">Riesgo</span><span className="text-critical">${economicImpactK(selectedAgent)}K</span>
+                <span className="text-[var(--text-muted)]">Tipo</span><span>{typeLabels[selectedAgent.type]}</span>
+                <span className="text-[var(--text-muted)]">Estado</span><span>{statusLabel(selectedAgent)}</span>
+                <span className="text-[var(--text-muted)]">Confianza</span><span>{confidencePercent(selectedAgent)}%</span>
+                <span className="text-[var(--text-muted)]">Riesgo</span><span className="text-red-600">${economicImpactK(selectedAgent)}K</span>
               </div>
-              <p className="text-xs leading-5 text-foreground/55">{selectedAgent.current_task.description}</p>
-              <button onClick={onOpenAudit} className="w-full rounded-badge border border-primary/40 bg-primary/10 px-3 py-2 font-display text-xs text-primary transition hover:bg-primary/20">Ver auditoría completa</button>
+              <p className="text-xs leading-5 text-[var(--text-secondary)]">{selectedAgent.current_task.description}</p>
+              <button onClick={onOpenAudit} className="w-full rounded-badge border border-primary/40 bg-primary/10 px-3 py-2 font-display text-xs text-[var(--status-accent)] transition hover:bg-primary/20">Ver auditoría completa</button>
             </div>
           )}
         </aside>
       </div>
 
-      <section className="rounded-data border border-[#1E2235] bg-card/70 p-4">
+      <section className="rounded-data border border-[var(--bg-border)] bg-white p-4">
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h3 className="font-accent text-lg">Dial de autonomía</h3>
-            <p className="text-xs text-foreground/45">Restrictivo a la izquierda, autónomo a la derecha.</p>
+            <p className="text-xs text-[var(--text-muted)]">Restrictivo a la izquierda, autónomo a la derecha.</p>
           </div>
-          <span className="font-display text-lg text-primary">{threshold}%</span>
+          <span className="font-display text-lg text-[var(--status-accent)]">{threshold}%</span>
         </div>
         <AutonomyDial value={threshold} onChange={setThreshold} />
-        <div className="mt-3 flex gap-4 font-display text-xs text-foreground/60">
+        <div className="mt-3 flex gap-4 font-display text-xs text-[var(--text-secondary)]">
           <span>Exc/hora estimadas: ~{estimatedExceptions}</span>
           <span>Toques humanos/1k: ~{humanTouches}</span>
         </div>

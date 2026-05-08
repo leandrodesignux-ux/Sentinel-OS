@@ -64,7 +64,7 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
     <TooltipProvider>
       {showOnboarding && <OnboardingFlow onComplete={() => setShowOnboarding(false)} />}
       {emergencyHalt.active && (
-        <div className="fixed left-3 top-[72px] z-40 flex w-[196px] items-center gap-2 rounded-data border border-critical/30 bg-critical/15 px-3 py-2 font-display text-xs text-critical">
+        <div className="fixed left-3 top-[72px] z-40 flex w-[196px] items-center gap-2 rounded-data border border-critical/30 bg-critical/15 px-3 py-2 font-display text-xs text-red-600">
           <span className="h-2 w-2 animate-status-pulse rounded-full bg-critical" />
           <span>FLOTA DETENIDA</span>
         </div>

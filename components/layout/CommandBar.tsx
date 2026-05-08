@@ -9,10 +9,10 @@ import type { Agent } from "@/types/agent";
 
 export function CommandBar({ agents }: { agents: Agent[] }) {
   return (
-    <header className="flex flex-col gap-3 rounded-data border bg-card/70 p-3 shadow-glow backdrop-blur md:flex-row md:items-center md:justify-between">
+    <header className="flex flex-col gap-3 rounded-data border bg-white p-3 shadow-glow backdrop-blur md:flex-row md:items-center md:justify-between">
       <div className="min-w-[320px]">
         <div className="flex items-center gap-3">
-          <Command className="h-7 w-7 text-primary" />
+          <Command className="h-7 w-7 text-[var(--status-accent)]" />
           <h1 className="font-accent text-3xl font-semibold tracking-tight">Sentinel OS</h1>
           <Badge>SUPERVISION BY EXCEPTION</Badge>
         </div>

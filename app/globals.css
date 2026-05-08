@@ -75,3 +75,7 @@ body {
 }
 
 ::selection { background: hsl(var(--primary) / 0.15); }
+
+.bg-card\/50, .bg-card\/70, .bg-card\/75 {
+  background-color: white;
+}

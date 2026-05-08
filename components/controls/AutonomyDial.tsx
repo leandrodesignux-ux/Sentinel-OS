@@ -14,23 +14,23 @@ export function AutonomyDial({ value = 72, onChange }: { value?: number; onChang
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between font-display text-[10px] uppercase tracking-[0.18em]">
-        <span className="text-critical">Tú decides todo</span>
-        <span className="text-ok">El sistema decide solo</span>
+        <span className="text-red-600">Tú decides todo</span>
+        <span className="text-green-700">El sistema decide solo</span>
       </div>
       <Slider value={[value]} min={0} max={100} step={1} onValueChange={(next: number[]) => onChange?.(next[0])} />
-      <p className="text-sm text-foreground/60">{supervisionLabel}</p>
+      <p className="text-sm text-[var(--text-secondary)]">{supervisionLabel}</p>
       <div className="grid grid-cols-3 gap-2 font-display text-xs">
         <div className="rounded-data border bg-background/50 p-2">
-          <span className="text-foreground/45">Autonomía</span>
-          <p className="text-primary">{value}%</p>
+          <span className="text-[var(--text-muted)]">Autonomía</span>
+          <p className="text-[var(--status-accent)]">{value}%</p>
         </div>
         <div className="rounded-data border bg-background/50 p-2">
-          <span className="text-foreground/45">Alertas por hora</span>
-          <p className="text-warn">~{expectedExceptions}</p>
+          <span className="text-[var(--text-muted)]">Alertas por hora</span>
+          <p className="text-yellow-700">~{expectedExceptions}</p>
         </div>
         <div className="rounded-data border bg-background/50 p-2">
-          <span className="text-foreground/45">Intervenciones por 1.000 tareas</span>
-          <p className="text-critical">~{humanTouches}</p>
+          <span className="text-[var(--text-muted)]">Intervenciones por 1.000 tareas</span>
+          <p className="text-red-600">~{humanTouches}</p>
         </div>
       </div>
     </div>

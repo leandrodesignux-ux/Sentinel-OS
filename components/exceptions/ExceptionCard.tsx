@@ -24,7 +24,7 @@ export function ExceptionCard({ agent }: { agent: Agent }) {
           <Badge variant="destructive">{agent.status}</Badge>
         </div>
       </div>
-      <p className="mt-2 text-xs text-foreground/55">{agent.name} / confidence {confidencePercent(agent)}% / blast {agent.blast_radius?.length ?? agent.dependencies.length}</p>
+      <p className="mt-2 text-xs text-[var(--text-secondary)]">{agent.name} / confidence {confidencePercent(agent)}% / blast {agent.blast_radius?.length ?? agent.dependencies.length}</p>
     </motion.div>
   );
 }

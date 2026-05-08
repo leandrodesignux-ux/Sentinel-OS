@@ -13,14 +13,14 @@ export function BatchApproval({ kind, agents }: { kind: ExceptionKind; agents: A
 
   return (
     <Dialog>
-      <DialogTrigger className="rounded-badge border border-warn/40 px-2 py-1 font-display text-xs text-warn">Resolver todos con una acción</DialogTrigger>
+      <DialogTrigger className="rounded-badge border border-warn/40 px-2 py-1 font-display text-xs text-yellow-700">Resolver todos con una acción</DialogTrigger>
       <DialogContent>
         <DialogTitle className="font-accent text-xl">Batch approval: {getExceptionLabel(kind)}</DialogTitle>
         <DialogDescription>{agents.length} agentes comparten el mismo patrón de excepción. Impacto agregado: ${totalImpact}K.</DialogDescription>
         <div className="space-y-4">
-          <div className="rounded-data border bg-background/60 p-3">
+          <div className="rounded-data border bg-white p-3">
             <p className="font-accent text-sm">Resumen comparativo</p>
-            <div className="mt-2 space-y-1 font-display text-xs text-foreground/65">
+            <div className="mt-2 space-y-1 font-display text-xs text-[var(--text-secondary)]">
               {agents.slice(0, 5).map((agent) => (
                 <div key={agent.id} className="flex justify-between">
                   <span>{agent.id}</span>
@@ -37,7 +37,7 @@ export function BatchApproval({ kind, agents }: { kind: ExceptionKind; agents: A
             <input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />
             Confirmo que revisé diferencias materiales entre casos.
           </label>
-          <button disabled={!confirmed} className="rounded-badge border border-ok/40 px-3 py-2 font-display text-xs text-ok disabled:cursor-not-allowed disabled:opacity-40">Aprobar batch · Undo 30s disponible</button>
+          <button disabled={!confirmed} className="rounded-badge border border-ok/40 px-3 py-2 font-display text-xs text-green-700 disabled:cursor-not-allowed disabled:opacity-40">Aprobar batch · Undo 30s disponible</button>
         </div>
       </DialogContent>
     </Dialog>

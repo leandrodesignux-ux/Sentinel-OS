@@ -10,7 +10,7 @@ export function GlobalControls() {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-data border bg-card/70 p-3 backdrop-blur">
+      <div className="rounded-data border bg-white p-3 backdrop-blur">
         <div className="mb-3 flex items-center justify-between font-display text-sm"><span>Autonomy dial</span><span>{threshold}% AUTO</span></div>
         <AutonomyDial value={threshold} onChange={setThreshold} />
       </div>
