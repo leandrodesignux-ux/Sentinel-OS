@@ -140,7 +140,7 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
       )}
 
       <div className="min-h-0 space-y-4 overflow-y-auto pr-1">
-        <section className="rounded-2xl border border-[var(--bg-border)] bg-white p-4 shadow-sm">
+        <section className="rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)]">
           <h2 className="font-semibold text-[var(--text-primary)] mb-1">Control individual de agentes</h2>
           <p className="text-sm text-[var(--text-muted)] mb-4">Ajusta el nivel de independencia de cada agente</p>
           
@@ -189,7 +189,7 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
           )}
         </section>
 
-        <section className="rounded-2xl border border-[var(--bg-border)] bg-white p-4 shadow-sm mt-4">
+        <section className="rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)] mt-4">
           <div className="flex items-center gap-2 mb-2">
             <h3 className="font-semibold text-[var(--text-primary)]">Demostración en vivo</h3>
             <span className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5">Solo para demo</span>
@@ -216,7 +216,7 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
       </div>
 
       <div className="min-h-0 space-y-4 overflow-y-auto pr-1">
-        <section className="rounded-2xl border border-red-200 bg-red-50/40 p-5 shadow-sm">
+        <section className="rounded-[20px] border border-red-200 bg-red-50/40 p-5 shadow-[var(--shadow-card)]">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center">
               <Power className="h-5 w-5 text-red-600" />
@@ -272,7 +272,7 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
           )}
         </section>
 
-        <section className="rounded-2xl border border-[var(--bg-border)] bg-white p-4 shadow-sm mt-4">
+        <section className="rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)] mt-4">
           <h3 className="font-semibold text-[var(--text-primary)] mb-3">Umbrales de aprobación por tipo</h3>
           <p className="text-sm text-[var(--text-muted)] mb-4">Cuánta seguridad necesita un agente para actuar solo</p>
           

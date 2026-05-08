@@ -57,7 +57,7 @@ function KpiCard({ label, value, subtitle, badge, link, accentColor, Icon, onLin
   onLinkClick?: () => void;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-[var(--bg-border)] bg-white p-5 shadow-sm">
+    <div className="relative overflow-hidden rounded-[20px] border border-[var(--bg-border)] bg-white p-5 shadow-[var(--shadow-card)]">
       <Icon className="absolute right-4 top-4 h-12 w-12 opacity-15" style={{ color: accentColor }} />
       <p className="text-sm font-medium text-[var(--text-secondary)]">{label}</p>
       <p className="mt-2 text-4xl font-bold" style={{ color: accentColor }}>{value}</p>
@@ -100,7 +100,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
       </div>
 
       <div className="grid grid-cols-[3fr_2fr] gap-4">
-        <section className="rounded-2xl border border-[var(--bg-border)] bg-white p-6 shadow-sm">
+        <section className="rounded-[20px] border border-[var(--bg-border)] bg-white p-6 shadow-[var(--shadow-card)]">
           <div className="mb-5">
             <h3 className="text-base font-semibold text-[var(--text-primary)]">Trabajo completado hoy</h3>
             <p className="mt-1 text-sm text-[var(--text-muted)]">El sistema resuelve la mayoría sin interrumpirte</p>
@@ -142,7 +142,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
           </div>
         </section>
 
-        <section className="flex flex-col rounded-2xl border border-[var(--bg-border)] bg-white p-6 shadow-sm">
+        <section className="flex flex-col rounded-[20px] border border-[var(--bg-border)] bg-white p-6 shadow-[var(--shadow-card)]">
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h3 className="text-base font-semibold text-[var(--text-primary)]">Necesitan tu criterio ahora</h3>

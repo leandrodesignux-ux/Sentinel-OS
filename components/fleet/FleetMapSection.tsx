@@ -117,7 +117,7 @@ function AddAgentModal({ open, onClose }: { open: boolean; onClose: () => void }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md rounded-2xl border-[var(--bg-border)] bg-white shadow-card">
+      <DialogContent className="max-w-md rounded-[20px] border-[var(--bg-border)] bg-white shadow-[var(--shadow-card)]">
         {step === 1 && (
           <>
             <DialogTitle className="text-xl font-semibold text-[var(--text-primary)]">Elige el tipo de agente</DialogTitle>
@@ -279,13 +279,13 @@ export function FleetMapSection({ agents, onOpenAudit }: { agents: Agent[]; onOp
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-[1fr_240px] gap-4">
-        <section className="overflow-auto rounded-2xl border border-[var(--bg-border)] bg-white p-4 shadow-sm">
+        <section className="overflow-auto rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)]">
           <div className="grid grid-cols-5 gap-2 xl:grid-cols-10">
             {visibleAgents.map((agent) => <FleetMapCard key={agent.id} agent={agent} selected={selectedAgent?.id === agent.id} onSelect={() => selectAgent(agent.id)} />)}
           </div>
         </section>
 
-        <aside className="rounded-2xl border border-[var(--bg-border)] bg-white p-4 shadow-sm">
+        <aside className="rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)]">
           {selectedAgent && (
             <div>
               <div className="flex items-center gap-3 mb-4">
@@ -331,7 +331,7 @@ export function FleetMapSection({ agents, onOpenAudit }: { agents: Agent[]; onOp
         </aside>
       </div>
 
-      <section className="rounded-2xl border border-[var(--bg-border)] bg-white p-4 shadow-sm">
+      <section className="rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)]">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="font-semibold text-[var(--text-primary)]">
