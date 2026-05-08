@@ -76,7 +76,7 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
           transition={{ duration: 0.15, delay: index * 0.02 }}
           onClick={() => selectAgent(agent.id)}
           className={cn(
-            "relative min-h-[80px] w-16 rounded-data border bg-[var(--bg-surface)] p-2 text-center transition-all duration-150 hover:shadow-[var(--shadow-card)] hover:scale-[1.02]",
+            "relative min-h-[88px] w-[84px] rounded-xl border bg-white p-2.5 text-center transition-all duration-150 hover:shadow-[var(--shadow-card)] hover:scale-[1.02]",
             isIntervention && "border-[var(--status-critical)]",
             inScenarioCascade && "border-[var(--status-critical)] bg-[var(--status-critical)]/10",
             hasLegalFlag && "border-[var(--status-warning)] bg-[var(--status-warning)]/10 shadow-danger",
@@ -86,10 +86,10 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="font-mono text-[9px] text-[var(--text-muted)]">{agent.id}</span>
+            <span className="font-mono text-[8px] text-[var(--text-muted)] leading-none">{agent.id.replace('AGT-','#')}</span>
             <span className={cn("h-2 w-2 rounded-full", isIntervention && "animate-pulse")} style={{ backgroundColor: STATUS_COLORS[agent.status] }} />
           </div>
-          <Icon className="h-5 w-5 mx-auto mb-2 text-[var(--text-secondary)]" />
+          <Icon className="h-5 w-5 mx-auto mb-1.5" style={{color: STATUS_COLORS[agent.status]}} />
           <span className={cn("font-mono text-[12px] font-semibold leading-none", confidenceColor)}>
             {confidence}%
           </span>

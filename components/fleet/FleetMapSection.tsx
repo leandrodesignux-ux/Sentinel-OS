@@ -280,12 +280,12 @@ export function FleetMapSection({ agents, onOpenAudit }: { agents: Agent[]; onOp
 
       <div className="grid min-h-0 flex-1 grid-cols-[1fr_240px] gap-4">
         <section className="overflow-auto rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)]">
-          <div className="grid grid-cols-5 gap-2 xl:grid-cols-10">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-2">
             {visibleAgents.map((agent, index) => <FleetMapCard key={agent.id} agent={agent} index={index} selected={selectedAgent?.id === agent.id} onSelect={() => selectAgent(agent.id)} />)}
           </div>
         </section>
 
-        <aside className="rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)]">
+        <aside className="rounded-[20px] border border-[#E4E7EC] bg-white p-5" style={{boxShadow: "0 1px 3px rgba(0,0,0,0.06)"}}>
           {selectedAgent && (
             <div>
               <div className="flex items-center gap-3 mb-4">
@@ -301,9 +301,9 @@ export function FleetMapSection({ agents, onOpenAudit }: { agents: Agent[]; onOp
                 </div>
               </div>
               <div className="mb-4">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-[var(--text-muted)]">Nivel de seguridad</span>
-                  <span className="font-medium" style={{ color: confidenceColor(confidencePercent(selectedAgent)) }}>{confidencePercent(selectedAgent)}%</span>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[12px] uppercase tracking-wide text-[var(--text-muted)]">Nivel de seguridad</span>
+                  <span className="text-[24px] font-bold" style={{ color: confidenceColor(confidencePercent(selectedAgent)) }}>{confidencePercent(selectedAgent)}%</span>
                 </div>
                 <div className="h-2 rounded-full bg-[var(--bg-border)]">
                   <div className="h-2 rounded-full transition-all" style={{ width: `${confidencePercent(selectedAgent)}%`, background: confidenceColor(confidencePercent(selectedAgent)) }} />
@@ -331,7 +331,7 @@ export function FleetMapSection({ agents, onOpenAudit }: { agents: Agent[]; onOp
         </aside>
       </div>
 
-      <section className="rounded-[20px] border border-[var(--bg-border)] bg-white p-4 shadow-[var(--shadow-card)]">
+      <section className="rounded-[20px] border border-[#E4E7EC] bg-white p-6 mt-4" style={{boxShadow: "0 1px 3px rgba(0,0,0,0.06)"}}>
         <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="font-semibold text-[var(--text-primary)]">
@@ -341,7 +341,7 @@ export function FleetMapSection({ agents, onOpenAudit }: { agents: Agent[]; onOp
               Qué tan independientes trabajan tus agentes
             </p>
           </div>
-          <span className="text-lg font-bold text-[var(--status-accent)]">{threshold}%</span>
+          <span className="text-[32px] font-bold text-[#2E90FA] font-mono">{threshold}%</span>
         </div>
         <AutonomyDial value={threshold} onChange={setThreshold} />
         <div className="mt-3 grid grid-cols-3 gap-3 text-center text-xs">
