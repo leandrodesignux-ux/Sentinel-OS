@@ -69,8 +69,8 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
           <span>FLOTA DETENIDA</span>
         </div>
       )}
-      <main className="ml-[240px] flex h-screen flex-col overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--bg-border)] bg-white px-6">
+      <main className="ml-[240px] flex min-h-screen flex-col overflow-hidden">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--bg-border)] bg-white/80 backdrop-blur-sm px-6">
           <div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)]">
               {sectionTitles[activeSection]}
@@ -85,7 +85,7 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
           </div>
         </header>
 
-        <section className="min-h-0 flex-1 overflow-hidden p-4">
+        <section className="bg-[var(--bg-canvas)] min-h-0 flex-1 overflow-hidden p-4">
           {activeSection === "resumen" && (
             <OperatorSummary agents={agents} onViewExceptions={() => navigateSection("excepciones")} />
           )}

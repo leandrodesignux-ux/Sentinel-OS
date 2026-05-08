@@ -40,7 +40,7 @@ function NavigationGroup({ title, sections, activeSection, exceptionCount, onSec
                 "relative flex w-full items-center justify-between rounded-data px-3 py-2.5 text-left text-sm transition-colors",
                 active
                   ? "bg-[var(--status-accent)]/8 font-medium text-[var(--status-accent)]"
-                  : "text-[var(--text-secondary)] hover:bg-gray-50"
+                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)]"
               )}
             >
               <span className="flex items-center gap-3">

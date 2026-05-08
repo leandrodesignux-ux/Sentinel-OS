@@ -44,7 +44,7 @@ const statusLabels: Record<Agent["status"], string> = {
 function statusColor(agent: Agent) {
   if (agent.status === "intervention_required" || agent.status === "circuit_open") return "#EF4444";
   if (agent.status === "monitoring") return "#F59E0B";
-  if (agent.status === "suspended" || agent.status === "idle") return "#374151";
+  if (agent.status === "suspended" || agent.status === "idle") return "var(--text-muted)";
   return "#00D4A1";
 }
 
