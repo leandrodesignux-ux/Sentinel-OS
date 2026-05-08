@@ -58,6 +58,8 @@ export function AgentCard({ agent }: { agent: Agent }) {
   const inScenarioCascade = activeScenario?.mode === "price_loop" && scenarioIndex >= 0;
   const hasLegalFlag = activeScenario?.mode === "screening_bias" && agent.id === "AGT-048";
 
+  const confidenceColor = confidence > 90 ? "text-[var(--conf-high)]" : confidence >= 80 ? "text-[var(--conf-mid)]" : "text-[var(--conf-low)]";
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -72,49 +74,23 @@ export function AgentCard({ agent }: { agent: Agent }) {
           transition={{ duration: 0.18, delay: inScenarioCascade ? scenarioIndex * 0.2 : isHalted ? haltIndex * 0.05 : 0 }}
           onClick={() => selectAgent(agent.id)}
           className={cn(
-            "relative h-[88px] w-16 rounded-data border border-[var(--bg-border)] bg-[var(--bg-surface)] p-2 text-left transition hover:z-10 hover:border-[var(--status-accent)]/50 hover:bg-[var(--bg-elevated)]",
-            isIntervention && "animate-critical-breach",
-            inScenarioCascade && "animate-critical-breach border-[var(--status-critical)] bg-[var(--status-critical)]/10",
+            "relative min-h-[80px] w-16 rounded-data border bg-[var(--bg-surface)] p-2 text-center transition-all duration-150 hover:shadow-[var(--shadow-card)] hover:scale-[1.02]",
+            isIntervention && "border-[var(--status-critical)]",
+            inScenarioCascade && "border-[var(--status-critical)] bg-[var(--status-critical)]/10",
             hasLegalFlag && "border-[var(--status-warning)] bg-[var(--status-warning)]/10 shadow-danger",
             isHalted && "bg-[var(--bg-border)] text-[var(--text-muted)]",
-            isSelected && "ring-1 ring-[var(--status-accent)]",
+            isSelected && "border-2 border-[var(--status-accent)] bg-blue-50/50",
+            !isSelected && "border-[var(--bg-border)]"
           )}
         >
-          <div className="flex items-center justify-between">
-            <Icon className="h-3 w-3 opacity-60" />
-            <StatusPulse status={agent.status} />
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-mono text-[9px] text-[var(--text-muted)]">{agent.id}</span>
+            <span className={cn("h-2 w-2 rounded-full", isIntervention && "animate-pulse")} style={{ backgroundColor: STATUS_COLORS[agent.status] }} />
           </div>
-          <p className="mt-1 truncate font-display text-[9px] text-[var(--text-muted)]">
-            {agent.id}
-          </p>
-          <div className="mt-2 h-5 w-full overflow-hidden rounded-[2px] bg-[var(--bg-border)]">
-            <motion.div
-              className="h-full origin-bottom rounded-[2px]"
-              animate={{
-                width: `${confidence}%`,
-                backgroundColor: confidence > 90
-                  ? "var(--conf-high)"
-                  : confidence >= 80
-                    ? "var(--conf-mid)"
-                    : "var(--conf-low)",
-              }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-            />
-          </div>
-          <div className="mt-1.5 flex items-center justify-between">
-            <span className={cn(
-              "font-display text-[9px] font-medium",
-              confidence > 90 ? "text-[var(--conf-high)]" :
-                confidence >= 80 ? "text-[var(--conf-mid)]" : "text-[var(--conf-low)]"
-            )}>
-              {confidence}%
-            </span>
-            {agent.economic_risk.amount > 50000 && (
-              <span className="font-display text-[8px] text-[var(--status-critical)]">
-                {impact}K
-              </span>
-            )}
-          </div>
+          <Icon className="h-5 w-5 mx-auto mb-2 text-[var(--text-secondary)]" />
+          <span className={cn("font-mono text-[12px] font-semibold leading-none", confidenceColor)}>
+            {confidence}%
+          </span>
         </motion.button>
       </TooltipTrigger>
       <TooltipContent className="w-80 rounded-card border-[var(--bg-border)] bg-[var(--bg-elevated)] p-4">
