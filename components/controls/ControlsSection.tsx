@@ -1,17 +1,24 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, Power, Search, ShieldAlert, SlidersHorizontal } from "lucide-react";
+import { AlertTriangle, Building2, CheckCircle2, Home, Loader2, Power, Search, Users, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAgentStore, type CircuitBreakerLevel, type EmergencyScope } from "@/store/agentStore";
 import type { Agent, AgentType } from "@/types/agent";
 
 const cbLevels: { level: CircuitBreakerLevel; label: string; tone: string }[] = [
-  { level: 1, label: "Solo lectura", tone: "border-amber-300/40 bg-amber-300/10 text-amber-700" },
-  { level: 2, label: "Congelar estado", tone: "border-yellow-300 bg-yellow-50 text-yellow-700" },
-  { level: 3, label: "Revocar acceso a interfaces", tone: "border-orange-500/40 bg-orange-500/10 text-orange-700" },
-  { level: 4, label: "Suspensión completa", tone: "border-red-200 bg-red-50 text-red-700" },
+  { level: 1, label: "Solo leer", tone: "border-amber-300 bg-amber-50 text-amber-700" },
+  { level: 2, label: "Congelar", tone: "border-yellow-300 bg-yellow-50 text-yellow-700" },
+  { level: 3, label: "Sin acceso", tone: "border-orange-300 bg-orange-50 text-orange-700" },
+  { level: 4, label: "Suspender", tone: "border-red-200 bg-red-50 text-red-700" },
 ];
+
+const typeIcons: Record<AgentType, typeof Building2> = {
+  sales: Building2,
+  asset_mgmt: Home,
+  maintenance: Wrench,
+  screening: Users,
+};
 
 const typeLabels: Record<AgentType, string> = {
   sales: "Ventas",
@@ -20,11 +27,32 @@ const typeLabels: Record<AgentType, string> = {
   screening: "Evaluación",
 };
 
+const typeHumanLabels: Record<AgentType, string> = {
+  sales: "Ventas",
+  asset_mgmt: "Activos",
+  maintenance: "Mantenimiento",
+  screening: "Evaluación",
+};
+
+const statusLabels: Record<Agent["status"], { label: string; bg: string; color: string }> = {
+  idle: { label: "En espera", bg: "bg-gray-100", color: "text-gray-600" },
+  running: { label: "Activo", bg: "bg-green-100", color: "text-green-700" },
+  monitoring: { label: "Monitoreando", bg: "bg-yellow-100", color: "text-yellow-700" },
+  intervention_required: { label: "Intervención", bg: "bg-red-100", color: "text-red-700" },
+  circuit_open: { label: "Cortacircuito", bg: "bg-red-100", color: "text-red-700" },
+  suspended: { label: "Inactivo", bg: "bg-gray-100", color: "text-gray-600" },
+};
+
+const scenarios = [
+  { id: "price_loop", label: "Agente con precios incorrectos 💰", description: "Un agente empieza a poner precios erróneos y otros lo copian", color: "#F79009", action: "activatePriceLoopScenario" },
+  { id: "screening_bias", label: "Posible discriminación detectada ⚖️", description: "Un agente rechaza solicitudes con un patrón inusual", color: "#8B5CF6", action: "activateScreeningBiasScenario" },
+  { id: "retry_storm", label: "Agente gastando presupuesto de más 💸", description: "Un agente de mantenimiento gasta mucho más de lo normal", color: "#F04438", action: "activateRetryStormScenario" },
+];
+
 export function ControlsSection({ agents }: { agents: Agent[] }) {
   const [query, setQuery] = useState("");
   const [pendingBreaker, setPendingBreaker] = useState<{ agent: Agent; level: CircuitBreakerLevel } | null>(null);
   const [scope, setScope] = useState<EmergencyScope>("all");
-  const [familyScope, setFamilyScope] = useState<AgentType>("sales");
   const [confirmation, setConfirmation] = useState("");
   const [reactivationConfirmation, setReactivationConfirmation] = useState("");
   const [overlay, setOverlay] = useState(false);
@@ -45,9 +73,10 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
   const affectedAgents = agents.filter((agent) => {
     if (scope === "all") return agent.status !== "suspended";
     if (scope === "critical") return agent.status === "intervention_required" || agent.status === "circuit_open" || agent.risk_level === "critical";
-    return agent.type === familyScope;
+    return agent.status !== "suspended";
   });
   const activeTasks = affectedAgents.reduce((sum, agent) => sum + Math.max(1, agent.dependencies.length + 1), 0);
+  const criticalCount = agents.filter((agent) => agent.status === "intervention_required" || agent.status === "circuit_open" || agent.risk_level === "critical").length;
 
   function startCountdown() {
     setToastCountdown(30);
@@ -62,11 +91,27 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
     }, 1000);
   }
 
+  function confirmCB(agent: Agent, level: CircuitBreakerLevel) {
+    setPendingBreaker({ agent, level });
+  }
+
+  function executeCB() {
+    if (!pendingBreaker) return;
+    setCircuitBreakerLevel(pendingBreaker.agent.id, pendingBreaker.level);
+    setPendingBreaker(null);
+  }
+
+  function activateScenario(id: string) {
+    if (id === "price_loop") activatePriceLoopScenario();
+    else if (id === "screening_bias") activateScreeningBiasScenario();
+    else if (id === "retry_storm") activateRetryStormScenario();
+  }
+
   function executeStop() {
-    if (confirmation !== "DETENER") return;
+    if (confirmation !== "PAUSAR") return;
     setOverlay(true);
     setTimeout(() => {
-      triggerEmergencyHalt(scope === "all" || scope === "critical" ? scope : familyScope);
+      triggerEmergencyHalt(scope === "all" || scope === "critical" ? scope : "sales");
       setOverlay(false);
       setConfirmation("");
       startCountdown();
@@ -74,9 +119,13 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
   }
 
   function executeReactivation() {
-    if (reactivationConfirmation !== "DETENER") return;
+    if (reactivationConfirmation !== "PAUSAR") return;
     reactivateFleet();
     setReactivationConfirmation("");
+  }
+
+  function updateThreshold(type: string, value: number) {
+    setThresholds((current) => ({ ...current, [type]: value }));
   }
 
   useEffect(() => () => setOverlay(false), []);
@@ -84,92 +133,166 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
   return (
     <div className="grid h-full min-h-0 grid-cols-[55fr_45fr] gap-4 overflow-hidden">
       {overlay && (
-        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background/75 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-white/75 backdrop-blur-sm">
           <Loader2 className="h-10 w-10 animate-spin text-red-600" />
-          <p className="mt-4 font-accent text-xl text-red-600">Enviando señal de parada...</p>
+          <p className="mt-4 font-semibold text-xl text-red-600">Enviando señal de parada...</p>
         </div>
       )}
 
       <div className="min-h-0 space-y-4 overflow-y-auto pr-1">
-        <section className="rounded-data border border-[var(--bg-border)] bg-white p-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-accent text-xl">Circuit breakers por agente</h2>
-            <div className="flex items-center gap-2 rounded-badge border border-[var(--bg-border)] bg-white px-3 py-2">
-              <Search className="h-3.5 w-3.5 text-foreground/40" />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar agente..." className="w-40 bg-transparent font-display text-xs outline-none placeholder:text-foreground/35" />
-            </div>
+        <section className="rounded-2xl border border-[var(--bg-border)] bg-white p-4 shadow-sm">
+          <h2 className="font-semibold text-[var(--text-primary)] mb-1">Control individual de agentes</h2>
+          <p className="text-sm text-[var(--text-muted)] mb-4">Ajusta el nivel de independencia de cada agente</p>
+          
+          <div className="flex items-center gap-2 rounded-xl border border-[var(--bg-border)] bg-white px-3 py-2 mb-4">
+            <Search className="h-4 w-4 text-[var(--text-muted)]" />
+            <input placeholder="Buscar agente..." value={query} onChange={(e) => setQuery(e.target.value)} className="bg-transparent text-sm outline-none w-full" />
           </div>
-          <div className="mt-4 max-h-[330px] space-y-2 overflow-y-auto pr-1">
-            {listedAgents.map((agent) => (
-              <div key={agent.id} className="grid grid-cols-[72px_1fr_90px_auto] items-center gap-3 rounded-data border border-[var(--bg-border)] bg-white p-2">
-                <span className="font-display text-xs text-[var(--status-accent)]">{agent.id}</span>
-                <span className="truncate text-sm text-foreground/70">{agent.name}</span>
-                <span className="font-display text-xs text-[var(--text-muted)]">L{circuitBreakers[agent.id] ?? 0}</span>
-                <div className="flex flex-wrap gap-1">
-                  {cbLevels.map((item) => <button key={item.level} onClick={() => setPendingBreaker({ agent, level: item.level })} className={cn("rounded-badge border px-2 py-1 font-display text-[10px]", item.tone)}>L{item.level}</button>)}
+
+          <div className="max-h-[400px] space-y-2 overflow-y-auto pr-1">
+            {listedAgents.map((agent) => {
+              const Icon = typeIcons[agent.type];
+              const activeLevel = circuitBreakers[agent.id] ?? 0;
+              const status = statusLabels[agent.status];
+              return (
+                <div key={agent.id} className="rounded-xl border border-[var(--bg-border)] bg-white p-3 mb-2 shadow-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="h-8 w-8 rounded-lg bg-[var(--bg-canvas)] flex items-center justify-center">
+                      <Icon className="h-4 w-4 text-[var(--text-secondary)]" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-[var(--text-primary)]">{agent.name}</p>
+                      <p className="text-xs text-[var(--text-muted)]">{typeLabels[agent.type]}</p>
+                    </div>
+                    <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: status.bg, color: status.color }}>{status.label}</span>
+                  </div>
+                  <div className="flex gap-1.5">
+                    {cbLevels.map((item) => (
+                      <button key={item.level} onClick={() => confirmCB(agent, item.level)} className={cn("flex-1 rounded-lg py-1.5 text-[10px] font-medium border transition-colors", activeLevel === item.level ? item.tone : "border-[var(--bg-border)] bg-[var(--bg-canvas)] text-[var(--text-muted)] hover:bg-[var(--bg-hover)]")}>
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+
           {pendingBreaker && (
-            <div className="mt-3 rounded-data border border-warn/40 bg-warn/10 p-3">
-              <p className="font-display text-sm text-yellow-700">¿Confirmar nivel L{pendingBreaker.level} para {pendingBreaker.agent.id}?</p>
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+              <p className="text-sm font-medium text-amber-900">¿Confirmar nivel "{cbLevels.find((l) => l.level === pendingBreaker.level)?.label}" para {pendingBreaker.agent.name}?</p>
               <div className="mt-2 flex gap-2">
-                <button onClick={() => { setCircuitBreakerLevel(pendingBreaker.agent.id, pendingBreaker.level); setPendingBreaker(null); }} className="rounded-badge border border-ok/40 px-3 py-1 font-display text-xs text-green-700">Sí</button>
-                <button onClick={() => setPendingBreaker(null)} className="rounded-badge border border-foreground/20 px-3 py-1 font-display text-xs text-[var(--text-secondary)]">No</button>
+                <button onClick={executeCB} className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600">Sí, confirmar</button>
+                <button onClick={() => setPendingBreaker(null)} className="rounded-xl bg-white border border-[var(--bg-border)] px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]">Cancelar</button>
               </div>
             </div>
           )}
         </section>
 
-        <section className="rounded-data border border-[var(--bg-border)] bg-white p-4">
-          <h2 className="font-accent text-xl">Simulación de fallos — solo para pruebas</h2>
-          <div className="mt-3 flex gap-2 rounded-data border border-warn/40 bg-warn/15 p-3 text-sm text-yellow-700"><AlertTriangle className="h-4 w-4 shrink-0" />Activar un escenario afectará datos reales de la flota. Usar solo en entorno de pruebas.</div>
-          <div className="mt-4 grid gap-3">
-            {[
-              { mode: "price_loop", title: "Bucle de precios", description: "Propaga aumento corrupto de precio a dependientes.", action: activatePriceLoopScenario },
-              { mode: "screening_bias", title: "Alerta de vivienda justa", description: "Simula sesgo estadístico en evaluación.", action: activateScreeningBiasScenario },
-              { mode: "retry_storm", title: "Tormenta de reintentos HVAC", description: "Dispara consumo acelerado de presupuesto.", action: activateRetryStormScenario },
-            ].map((scenario) => {
-              const active = activeScenario?.mode === scenario.mode;
-              return <div key={scenario.mode} className={cn("rounded-data border border-[var(--bg-border)] bg-white p-3", active && "border-warn")}> 
-                <div className="flex items-center justify-between gap-3">
-                  <div><p className="font-display text-sm text-[var(--text-primary)]">{scenario.title}</p><p className="text-xs text-[var(--text-muted)]">{scenario.description}</p></div>
-                  <div className="flex items-center gap-2">{active && <span className="rounded-badge bg-warn/15 px-2 py-1 font-display text-[10px] text-yellow-700">ACTIVO</span>}<button onClick={active ? containScenarioFamily : scenario.action} className="rounded-badge border border-warn/40 px-3 py-2 font-display text-xs text-yellow-700">{active ? "Detener" : "Activar"}</button></div>
-                </div>
-              </div>;
-            })}
+        <section className="rounded-2xl border border-[var(--bg-border)] bg-white p-4 shadow-sm mt-4">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="font-semibold text-[var(--text-primary)]">Demostración en vivo</h3>
+            <span className="text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5">Solo para demo</span>
           </div>
+          <p className="text-sm text-[var(--text-muted)] mb-3">Activa una situación de riesgo para ver cómo responde el sistema</p>
+          
+          {scenarios.map((scenario) => {
+            const active = activeScenario?.mode === scenario.id;
+            return (
+              <div key={scenario.id} className={cn("rounded-xl border border-[var(--bg-border)] p-3 mb-2 hover:border-[var(--status-accent)]/40 hover:bg-blue-50/30 transition-colors cursor-pointer", active && "border-amber-300 bg-amber-50")} style={{ borderLeft: `3px solid ${active ? "#F79009" : scenario.color}` }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{scenario.label}</p>
+                    <p className="text-xs text-[var(--text-muted)] mt-0.5">{scenario.description}</p>
+                  </div>
+                  <button onClick={() => active ? containScenarioFamily() : activateScenario(scenario.id)} className="ml-3 flex-shrink-0 rounded-lg border border-[var(--bg-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]">
+                    {active ? "Detener" : "Activar"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </section>
       </div>
 
       <div className="min-h-0 space-y-4 overflow-y-auto pr-1">
-        <section className="rounded-[8px] border border-[#7F1D1D] bg-[#1A0A0A] p-4">
-          <div className="flex items-center gap-3"><Power className="h-5 w-5 text-red-600" /><h2 className="font-accent text-xl text-red-600">Parada de emergencia de flota</h2></div>
-          <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">Detiene todas las acciones de escritura de los agentes activos. Esta acción es reversible pero requiere revalidación manual para reanudar.</p>
-          <div className="mt-4 grid gap-2 font-display text-xs">
-            <div className="flex justify-between rounded-data border border-[#7F1D1D]/60 bg-background/30 p-2"><span>Agentes activos que se detendrán</span><span className="text-red-600">{affectedAgents.length}</span></div>
-            <div className="flex justify-between rounded-data border border-[#7F1D1D]/60 bg-background/30 p-2"><span>Tareas en curso que se pausarán</span><span className="text-red-600">{activeTasks}</span></div>
-            <div className="flex justify-between rounded-data border border-[#7F1D1D]/60 bg-background/30 p-2"><span>Tiempo estimado de reactivación</span><span className="text-red-600">8-12 min</span></div>
+        <section className="rounded-2xl border border-red-200 bg-red-50/40 p-5 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center">
+              <Power className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-[var(--text-primary)]">Pausar toda la flota</h3>
+              <p className="text-xs text-[var(--text-muted)]">Solo para emergencias</p>
+            </div>
           </div>
-          <div className="mt-4 space-y-2 text-sm text-foreground/70">
-            <label className="flex gap-2"><input type="radio" checked={scope === "all"} onChange={() => setScope("all")} /> Detener toda la flota</label>
-            <label className="flex gap-2"><input type="radio" checked={scope === "critical"} onChange={() => setScope("critical")} /> Solo agentes en estado crítico ({agents.filter((agent) => agent.risk_level === "critical" || agent.status === "intervention_required").length})</label>
-            <label className="flex items-center gap-2"><input type="radio" checked={scope !== "all" && scope !== "critical"} onChange={() => setScope(familyScope)} /> Solo familia seleccionada <select value={familyScope} onChange={(event) => { const value = event.target.value as AgentType; setFamilyScope(value); setScope(value); }} className="rounded-badge border border-[#7F1D1D] bg-background px-2 py-1 text-xs">{Object.entries(typeLabels).map(([type, label]) => <option key={type} value={type}>{label}</option>)}</select></label>
+          
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="rounded-xl bg-white border border-[var(--bg-border)] p-3 text-center">
+              <p className="text-2xl font-bold text-[var(--text-primary)]">{affectedAgents.length}</p>
+              <p className="text-xs text-[var(--text-muted)]">agentes se detendrán</p>
+            </div>
+            <div className="rounded-xl bg-white border border-[var(--bg-border)] p-3 text-center">
+              <p className="text-2xl font-bold text-[var(--text-primary)]">{activeTasks}</p>
+              <p className="text-xs text-[var(--text-muted)]">tareas en pausa</p>
+            </div>
           </div>
-          <label className="mt-4 block font-display text-xs text-[var(--text-secondary)]">Para continuar, escribe DETENER</label>
-          <input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} className="mt-2 w-full rounded-data border border-[#7F1D1D] bg-background px-3 py-2 outline-none" />
-          <button disabled={confirmation !== "DETENER"} onClick={executeStop} className="mt-3 w-full rounded-badge border border-critical bg-critical/20 px-4 py-3 font-display text-sm text-red-600 disabled:cursor-not-allowed disabled:opacity-40">Ejecutar parada</button>
-          {toastCountdown !== null && <div className="mt-3 flex items-center gap-2 rounded-data border border-green-200 bg-green-50 p-2 text-sm text-green-700"><CheckCircle2 className="h-4 w-4" /> Parada aplicada · Deshacer ({toastCountdown}s)</div>}
-          {emergencyHalt.active && <div className="mt-4 rounded-data border border-critical/50 bg-critical/10 p-3"><p className="font-display text-sm text-red-600">Estado de parada</p><p className="mt-2 text-xs text-[var(--text-secondary)]">Ejecutada: {new Date(emergencyHalt.startedAt ?? "").toLocaleString("es-ES")}</p><p className="text-xs text-[var(--text-secondary)]">Agentes detenidos: {emergencyHalt.affectedAgentIds.length} / {agents.length}</p><input value={reactivationConfirmation} onChange={(event) => setReactivationConfirmation(event.target.value)} placeholder="Escribe DETENER para reactivar" className="mt-3 w-full rounded-data border bg-background px-3 py-2 text-sm outline-none" /><button disabled={reactivationConfirmation !== "DETENER"} onClick={executeReactivation} className="mt-2 rounded-badge border border-ok/40 px-3 py-2 font-display text-xs text-green-700 disabled:opacity-40">Reactivar flota</button></div>}
+          
+          <div className="space-y-2 mb-4">
+            {[
+              { value: "all", label: "Pausar toda la flota", desc: "Todos los agentes activos" },
+              { value: "critical", label: "Solo los que dan error", desc: `${criticalCount} agentes con alertas activas` },
+            ].map((opt) => (
+              <label key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border border-[var(--bg-border)] bg-white cursor-pointer hover:bg-[var(--bg-hover)]">
+                <input type="radio" name="scope" value={opt.value} checked={scope === opt.value} onChange={() => setScope(opt.value as EmergencyScope)} className="text-[var(--status-accent)]" />
+                <div>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{opt.label}</p>
+                  <p className="text-xs text-[var(--text-muted)]">{opt.desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          
+          <input value={confirmation} onChange={(e) => setConfirmation(e.target.value)} placeholder='Escribe "PAUSAR" para confirmar' className="w-full rounded-xl border border-[var(--bg-border)] bg-white px-3 py-2.5 text-sm mb-3 outline-none focus:border-red-300 focus:ring-2 focus:ring-red-100" />
+          
+          <button disabled={confirmation !== "PAUSAR"} onClick={executeStop} className="w-full rounded-xl bg-red-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed">
+            Pausar la flota
+          </button>
+
+          {toastCountdown !== null && <div className="mt-3 flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 p-3 text-sm text-green-700"><CheckCircle2 className="h-4 w-4" /> Parada aplicada · Deshacer ({toastCountdown}s)</div>}
+          
+          {emergencyHalt.active && (
+            <div className="mt-4 rounded-xl bg-white border border-red-200 p-3">
+              <p className="font-semibold text-sm text-red-700">Estado de parada</p>
+              <p className="mt-2 text-xs text-[var(--text-muted)]">Ejecutada: {new Date(emergencyHalt.startedAt ?? "").toLocaleString("es-ES")}</p>
+              <p className="text-xs text-[var(--text-muted)]">Agentes detenidos: {emergencyHalt.affectedAgentIds.length} / {agents.length}</p>
+              <input value={reactivationConfirmation} onChange={(e) => setReactivationConfirmation(e.target.value)} placeholder='Escribe "PAUSAR" para reactivar' className="mt-3 w-full rounded-xl border border-[var(--bg-border)] bg-white px-3 py-2 text-sm outline-none" />
+              <button disabled={reactivationConfirmation !== "PAUSAR"} onClick={executeReactivation} className="mt-2 w-full rounded-xl bg-green-600 py-2 text-sm font-semibold text-white disabled:opacity-40">Reactivar flota</button>
+            </div>
+          )}
         </section>
 
-        <section className="rounded-data border border-[var(--bg-border)] bg-white p-4">
-          <div className="flex items-center gap-2"><SlidersHorizontal className="h-4 w-4 text-[var(--status-accent)]" /><h2 className="font-accent text-xl">Reglas de autonomía globales</h2></div>
-          <div className="mt-4 space-y-2">
-            {Object.entries(thresholds).map(([key, value]) => <div key={key} className="grid grid-cols-[1fr_80px] items-center gap-3 rounded-data border border-[var(--bg-border)] bg-white p-2"><span className="capitalize text-sm text-foreground/70">{key}</span><input type="number" value={value} onChange={(event) => setThresholds((current) => ({ ...current, [key]: Number(event.target.value) }))} className="rounded-badge border border-[var(--bg-border)] bg-background px-2 py-1 font-display text-xs" /></div>)}
-          </div>
-          <button className="mt-3 rounded-badge border border-primary/40 bg-primary/10 px-3 py-2 font-display text-xs text-[var(--status-accent)]">Guardar cambios</button>
+        <section className="rounded-2xl border border-[var(--bg-border)] bg-white p-4 shadow-sm mt-4">
+          <h3 className="font-semibold text-[var(--text-primary)] mb-3">Umbrales de aprobación por tipo</h3>
+          <p className="text-sm text-[var(--text-muted)] mb-4">Cuánta seguridad necesita un agente para actuar solo</p>
+          
+          {Object.entries(thresholds).map(([type, value]) => (
+            <div key={type} className="mb-4">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="font-medium text-[var(--text-primary)]">{typeHumanLabels[type as AgentType]}</span>
+                <span className="text-[var(--status-accent)] font-bold">{value}%</span>
+              </div>
+              <input type="range" min={70} max={99} value={value} onChange={(e) => updateThreshold(type, +e.target.value)} className="w-full accent-[var(--status-accent)]" />
+              <div className="flex justify-between text-[10px] text-[var(--text-muted)] mt-0.5">
+                <span>Más supervisión</span>
+                <span>Más autonomía</span>
+              </div>
+            </div>
+          ))}
+          
+          <button className="mt-2 w-full rounded-xl border border-[var(--status-accent)]/30 bg-blue-50 py-2 text-sm font-medium text-[var(--status-accent)] hover:bg-blue-100 transition-colors">
+            Guardar cambios
+          </button>
         </section>
       </div>
     </div>
