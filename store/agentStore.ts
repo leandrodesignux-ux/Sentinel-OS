@@ -38,6 +38,7 @@ type AgentStore = {
   activeScenario: ActiveScenario;
   setThreshold: (threshold: number) => void;
   selectAgent: (agentId: string) => void;
+  approveAgent: (agentId: string) => void;
   activatePriceLoopScenario: () => void;
   activateScreeningBiasScenario: () => void;
   activateRetryStormScenario: () => void;
@@ -95,6 +96,10 @@ export const useAgentStore = create<AgentStore>((set) => ({
       return { agents, exceptions, threshold };
     }),
   selectAgent: (agentId) => set({ selectedAgentId: agentId }),
+  approveAgent: (agentId) =>
+    set((state) => ({
+      agents: state.agents.map((a) => a.id === agentId ? { ...a, status: "idle" as const } : a),
+    })),
   activatePriceLoopScenario: () =>
     set((state) => {
       const affectedAgentIds = ["AGT-007", "AGT-008", "AGT-009", "AGT-010", "AGT-011", "AGT-012", "AGT-013", "AGT-014", "AGT-015", "AGT-016", "AGT-017", "AGT-018", "AGT-019"];
