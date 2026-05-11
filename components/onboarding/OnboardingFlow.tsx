@@ -1,59 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Bell, Check, Command, LayoutDashboard, Map, Shield } from "lucide-react";
-import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
+import { Bell, Check, Map, Shield, Zap, ArrowRight } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
-const agentItems = [
-  "20 agentes de ventas — calificando leads",
-  "15 agentes de activos — monitoreando portafolio",
-  "10 agentes de mantenimiento — coordinando órdenes",
-  "5 agentes de evaluación — revisando solicitudes",
+const agentGroups = [
+  { label: "20 Agentes de Ventas", sub: "Calificando leads en tiempo real", color: "#2E90FA", bg: "#EBF8FF", count: 20 },
+  { label: "15 Agentes de Activos", sub: "Monitoreando portafolio", color: "#12B76A", bg: "#ECFDF3", count: 15 },
+  { label: "10 Agentes de Mantenimiento", sub: "Coordinando órdenes de trabajo", color: "#F79009", bg: "#FFF7ED", count: 10 },
+  { label: "5 Agentes de Evaluación", sub: "Revisando solicitudes de inquilinos", color: "#8B5CF6", bg: "#F5F3FF", count: 5 },
 ];
 
 const features = [
-  {
-    icon: LayoutDashboard,
-    title: "Resumen en tiempo real",
-    description: "Ve cuántos agentes trabajan y cuánto dinero protegen",
-    color: "var(--status-accent)",
-    bg: "rgba(46, 144, 250, 0.1)",
-  },
-  {
-    icon: Map,
-    title: "Mapa de tu flota",
-    description: "Monitorea 50 agentes de un vistazo",
-    color: "var(--status-nominal)",
-    bg: "rgba(18, 183, 106, 0.1)",
-  },
-  {
-    icon: Bell,
-    title: "Alertas que importan",
-    description: "Solo ves lo que necesita tu decisión — nada más",
-    color: "var(--status-warning)",
-    bg: "rgba(247, 144, 9, 0.12)",
-  },
-  {
-    icon: Shield,
-    title: "Control total",
-    description: "Pausa, ajusta o detén agentes con un click",
-    color: "var(--status-accent)",
-    bg: "rgba(46, 144, 250, 0.1)",
-  },
+  { icon: Zap, title: "Piloto automático", desc: "91% de las tareas sin interrumpirte", color: "#2E90FA", bg: "#EBF8FF" },
+  { icon: Map, title: "Flota en vivo", desc: "50 agentes visibles de un vistazo", color: "#12B76A", bg: "#ECFDF3" },
+  { icon: Bell, title: "Solo lo urgente", desc: "Alertas ordenadas por impacto económico", color: "#F79009", bg: "#FFF7ED" },
+  { icon: Shield, title: "Control total", desc: "Pausa o detén agentes al instante", color: "#8B5CF6", bg: "#F5F3FF" },
 ];
 
-function ProgressDots({ activeStep }: { activeStep: number }) {
+function Dots({ active }: { active: number }) {
   return (
-    <div className="mt-6 flex justify-center gap-2">
-      {[0, 1, 2].map((step) => (
-        <span
-          key={step}
-          className={cn(
-            "h-2 rounded-full transition-all duration-300",
-            activeStep === step ? "w-7 bg-[var(--status-accent)]" : "w-2 bg-gray-200"
-          )}
-        />
+    <div className="flex justify-center gap-2 mt-8">
+      {[0, 1, 2].map((i) => (
+        <span key={i} className="h-1.5 rounded-full transition-all duration-400"
+          style={{ width: active === i ? 28 : 6, background: active === i ? "#2E90FA" : "#D0D5DD" }} />
       ))}
     </div>
   );
@@ -61,128 +31,156 @@ function ProgressDots({ activeStep }: { activeStep: number }) {
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState(0);
-  const agentCount = useMotionValue(0);
-  const springCount = useSpring(agentCount, { duration: 2000, bounce: 0 });
+  const [loaded, setLoaded] = useState<number[]>([]);
+  const [counter, setCounter] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (step === 0) {
-      const timeout = setTimeout(() => setStep(1), 3000);
-      return () => clearTimeout(timeout);
+      const t = setTimeout(() => setStep(1), 2800);
+      return () => clearTimeout(t);
     }
-
     if (step === 1) {
-      agentCount.set(50);
-      const timeout = setTimeout(() => setStep(2), 2500);
-      return () => clearTimeout(timeout);
+      // Aparece cada agente con delay
+      agentGroups.forEach((_, i) => {
+        setTimeout(() => setLoaded((prev) => [...prev, i]), i * 500 + 200);
+      });
+      // Counter sube de 0 a 50
+      let n = 0;
+      intervalRef.current = setInterval(() => {
+        n += 2;
+        setCounter(Math.min(n, 50));
+        if (n >= 50) clearInterval(intervalRef.current!);
+      }, 60);
+      const t = setTimeout(() => setStep(2), 3200);
+      return () => { clearTimeout(t); clearInterval(intervalRef.current!); };
     }
-  }, [step, agentCount]);
+  }, [step]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 px-6 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-6"
+      style={{ background: "rgba(236,240,234,0.92)", backdropFilter: "blur(12px)" }}>
       <AnimatePresence mode="wait">
+
+        {/* PASO 0 — Bienvenida */}
         {step === 0 && (
-          <motion.div
-            key="intro"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.35 }}
-            className="flex flex-col items-center text-center"
-          >
+          <motion.div key="s0"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center text-center max-w-lg">
             <motion.div
-              animate={{ scale: [1, 1.08, 1] }}
-              transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-              className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--status-accent)] text-white shadow-card"
-            >
-              <Command className="h-7 w-7" />
+              animate={{ scale: [1, 1.06, 1] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              className="h-16 w-16 rounded-[20px] bg-[#2E90FA] flex items-center justify-center mb-6 shadow-xl"
+              style={{ boxShadow: "0 8px 32px rgba(46,144,250,0.35)" }}>
+              <Shield className="h-8 w-8 text-white" />
             </motion.div>
-            <h1 className="mt-4 text-3xl font-semibold text-[var(--text-primary)]">Bienvenido a Sentinel OS</h1>
-            <p className="mt-2 max-w-md text-center text-gray-500">
-              La plataforma que permite a una sola persona supervisar 50 asistentes de IA trabajando en paralelo para tu empresa inmobiliaria.
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-[#98A2B3] mb-2">Portfolio · Leandro Balbián</p>
+            <h1 className="text-[32px] font-semibold text-[#101828] leading-tight tracking-tight mb-3">
+              Bienvenido a<br />Sentinel OS
+            </h1>
+            <p className="text-[15px] text-[#475467] leading-relaxed">
+              Una persona. Cincuenta agentes de IA trabajando en paralelo.<br />
+              Solo ves las decisiones que importan.
             </p>
-            <ProgressDots activeStep={0} />
+            <Dots active={0} />
           </motion.div>
         )}
 
+        {/* PASO 1 — Carga de agentes */}
         {step === 1 && (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
+          <motion.div key="s1"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.35 }}
-            className="flex flex-col items-center text-center"
-          >
-            <p className="text-sm uppercase tracking-widest text-gray-400">Conectando agentes de IA</p>
-            <h2 className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">Iniciando tu flota de trabajo</h2>
-            <div className="mt-7 space-y-3 text-left">
-              {agentItems.map((item, index) => (
-                <motion.div
-                  key={item}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.4, duration: 0.35 }}
-                  className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-sm"
-                >
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.4 + 0.15, type: "spring", bounce: 0.4 }}
-                    className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--status-nominal)] text-white"
-                  >
-                    <Check className="h-3.5 w-3.5" />
-                  </motion.span>
-                  <span className="text-sm text-[var(--text-secondary)]">{item}</span>
-                </motion.div>
+            className="flex flex-col items-center w-full max-w-md">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-[#98A2B3] mb-2">Iniciando flota</p>
+            <h2 className="text-[24px] font-semibold text-[#101828] mb-6 text-center">
+              Conectando tus agentes de IA
+            </h2>
+            <div className="w-full space-y-3 mb-6">
+              {agentGroups.map((g, i) => (
+                <AnimatePresence key={g.label}>
+                  {loaded.includes(i) && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -16, scale: 0.97 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      transition={{ duration: 0.3, type: "spring", bounce: 0.2 }}
+                      className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 border border-[#E4E7EC]"
+                      style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+                      <div className="h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: g.bg }}>
+                        <Check className="h-4 w-4" style={{ color: g.color }} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[13px] font-semibold text-[#101828]">{g.label}</p>
+                        <p className="text-[11px] text-[#98A2B3]">{g.sub}</p>
+                      </div>
+                      <span className="text-[11px] font-mono font-bold" style={{ color: g.color }}>{g.count}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               ))}
             </div>
-            <div className="mt-6 h-1.5 w-64 rounded-full bg-gray-200">
-              <motion.div
-                className="h-full rounded-full bg-[var(--status-accent)]"
-                animate={{ width: ["0%", "100%"] }}
-                transition={{ duration: 2 }}
-              />
+            {/* Barra + contador */}
+            <div className="w-full">
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-[12px] text-[#98A2B3]">Agentes activos</p>
+                <p className="text-[13px] font-mono font-bold text-[#2E90FA]">{counter} / 50</p>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-[#E4E7EC] overflow-hidden">
+                <motion.div className="h-full rounded-full bg-[#2E90FA]"
+                  animate={{ width: `${(counter / 50) * 100}%` }}
+                  transition={{ duration: 0.1 }} />
+              </div>
             </div>
-            <p className="mt-2 text-xs text-gray-400">{Math.round(springCount.get())} / 50 agentes activos</p>
-            <ProgressDots activeStep={1} />
+            <Dots active={1} />
           </motion.div>
         )}
 
+        {/* PASO 2 — Panel listo con feature grid */}
         {step === 2 && (
-          <motion.div
-            key="ready"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.35 }}
-            className="flex max-w-2xl flex-col items-center text-center"
-          >
-            <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Tu panel de control está listo</h2>
-            <p className="mt-2 max-w-xl text-gray-500">
-              Aquí puedes supervisar todo lo que hacen tus agentes sin revisar cada tarea — solo las que necesitan tu criterio.
+          <motion.div key="s2"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center text-center max-w-xl w-full">
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
+              transition={{ type: "spring", bounce: 0.4, delay: 0.1 }}
+              className="h-12 w-12 rounded-2xl bg-[#ECFDF3] flex items-center justify-center mb-5"
+              style={{ border: "1.5px solid #D1FADF" }}>
+              <Check className="h-6 w-6 text-[#12B76A]" />
+            </motion.div>
+            <h2 className="text-[26px] font-semibold text-[#101828] mb-2">Tu panel está listo</h2>
+            <p className="text-[14px] text-[#475467] mb-7">
+              50 agentes activos · solo ves lo que requiere tu criterio
             </p>
-            <div className="mt-7 grid grid-cols-2 gap-4 text-left">
-              {features.map((feature) => {
-                const Icon = feature.icon;
-
+            <div className="grid grid-cols-2 gap-3 w-full mb-7 text-left">
+              {features.map((f, i) => {
+                const Icon = f.icon;
                 return (
-                  <div key={feature.title} className="rounded-2xl border border-[var(--bg-border)] bg-white p-5 shadow-sm">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: feature.bg }}>
-                      <Icon className="h-5 w-5" style={{ color: feature.color }} />
+                  <motion.div key={f.title}
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 + i * 0.08 }}
+                    className="rounded-2xl bg-white border border-[#E4E7EC] p-4"
+                    style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+                    <div className="h-9 w-9 rounded-xl flex items-center justify-center mb-3"
+                      style={{ background: f.bg }}>
+                      <Icon className="h-4 w-4" style={{ color: f.color }} />
                     </div>
-                    <h3 className="mt-4 text-sm font-semibold text-[var(--text-primary)]">{feature.title}</h3>
-                    <p className="mt-1 text-sm text-[var(--text-muted)]">{feature.description}</p>
-                  </div>
+                    <p className="text-[13px] font-semibold text-[#101828] mb-0.5">{f.title}</p>
+                    <p className="text-[12px] text-[#98A2B3] leading-relaxed">{f.desc}</p>
+                  </motion.div>
                 );
               })}
             </div>
-            <button onClick={onComplete} className="mt-8 rounded-xl bg-[var(--status-accent)] px-6 py-3 text-sm font-semibold text-white shadow-card transition hover:shadow-card-hover">
-              Explorar el dashboard →
+            <button onClick={onComplete}
+              className="flex items-center gap-2 rounded-xl bg-[#2E90FA] px-7 py-3.5 text-[14px] font-semibold text-white transition-all hover:bg-[#1a7ee8] mb-3"
+              style={{ boxShadow: "0 4px 16px rgba(46,144,250,0.3)" }}>
+              Explorar el dashboard <ArrowRight className="h-4 w-4" />
             </button>
-            <button onClick={onComplete} className="mt-3 text-xs text-gray-400 transition hover:text-gray-600">
-              Saltar onboarding
+            <button onClick={onComplete} className="text-[12px] text-[#98A2B3] hover:text-[#475467] transition-colors">
+              Saltar intro
             </button>
-            <ProgressDots activeStep={2} />
+            <Dots active={2} />
           </motion.div>
         )}
       </AnimatePresence>
