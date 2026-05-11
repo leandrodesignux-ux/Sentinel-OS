@@ -39,12 +39,12 @@ function NavigationGroup({ title, sections, activeSection, exceptionCount, onSec
               className={cn(
                 "relative flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
                 active
-                  ? "bg-[var(--status-accent)]/8 font-medium text-[var(--status-accent)]"
-                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-canvas)]"
+                  ? "bg-[#EBF5FF] text-[#2E90FA] font-medium border border-[#BDDEFF]"
+                  : "text-[#475467] hover:bg-[#F5F6F5] border border-transparent"
               )}
             >
               <span className="flex items-center gap-3">
-                <Icon className={cn("h-4 w-4", active && "text-[var(--status-accent)]")} />
+                <Icon className="h-4 w-4" style={{ color: active ? "#2E90FA" : "#98A2B3" }} />
                 {section.label}
               </span>
               <span className="flex items-center gap-2">
@@ -58,7 +58,6 @@ function NavigationGroup({ title, sections, activeSection, exceptionCount, onSec
                     {exceptionCount}
                   </motion.span>
                 )}
-                {active && <span className="h-1.5 w-1.5 rounded-full bg-[var(--status-warning)]" />}
               </span>
             </motion.button>
           );
