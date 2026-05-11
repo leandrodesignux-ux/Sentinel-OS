@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { EmergencyStop } from "@/components/controls/EmergencyStop";
 import { ControlsSection } from "@/components/controls/ControlsSection";
 import { DecisionAuditPanel } from "@/components/audit/DecisionAuditPanel";
+import { DocsSection } from "@/components/docs/DocsSection";
 import { OperatorSummary } from "@/components/dashboard/OperatorSummary";
 import { ExceptionsWorkbench } from "@/components/exceptions/ExceptionsWorkbench";
 import { FleetMapSection } from "@/components/fleet/FleetMapSection";
@@ -21,6 +22,7 @@ const sectionTitles: Record<SentinelSection, string> = {
   excepciones: "Para revisar",
   auditoria: "Historial de decisiones",
   controles: "Configuración",
+  docs: "Cómo lo construí",
 };
 
 const sectionSubtitles: Record<SentinelSection, string> = {
@@ -29,6 +31,7 @@ const sectionSubtitles: Record<SentinelSection, string> = {
   excepciones: "Decisiones que necesitan tu criterio",
   auditoria: "Rastro completo de cada acción tomada",
   controles: "Ajusta el comportamiento de tus agentes",
+  docs: "El proceso detrás de Sentinel OS — de problema a producto",
 };
 
 function formatTime(date: Date) {
@@ -102,6 +105,7 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
               {activeSection === "excepciones" && <ExceptionsWorkbench agents={agents} onOpenAudit={(agentId) => { selectAgent(agentId); navigateSection("auditoria"); }} />}
               {activeSection === "auditoria" && <DecisionAuditPanel agents={agents} />}
               {activeSection === "controles" && <ControlsSection agents={agents} />}
+              {activeSection === "docs" && <DocsSection />}
             </motion.div>
           </AnimatePresence>
         </section>

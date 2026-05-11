@@ -1,11 +1,11 @@
 "use client";
 
-import { Bell, ClipboardList, Command, LayoutDashboard, Settings, Users } from "lucide-react";
+import { Bell, BookOpen, ClipboardList, Command, LayoutDashboard, Settings, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export type SentinelSection = "resumen" | "flota" | "excepciones" | "auditoria" | "controles";
+export type SentinelSection = "resumen" | "flota" | "excepciones" | "auditoria" | "controles" | "docs";
 
 const mainSections: { id: SentinelSection; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "resumen", label: "Panel principal", icon: LayoutDashboard },
@@ -19,6 +19,7 @@ const managementSections: { id: SentinelSection; label: string; icon: typeof Lay
 
 const systemSections: { id: SentinelSection; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "controles", label: "Configuración", icon: Settings },
+  { id: "docs", label: "Cómo lo construí", icon: BookOpen },
 ];
 
 function NavigationGroup({ title, sections, activeSection, exceptionCount, onSectionChange }: { title: string; sections: { id: SentinelSection; label: string; icon: typeof LayoutDashboard }[]; activeSection: SentinelSection; exceptionCount: number; onSectionChange: (section: SentinelSection) => void }) {
