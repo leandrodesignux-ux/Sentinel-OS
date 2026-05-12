@@ -73,29 +73,22 @@ function KpiCard({ label, value, subtitle, badge, link, accentColor, Icon, onLin
   const fontSize = isSlash ? '36px' : '44px';
 
   return (
-    <div className="bg-white rounded-[20px] border border-[#E4E7EC] p-6 flex flex-col" style={{boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"}}>
-      <div className="flex items-center gap-2 mb-3">
-        <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{background: `${accentColor}15`}}>
-          <Icon className="h-3.5 w-3.5" style={{color: accentColor}} />
-        </div>
-        <p className="text-[11px] font-medium uppercase tracking-widest text-[#98A2B3]">{label}</p>
-      </div>
+    <div className="flex flex-col">
+      <p className="text-[11px] font-medium uppercase tracking-widest text-[var(--text-muted)] mb-2">{label}</p>
       <motion.p
-        className="font-mono font-bold leading-none mb-3"
-        style={{ fontSize, color: accentColor }}
+        className="font-mono font-bold leading-none text-[var(--text-primary)] mb-1"
+        style={{ fontSize }}
       >
         {display}
       </motion.p>
-      <p className="text-[12px] text-[#98A2B3] leading-relaxed mb-3 flex-1">{subtitle}</p>
+      <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed mb-2 flex-1">{subtitle}</p>
       {badge && (
-        <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-green-50 px-3 py-1.5 text-[11px] font-medium text-green-700 border border-green-100">
-          <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block"/>
+        <span className="text-[11px] text-[var(--status-nominal)] font-medium">
           {badge}
         </span>
       )}
       {link && (
-        <button onClick={onLinkClick} className="inline-flex items-center gap-1.5 self-start rounded-full bg-amber-50 px-3 py-1.5 text-[11px] font-medium text-amber-700 border border-amber-100 hover:bg-amber-100 transition-colors">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 inline-block"/>
+        <button onClick={onLinkClick} className="text-[11px] text-[var(--status-warning)] font-medium hover:underline">
           {link}
         </button>
       )}
@@ -119,7 +112,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
         </p>
       </div>
 
-      <div className="mb-6 grid grid-cols-4 gap-4">
+      <div className="mb-10 grid grid-cols-4">
         <KpiCard label="Tareas en piloto automático" value="8.3%" subtitle="Tasa de escalación — meta < 10%" badge="Por debajo del límite" accentColor="var(--status-nominal)" Icon={Zap} />
         <KpiCard label="Sin intervención humana" value="91.7%" subtitle="De cada 100 tareas, solo 8 necesitan tu revisión" badge="Por encima de la meta" accentColor="var(--status-accent)" Icon={Bell} />
         <KpiCard label="Tiempo para tomar una decisión" value="4.2s" subtitle="Promedio para aprobar una acción" badge="Excelente" accentColor="var(--status-accent)" Icon={Clock} />

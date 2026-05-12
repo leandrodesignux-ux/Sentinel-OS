@@ -76,23 +76,43 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
           transition={{ duration: 0.15, delay: index * 0.02 }}
           onClick={() => selectAgent(agent.id)}
           className={cn(
-            "relative min-h-[88px] w-[84px] rounded-xl border bg-white p-2.5 text-center transition-all duration-150 hover:shadow-[var(--shadow-card)] hover:scale-[1.02]",
-            isIntervention && "border-[var(--status-critical)]",
-            inScenarioCascade && "border-[var(--status-critical)] bg-[var(--status-critical)]/10",
-            hasLegalFlag && "border-[var(--status-warning)] bg-[var(--status-warning)]/10 shadow-danger",
-            isHalted && "bg-[var(--bg-border)] text-[var(--text-muted)]",
-            isSelected && "border-2 border-[var(--status-accent)] bg-blue-50/50",
-            !isSelected && "border-[var(--bg-border)]"
+            "group relative min-h-[88px] w-[84px] rounded-xl bg-white p-3 text-center transition-all duration-150 hover:shadow-[var(--shadow-card)]",
+            isIntervention && "ring-1 ring-[var(--status-critical)]",
+            inScenarioCascade && "ring-1 ring-[var(--status-critical)]",
+            hasLegalFlag && "ring-1 ring-[var(--status-warning)]",
+            isHalted && "opacity-40 grayscale",
+            isSelected && "ring-2 ring-[var(--status-accent)]"
           )}
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-mono text-[8px] text-[var(--text-muted)] leading-none">{agent.id.replace('AGT-','#')}</span>
-            <span className={cn("h-2 w-2 rounded-full", isIntervention && "animate-pulse")} style={{ backgroundColor: STATUS_COLORS[agent.status] }} />
-          </div>
-          <Icon className="h-5 w-5 mx-auto mb-1.5" style={{color: STATUS_COLORS[agent.status]}} />
-          <span className={cn("font-mono text-[12px] font-semibold leading-none", confidenceColor)}>
+          {/* ID en JetBrains Mono */}
+          <span className="font-mono text-[9px] text-[var(--text-muted)] tracking-tight" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+            {agent.id.replace('AGT-','#')}
+          </span>
+          
+          {/* Icono */}
+          <Icon className="h-5 w-5 mx-auto my-2" style={{color: STATUS_COLORS[agent.status]}} />
+          
+          {/* Porcentaje */}
+          <span className="font-mono text-[11px] font-medium text-[var(--text-primary)]">
             {confidence}%
           </span>
+          
+          {/* Hilo de confianza (2px) en la parte inferior */}
+          <div className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full overflow-hidden">
+            <div 
+              className="h-full rounded-full transition-all"
+              style={{ 
+                width: `${confidence}%`,
+                background: confidence > 90 ? 'var(--conf-high)' : confidence >= 80 ? 'var(--conf-mid)' : 'var(--conf-low)'
+              }} 
+            />
+          </div>
+          
+          {/* Status dot flotante */}
+          <span 
+            className={cn("absolute top-2 right-2 h-1.5 w-1.5 rounded-full", isIntervention && "animate-pulse")} 
+            style={{ backgroundColor: STATUS_COLORS[agent.status] }} 
+          />
         </motion.button>
       </TooltipTrigger>
       <TooltipContent className="w-80 rounded-card border-[var(--bg-border)] bg-[var(--bg-elevated)] p-4">

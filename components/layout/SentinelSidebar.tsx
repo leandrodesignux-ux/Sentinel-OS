@@ -38,14 +38,14 @@ function NavigationGroup({ title, sections, activeSection, exceptionCount, onSec
               key={section.id}
               onClick={() => onSectionChange(section.id)}
               className={cn(
-                "relative flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                "relative flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-all",
                 active
-                  ? "bg-[#EBF5FF] text-[#2E90FA] font-medium border border-[#BDDEFF]"
-                  : "text-[#475467] hover:bg-[#F5F6F5] border border-transparent"
+                  ? "text-[var(--status-accent)] font-medium"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               )}
             >
               <span className="flex items-center gap-3">
-                <Icon className="h-4 w-4" style={{ color: active ? "#2E90FA" : "#98A2B3" }} />
+                <Icon className="h-4 w-4" style={{ color: active ? "var(--status-accent)" : "var(--text-muted)" }} />
                 {section.label}
               </span>
               <span className="flex items-center gap-2">
@@ -76,7 +76,7 @@ export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCou
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col border-r border-[var(--bg-border)] bg-white px-4 py-5">
+    <aside className="fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col bg-white px-6 py-6">
       <div className="mb-6 flex flex-col gap-1 px-2">
         <div className="flex items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--status-accent)]">
@@ -112,7 +112,7 @@ export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCou
         <NavigationGroup title="Sistema" sections={systemSections} activeSection={activeSection} exceptionCount={exceptionCount} onSectionChange={onSectionChange} />
       </div>
 
-      <div className="mt-auto border-t border-[var(--bg-border)] px-2 pt-4">
+      <div className="mt-auto pt-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--status-accent)]/10 text-xs font-bold text-[var(--status-accent)]">
             V
