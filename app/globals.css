@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  /* Fondo y superficies — blanco y gris muy suave */
-  --bg-void: #ECF0EA;
-  --bg-canvas: #F2F4F0;
+  /* Fondo y superficies — Ultra-Clean White Mode */
+  --bg-void: #FFFFFF;
+  --bg-canvas: #FAFBFC;
   --bg-surface: #FFFFFF;
   --bg-elevated: #FFFFFF;
-  --bg-hover: #F0F2F5;
-  --bg-border: #E4E7EC;
-  --bg-border-strong: #CDD2DA;
+  --bg-hover: #F8FAFC;
+  --bg-border: #F1F5F9;
+  --bg-border-strong: #E2E8F0;
 
   /* Radios */
   --radius-card: 20px;
@@ -21,26 +21,26 @@
   --text-kpi-sm: 32px;
   --text-section-title: 22px;
 
-  /* Sombras */
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  /* Sombras — Ultra-sutil */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.02), 0 1px 2px -1px rgb(0 0 0 / 0.02);
 
-  /* Semánticos — más suaves, profesionales */
-  --status-nominal: #12B76A;
-  --status-warning: #F79009;
-  --status-critical: #F04438;
-  --status-offline: #98A2B3;
-  --status-accent: #2E90FA;
+  /* Semánticos — High-Authority */
+  --status-nominal: #10B981;
+  --status-warning: #F59E0B;
+  --status-critical: #EF4444;
+  --status-offline: #94A3B8;
+  --status-accent: #6366F1;
 
-  /* Textos */
-  --text-primary: #101828;
-  --text-secondary: #475467;
-  --text-muted: #98A2B3;
-  --text-accent: #2E90FA;
+  /* Textos — Slate scale */
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+  --text-accent: #6366F1;
 
   /* Confianza */
-  --conf-high: #12B76A;
-  --conf-mid: #F79009;
-  --conf-low: #F04438;
+  --conf-high: #10B981;
+  --conf-mid: #F59E0B;
+  --conf-low: #EF4444;
 
   /* Shadcn tokens para white mode */
   --background: 210 20% 98%;
@@ -80,10 +80,10 @@ body {
 
 .card-surface {
   background: var(--bg-surface);
-  border: 1px solid var(--bg-border);
+  border: none;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(16,24,40,0.06), 0 1px 2px rgba(16,24,40,0.04);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.02), 0 1px 2px -1px rgb(0 0 0 / 0.02);
 }
 
 ::selection { background: hsl(var(--primary) / 0.15); }
@@ -92,11 +92,11 @@ body {
   background-color: white;
 }
 
-/* Scrollbar custom — más limpio */
+/* Scrollbar custom — Ultra-clean */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #D0D5DD; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #98A2B3; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
-/* Asegura que el fondo verde-gris se aplica al html también */
-html, body { background: #ECF0EA; }
+/* Fondo ultra-clean para html/body */
+html, body { background: #FAFBFC; }
