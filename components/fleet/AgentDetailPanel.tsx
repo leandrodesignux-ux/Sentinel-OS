@@ -1,11 +1,12 @@
 "use client";
 
-import { MousePointerClick, Building2, Home, Users, Wrench } from "lucide-react";
+import { MousePointerClick, Building2, Home, Users, Wrench, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { StatusPulse } from "@/components/fleet/StatusPulse";
 import { ConfidenceSparkline } from "@/components/charts/ConfidenceSparkline";
 import { confidencePercent } from "@/lib/utils/confidenceUtils";
 import { economicImpactK } from "@/lib/utils/riskUtils";
+import { useAgentStore } from "@/store/agentStore";
 import type { Agent, AgentType, AgentStatus } from "@/types/agent";
 
 const STATUS_COLORS: Record<AgentStatus, string> = {
@@ -48,6 +49,12 @@ const STATUS_LABELS: Record<AgentStatus, string> = {
 };
 
 export function AgentDetailPanel({ agent }: { agent: Agent | null }) {
+  // Store hooks
+  const emergencyHalt = useAgentStore((s) => s.emergencyHalt);
+  const updateAgent = useAgentStore((s) => s.updateAgent);
+  const approveAgent = useAgentStore((s) => s.approveAgent);
+  const selectAgent = useAgentStore((s) => s.selectAgent);
+
   // Empty state
   if (!agent) {
     return (
@@ -66,6 +73,12 @@ export function AgentDetailPanel({ agent }: { agent: Agent | null }) {
     ? agent.confidence_history.reduce((a, b) => a + b, 0) / agent.confidence_history.length
     : agent.confidence_score;
   const sparklineColor = avgHistoryConfidence > 0.9 ? "#34D399" : avgHistoryConfidence >= 0.8 ? "#FBBF24" : "#F87171";
+
+  // Check if agent is already paused
+  const isPaused = emergencyHalt.affectedAgentIds.includes(agent.id) || agent.status === "suspended";
+
+  // Check if agent requires intervention
+  const needsIntervention = agent.status === "intervention_required" || agent.status === "circuit_open";
 
   return (
     <motion.div
@@ -202,18 +215,36 @@ export function AgentDetailPanel({ agent }: { agent: Agent | null }) {
 
       {/* SECTION 4 — Quick Actions */}
       <div className="flex flex-col gap-2 mt-auto">
+        {/* Pause button */}
         <button
-          onClick={() => console.log("Pausar agente:", agent.id)}
-          className="w-full py-2.5 px-4 rounded-lg bg-[#F87171]/10 border border-[#F87171]/30 text-[#F87171] text-sm font-medium hover:bg-[#F87171]/20 transition-colors"
+          onClick={() => !isPaused && updateAgent(agent.id, { status: "suspended" })}
+          disabled={isPaused}
+          className={`w-full py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+            isPaused
+              ? "bg-[#F87171]/5 border-[#F87171]/20 text-[#F87171]/50 cursor-not-allowed"
+              : "bg-[#F87171]/10 border-[#F87171]/30 text-[#F87171] hover:bg-[#F87171]/20"
+          }`}
         >
-          Pausar agente
+          {isPaused ? "Ya pausado" : "Pausar agente"}
         </button>
-        <button
-          onClick={() => console.log("Aprobar tarea:", agent.id)}
-          className="w-full py-2.5 px-4 rounded-lg bg-[#34D399]/10 border border-[#34D399]/30 text-[#34D399] text-sm font-medium hover:bg-[#34D399]/20 transition-colors"
-        >
-          Aprobar tarea
-        </button>
+
+        {/* Approve or Inspect button */}
+        {needsIntervention ? (
+          <button
+            onClick={() => approveAgent(agent.id)}
+            className="w-full py-2.5 px-4 rounded-lg bg-[#34D399]/10 border border-[#34D399]/30 text-[#34D399] text-sm font-medium hover:bg-[#34D399]/20 transition-colors flex items-center justify-center gap-2"
+          >
+            Aprobar tarea
+          </button>
+        ) : (
+          <button
+            onClick={() => selectAgent(agent.id)}
+            className="w-full py-2.5 px-4 rounded-lg bg-[#6B7272]/10 border border-[#6B7272]/30 text-[#A8AFAF] text-sm font-medium hover:bg-[#6B7272]/20 transition-colors flex items-center justify-center gap-2"
+          >
+            <Eye className="h-4 w-4" />
+            Inspeccionar
+          </button>
+        )}
       </div>
     </motion.div>
   );
