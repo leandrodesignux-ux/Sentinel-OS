@@ -934,7 +934,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
 
                 <StepButton
                   step={2}
-                  isReady={ctaReady && !!selectedAgentType && !!agentName}
+                  isReady={!!selectedAgentType && !!agentName}
                   isLoading={isLoading}
                   isComplete={!!selectedAgentType && !!agentName}
                   onClick={handleDeployAgent}
