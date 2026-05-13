@@ -76,74 +76,87 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
           transition={{ duration: 0.15, delay: index * 0.02 }}
           onClick={() => selectAgent(agent.id)}
           className={cn(
-            "group relative min-h-[88px] w-[84px] rounded-xl bg-white p-3 text-center transition-all duration-150 hover:shadow-[var(--shadow-card)]",
-            isIntervention && "ring-1 ring-[var(--status-critical)]",
-            inScenarioCascade && "ring-1 ring-[var(--status-critical)]",
-            hasLegalFlag && "ring-1 ring-[var(--status-warning)]",
+            "group relative min-h-[88px] w-[84px] rounded-xl bg-[#2B2E2E] border border-[#3D4141] p-3 text-center transition-all duration-150 hover:border-[#D7FEFA]/30",
+            isIntervention && "border-[#F87171]/50",
+            inScenarioCascade && "border-[#F87171]/50",
+            hasLegalFlag && "border-[#FBBF24]/50",
             isHalted && "opacity-40 grayscale",
-            isSelected && "ring-2 ring-[var(--status-accent)]"
+            isSelected && "border-[#D7FEFA]"
           )}
         >
           {/* ID en JetBrains Mono */}
-          <span className="font-mono text-[9px] text-[var(--text-muted)] tracking-tight" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
+          <span className="font-mono text-[9px] text-[#6B7272] tracking-tight" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
             {agent.id.replace('AGT-','#')}
           </span>
           
           {/* Icono */}
           <Icon className="h-5 w-5 mx-auto my-2" style={{color: STATUS_COLORS[agent.status]}} />
           
-          {/* Porcentaje */}
-          <span className="font-mono text-[11px] font-medium text-[var(--text-primary)]">
-            {confidence}%
-          </span>
+          {/* Nombre del agente */}
+          <p className="text-[11px] font-medium text-white truncate px-1">
+            {agent.name.split(' ')[0]}
+          </p>
           
-          {/* Hilo de confianza (2px) en la parte inferior */}
-          <div className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full overflow-hidden">
+          {/* Tipo/familia */}
+          <p className="text-[9px] text-[#A8AFAF] mb-1">
+            {typeLabels[agent.type]}
+          </p>
+          
+          {/* Hilo de confianza (2px) - track #3D4141 */}
+          <div className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full overflow-hidden bg-[#3D4141]">
             <div 
               className="h-full rounded-full transition-all"
               style={{ 
                 width: `${confidence}%`,
-                background: confidence > 90 ? 'var(--conf-high)' : confidence >= 80 ? 'var(--conf-mid)' : 'var(--conf-low)'
+                background: confidence > 70 ? '#34D399' : confidence >= 40 ? '#FBBF24' : '#F87171'
               }} 
             />
           </div>
           
-          {/* Status dot flotante */}
+          {/* Status badge flotante (modo oscuro con opacidad) */}
           <span 
-            className={cn("absolute top-2 right-2 h-1.5 w-1.5 rounded-full", isIntervention && "animate-pulse")} 
-            style={{ backgroundColor: STATUS_COLORS[agent.status] }} 
-          />
+            className={cn(
+              "absolute top-2 right-2 px-1.5 py-0.5 rounded text-[8px] font-medium border",
+              agent.status === 'running' || agent.status === 'idle' 
+                ? "bg-[#34D399]/10 text-[#34D399] border-[#34D399]/20"
+                : agent.status === 'monitoring'
+                ? "bg-[#FBBF24]/10 text-[#FBBF24] border-[#FBBF24]/20"
+                : agent.status === 'intervention_required' || agent.status === 'circuit_open'
+                ? "bg-[#F87171]/10 text-[#F87171] border-[#F87171]/20"
+                : "bg-[#6B7272]/10 text-[#6B7272] border-[#6B7272]/20"
+            )} 
+          >
+            {confidence}%
+          </span>
         </motion.button>
       </TooltipTrigger>
-      <TooltipContent className="w-80 rounded-card border-[var(--bg-border)] bg-[var(--bg-elevated)] p-4">
+      <TooltipContent className="w-80 rounded-card border-[#3D4141] bg-[#2B2E2E] p-4">
         <div className="space-y-3">
           <div>
-            <p className="font-display text-sm text-[var(--text-primary)]">{agent.name}</p>
-            <p className="mt-0.5 text-xs text-[var(--text-muted)]">{agent.id} · {typeLabels[agent.type]}</p>
+            <p className="font-display text-sm text-white">{agent.name}</p>
+            <p className="mt-0.5 text-xs text-[#A8AFAF]">{agent.id} · {typeLabels[agent.type]}</p>
           </div>
           <div>
             <div className="mb-1 flex justify-between text-xs">
-              <span className="text-[var(--text-muted)]">Seguridad de la decisión</span>
-              <span className="font-display" style={{ color: confidence > 90 ? "var(--conf-high)" : confidence >= 80 ? "var(--conf-mid)" : "var(--conf-low)" }}>
-                {confidence}%
-              </span>
+              <span className="text-[#6B7272]">Seguridad de la decisión</span>
+              <span className="font-display text-white">{confidence}%</span>
             </div>
-            <div className="h-1.5 w-full rounded-full bg-[var(--bg-border)]">
+            <div className="h-1.5 w-full rounded-full bg-[#3D4141]">
               <div
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${confidence}%`,
-                  background: confidence > 90 ? "var(--conf-high)" : confidence >= 80 ? "var(--conf-mid)" : "var(--conf-low)",
+                  background: confidence > 70 ? '#34D399' : confidence >= 40 ? '#FBBF24' : '#F87171',
                 }}
               />
             </div>
           </div>
-          <p className="text-xs text-[var(--text-secondary)]">{agent.current_task.description}</p>
+          <p className="text-xs text-[#A8AFAF]">{agent.current_task.description}</p>
           <div className="grid grid-cols-2 gap-y-1.5 text-xs">
-            <span className="text-[var(--text-muted)]">Dinero en juego</span>
-            <span className="font-display text-right text-[var(--status-critical)]">${impact}K</span>
-            <span className="text-[var(--text-muted)]">Estado</span>
-            <span className="text-right">{statusLabels[agent.status]}</span>
+            <span className="text-[#6B7272]">Dinero en juego</span>
+            <span className="font-display text-right text-white">${impact}K</span>
+            <span className="text-[#6B7272]">Estado</span>
+            <span className="text-right text-white">{statusLabels[agent.status]}</span>
           </div>
         </div>
       </TooltipContent>
