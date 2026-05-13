@@ -534,7 +534,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                 }}
                 className="mb-8"
               >
-                <SentinelLogo variant="isotipo" size="lg" hoverAnimation />
+                <SentinelLogo variant="isotipo" size="lg" hoverAnimation priority />
               </motion.div>
 
               {/* Wordmark */}
@@ -544,7 +544,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                 transition={{ duration: 0.5, ease: "easeOut", delay: 0.55 }}
                 className="mb-8"
               >
-                <SentinelLogo variant="wordmark" isotipoWidth={220} />
+                <SentinelLogo variant="wordmark" isotipoWidth={220} priority />
               </motion.div>
 
               {/* Subtitle */}

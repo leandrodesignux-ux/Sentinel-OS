@@ -13,6 +13,8 @@ interface SentinelLogoProps {
   wordmarkWidth?: number;
   gap?: number;
   hoverAnimation?: boolean;
+  priority?: boolean;
+  invertOnDark?: boolean;
   className?: string;
 }
 
@@ -40,6 +42,8 @@ export function SentinelLogo({
   wordmarkWidth,
   gap = 12,
   hoverAnimation = false,
+  priority = false,
+  invertOnDark = false,
   className = "",
 }: SentinelLogoProps) {
   const isoWidth = isotipoWidth ?? isotipoSizes[size];
@@ -55,9 +59,10 @@ export function SentinelLogo({
         alt="Sentinel OS"
         width={isoWidth}
         height={isoHeight}
-        priority
+        priority={priority}
         unoptimized={false}
         className="object-contain"
+        style={{ filter: invertOnDark ? "invert(1)" : "none" }}
       />
     );
 
@@ -86,9 +91,10 @@ export function SentinelLogo({
       alt="Sentinel OS"
       width={wordWidth}
       height={wordHeight}
-      priority
+      priority={priority}
       unoptimized={false}
       className="object-contain"
+      style={{ filter: invertOnDark ? "invert(1)" : "none" }}
     />
   );
 
