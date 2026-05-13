@@ -3,6 +3,7 @@
 import { Building2, Home, Users, Wrench } from "lucide-react";
 import { motion } from "framer-motion";
 import { StatusPulse } from "@/components/fleet/StatusPulse";
+import { ConfidenceSparkline } from "@/components/charts/ConfidenceSparkline";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { confidencePercent } from "@/lib/utils/confidenceUtils";
 import { economicImpactK } from "@/lib/utils/riskUtils";
@@ -59,6 +60,7 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
   const hasLegalFlag = activeScenario?.mode === "screening_bias" && agent.id === "AGT-048";
 
   const confidenceColor = confidence > 90 ? "text-[var(--conf-high)]" : confidence >= 80 ? "text-[var(--conf-mid)]" : "text-[var(--conf-low)]";
+  const confidenceStroke = confidence > 90 ? "#34D399" : confidence >= 80 ? "#FBBF24" : "#F87171";
 
   return (
     <Tooltip>
@@ -74,60 +76,63 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
             borderColor: inScenarioCascade ? "var(--status-critical)" : STATUS_COLORS[agent.status],
           }}
           transition={{ duration: 0.15, delay: index * 0.02 }}
+          whileHover={{ scale: 1.02 }}
           onClick={() => selectAgent(agent.id)}
           className={cn(
-            "group relative min-h-[88px] w-[84px] rounded-xl bg-[#2B2E2E] border border-[#3D4141] p-3 text-center transition-all duration-150 hover:border-[#D7FEFA]/30",
+            "group relative h-[110px] w-[140px] rounded-xl bg-[#2B2E2E] border border-[#3D4141] p-2.5 flex flex-col transition-all duration-150 hover:border-[#D7FEFA]/30",
             isIntervention && "border-[#F87171]/50",
             inScenarioCascade && "border-[#F87171]/50",
             hasLegalFlag && "border-[#FBBF24]/50",
             isHalted && "opacity-40 grayscale",
-            isSelected && "border-[#D7FEFA]"
+            isSelected && "border-[#D7FEFA] bg-[#333737]"
           )}
         >
-          {/* ID en JetBrains Mono */}
-          <span className="font-mono text-[9px] text-[#6B7272] tracking-tight" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
-            {agent.id.replace('AGT-','#')}
-          </span>
-          
-          {/* Icono */}
-          <Icon className="h-5 w-5 mx-auto my-2" style={{color: STATUS_COLORS[agent.status]}} />
-          
-          {/* Nombre del agente */}
-          <p className="text-[11px] font-medium text-white truncate px-1">
-            {agent.name.split(' ')[0]}
-          </p>
-          
-          {/* Tipo/familia */}
-          <p className="text-[9px] text-[#A8AFAF] mb-1">
+          {/* Header: ID left + StatusPulse right */}
+          <div className="flex items-center justify-between mb-1">
+            <span 
+              className="font-mono text-[9px] text-[#6B7272] tracking-tight" 
+              style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+            >
+              {agent.id.replace('AGT-','#')}
+            </span>
+            <StatusPulse status={agent.status} />
+          </div>
+
+          {/* Center: Icon (24px) */}
+          <div className="flex justify-center mb-1">
+            <Icon className="h-6 w-6" style={{ color: STATUS_COLORS[agent.status] }} />
+          </div>
+
+          {/* Confidence number: large mono */}
+          <div className="text-center mb-0.5">
+            <span 
+              className="font-mono text-[20px] font-semibold leading-none"
+              style={{ color: confidenceStroke }}
+            >
+              {confidence}
+            </span>
+          </div>
+
+          {/* Type label */}
+          <p className="text-[9px] text-[#6B7272] text-center mb-1">
             {typeLabels[agent.type]}
           </p>
-          
-          {/* Hilo de confianza (2px) - track #3D4141 */}
-          <div className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full overflow-hidden bg-[#3D4141]">
+
+          {/* Mini sparkline */}
+          <div className="h-[28px]" style={{ color: confidenceStroke }}>
+            <ConfidenceSparkline agent={agent} />
+          </div>
+
+          {/* Bottom confidence bar (2px) */}
+          <div className="mt-1 h-[2px] rounded-full overflow-hidden bg-[#3D4141]">
             <div 
               className="h-full rounded-full transition-all"
               style={{ 
                 width: `${confidence}%`,
-                background: confidence > 70 ? '#34D399' : confidence >= 40 ? '#FBBF24' : '#F87171'
+                background: confidenceStroke
               }} 
             />
           </div>
-          
-          {/* Status badge flotante (modo oscuro con opacidad) */}
-          <span 
-            className={cn(
-              "absolute top-2 right-2 px-1.5 py-0.5 rounded text-[8px] font-medium border",
-              agent.status === 'running' || agent.status === 'idle' 
-                ? "bg-[#34D399]/10 text-[#34D399] border-[#34D399]/20"
-                : agent.status === 'monitoring'
-                ? "bg-[#FBBF24]/10 text-[#FBBF24] border-[#FBBF24]/20"
-                : agent.status === 'intervention_required' || agent.status === 'circuit_open'
-                ? "bg-[#F87171]/10 text-[#F87171] border-[#F87171]/20"
-                : "bg-[#6B7272]/10 text-[#6B7272] border-[#6B7272]/20"
-            )} 
-          >
-            {confidence}%
-          </span>
         </motion.button>
       </TooltipTrigger>
       <TooltipContent className="w-80 rounded-card border-[#3D4141] bg-[#2B2E2E] p-4">
