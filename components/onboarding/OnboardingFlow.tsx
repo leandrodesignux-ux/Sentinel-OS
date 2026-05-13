@@ -1,10 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Building2, Check, Home, Shield, Users, Wrench, ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAgentStore } from "@/store/agentStore";
 import type { AgentType } from "@/types/agent";
+
+// Custom hook for typewriter effect
+function useTypewriter(
+  value: string,
+  onComplete: () => void,
+  delay: number = 800,
+  charInterval: number = 45
+) {
+  const [displayValue, setDisplayValue] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const userInteracted = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startTyping = useCallback(() => {
+    if (userInteracted.current) return;
+    
+    timeoutRef.current = setTimeout(() => {
+      if (userInteracted.current) return;
+      
+      setIsTyping(true);
+      let currentIndex = 0;
+      
+      intervalRef.current = setInterval(() => {
+        if (userInteracted.current) {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          setIsTyping(false);
+          return;
+        }
+        
+        if (currentIndex <= value.length) {
+          setDisplayValue(value.slice(0, currentIndex));
+          currentIndex++;
+        } else {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          setIsTyping(false);
+          onComplete();
+        }
+      }, charInterval);
+    }, delay);
+  }, [value, delay, charInterval, onComplete]);
+
+  const cancelTyping = useCallback(() => {
+    userInteracted.current = true;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setIsTyping(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  return { displayValue, isTyping, startTyping, cancelTyping, userInteracted };
+}
 
 const steps = [
   { id: 1, title: "Configuración de Escudo", subtitle: "Establece tu identidad de operador" },
@@ -61,10 +119,127 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [signature, setSignature] = useState("");
   const [selectedAgentType, setSelectedAgentType] = useState<AgentType | null>(null);
   const [agentName, setAgentName] = useState("");
-  const [threshold, setThreshold] = useState(75);
+  const [threshold, setThreshold] = useState(50);
+  const [highlightedCard, setHighlightedCard] = useState<string | null>(null);
+  const [ctaReady, setCtaReady] = useState(false);
 
   const updateAgent = useAgentStore((s) => s.updateAgent);
   const agents = useAgentStore((s) => s.agents);
+
+  // Typewriter for Step 1 - Operator Name
+  const {
+    displayValue: operatorNameTyped,
+    isTyping: isTypingOperator,
+    startTyping: startOperatorTyping,
+    cancelTyping: cancelOperatorTyping,
+    userInteracted: operatorInteracted,
+  } = useTypewriter("Operador Vega", () => {
+    // Start signature typing 300ms after operator name completes
+    setTimeout(() => startSignatureTyping(), 300);
+  }, 800, 45);
+
+  // Typewriter for Step 1 - Signature
+  const {
+    displayValue: signatureTyped,
+    isTyping: isTypingSignature,
+    startTyping: startSignatureTyping,
+    cancelTyping: cancelSignatureTyping,
+    userInteracted: signatureInteracted,
+  } = useTypewriter("SOS-7734-ALPHA", () => {
+    // CTA animation ready
+    setCtaReady(true);
+  }, 0, 45);
+
+  // Typewriter for Step 2 - Agent Name
+  const {
+    displayValue: agentNameTyped,
+    isTyping: isTypingAgent,
+    startTyping: startAgentTyping,
+    cancelTyping: cancelAgentTyping,
+    userInteracted: agentInteracted,
+  } = useTypewriter("Marco el de Ventas", () => {
+    setCtaReady(true);
+  }, 800, 45);
+
+  // Effect for Step 1 typing
+  useEffect(() => {
+    if (step === 1) {
+      setCtaReady(false);
+      const timer = setTimeout(() => {
+        startOperatorTyping();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [step, startOperatorTyping]);
+
+  // Effect for Step 2 - auto select sales card then type
+  useEffect(() => {
+    if (step === 2) {
+      setCtaReady(false);
+      // Flash highlight on sales card after 600ms
+      const highlightTimer = setTimeout(() => {
+        setHighlightedCard("sales");
+        setSelectedAgentType("sales");
+        // Remove highlight after flash
+        setTimeout(() => setHighlightedCard(null), 400);
+        // Start typing after selection
+        setTimeout(() => startAgentTyping(), 400);
+      }, 600);
+      return () => clearTimeout(highlightTimer);
+    }
+  }, [step, startAgentTyping]);
+
+  // Effect for Step 3 - animate slider from 50 to 75
+  useEffect(() => {
+    if (step === 3) {
+      setCtaReady(false);
+      setThreshold(50);
+      const startTime = performance.now();
+      const duration = 1200;
+      const startValue = 50;
+      const endValue = 75;
+
+      const animateSlider = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out function
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentValue = Math.round(startValue + (endValue - startValue) * easeOut);
+        setThreshold(currentValue);
+
+        if (progress < 1) {
+          requestAnimationFrame(animateSlider);
+        } else {
+          setCtaReady(true);
+        }
+      };
+
+      const timer = setTimeout(() => {
+        requestAnimationFrame(animateSlider);
+      }, 800);
+
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
+  // Update actual state with typed values
+  useEffect(() => {
+    if (step === 1 && !operatorInteracted.current) {
+      setOperatorName(operatorNameTyped);
+    }
+  }, [operatorNameTyped, step]);
+
+  useEffect(() => {
+    if (step === 1 && !signatureInteracted.current) {
+      setSignature(signatureTyped);
+    }
+  }, [signatureTyped, step]);
+
+  useEffect(() => {
+    if (step === 2 && !agentInteracted.current) {
+      setAgentName(agentNameTyped);
+    }
+  }, [agentNameTyped, step]);
 
   const handleDeployAgent = () => {
     if (!selectedAgentType || !agentName) return;
@@ -143,61 +318,79 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                 </p>
 
                 <div className="space-y-5">
-                  <div>
+                  <div className="relative">
                     <label className="block text-[13px] font-medium mb-2" style={{ color: "var(--text-primary)" }}>
                       Nombre del Operador
                     </label>
-                    <input
-                      type="text"
-                      value={operatorName}
-                      onChange={(e) => setOperatorName(e.target.value)}
-                      placeholder="Ej: Operador Vega"
-                      className="w-full rounded-xl border px-4 py-3 text-[14px] outline-none transition-all"
-                      style={{
-                        background: "var(--bg-surface)",
-                        borderColor: "var(--bg-border)",
-                        color: "var(--text-primary)",
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "var(--accent-teal)";
-                        e.target.style.boxShadow = "0 0 0 1px var(--accent-teal)";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "var(--bg-border)";
-                        e.target.style.boxShadow = "none";
-                      }}
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={operatorName}
+                        onChange={(e) => {
+                          cancelOperatorTyping();
+                          setOperatorName(e.target.value);
+                        }}
+                        placeholder="Ej: Operador Vega"
+                        className={`w-full rounded-xl border px-4 py-3 text-[14px] outline-none transition-all ${isTypingOperator ? 'typing-cursor' : ''}`}
+                        style={{
+                          background: "var(--bg-surface)",
+                          borderColor: "var(--bg-border)",
+                          color: "var(--text-primary)",
+                        }}
+                        onFocus={(e) => {
+                          cancelOperatorTyping();
+                          e.target.style.borderColor = "var(--accent-teal)";
+                          e.target.style.boxShadow = "0 0 0 1px var(--accent-teal)";
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = "var(--bg-border)";
+                          e.target.style.boxShadow = "none";
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div>
+                  <div className="relative">
                     <label className="block text-[13px] font-medium mb-2" style={{ color: "var(--text-primary)" }}>
                       Firma de Seguridad
                     </label>
-                    <input
-                      type="text"
-                      value={signature}
-                      onChange={(e) => setSignature(e.target.value)}
-                      placeholder="Tu código de autorización"
-                      className="w-full rounded-xl border px-4 py-3 text-[14px] outline-none transition-all"
-                      style={{
-                        background: "var(--bg-surface)",
-                        borderColor: "var(--bg-border)",
-                        color: "var(--text-primary)",
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "var(--accent-teal)";
-                        e.target.style.boxShadow = "0 0 0 1px var(--accent-teal)";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "var(--bg-border)";
-                        e.target.style.boxShadow = "none";
-                      }}
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={signature}
+                        onChange={(e) => {
+                          cancelSignatureTyping();
+                          setSignature(e.target.value);
+                        }}
+                        placeholder="Tu código de autorización"
+                        className={`w-full rounded-xl border px-4 py-3 text-[14px] outline-none transition-all ${isTypingSignature ? 'typing-cursor' : ''}`}
+                        style={{
+                          background: "var(--bg-surface)",
+                          borderColor: "var(--bg-border)",
+                          color: "var(--text-primary)",
+                        }}
+                        onFocus={(e) => {
+                          cancelSignatureTyping();
+                          e.target.style.borderColor = "var(--accent-teal)";
+                          e.target.style.boxShadow = "0 0 0 1px var(--accent-teal)";
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = "var(--bg-border)";
+                          e.target.style.boxShadow = "none";
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <button
+                <motion.button
                   onClick={() => setStep(2)}
                   disabled={!operatorName || !signature}
+                  initial={{ scale: 0.97, opacity: 0.5 }}
+                  animate={{
+                    scale: ctaReady && operatorName && signature ? 1 : 0.97,
+                    opacity: ctaReady && operatorName && signature ? 1 : 0.5,
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   className="mt-8 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{
                     background: "var(--brand)",
@@ -213,7 +406,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   }}
                 >
                   Continuar <ChevronRight className="h-4 w-4" />
-                </button>
+                </motion.button>
               </motion.div>
             )}
 
@@ -242,12 +435,21 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   {agentTypes.map((type) => {
                     const Icon = type.icon;
                     const isSelected = selectedAgentType === type.id;
+                    const isHighlighted = highlightedCard === type.id;
                     return (
                       <motion.button
                         key={type.id}
                         onClick={() => setSelectedAgentType(type.id)}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
+                        animate={isHighlighted ? {
+                          boxShadow: [
+                            "0 0 0 0 rgba(215, 254, 250, 0)",
+                            "0 0 0 4px rgba(215, 254, 250, 0.5)",
+                            "0 0 0 0 rgba(215, 254, 250, 0)",
+                          ],
+                        } : {}}
+                        transition={{ duration: 0.4 }}
                         className="flex flex-col items-start p-4 rounded-xl border transition-all text-left"
                         style={{
                           background: isSelected ? "var(--bg-surface)" : "var(--bg-surface)",
@@ -277,35 +479,47 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                 </div>
 
                 {/* Nombre del agente */}
-                <div>
+                <div className="relative">
                   <label className="block text-[13px] font-medium mb-2" style={{ color: "var(--text-primary)" }}>
                     Nombre del Agente
                   </label>
-                  <input
-                    type="text"
-                    value={agentName}
-                    onChange={(e) => setAgentName(e.target.value)}
-                    placeholder="Ej: Marco el de Ventas"
-                    className="w-full rounded-xl border px-4 py-3 text-[14px] outline-none transition-all"
-                    style={{
-                      background: "var(--bg-surface)",
-                      borderColor: "var(--bg-border)",
-                      color: "var(--text-primary)",
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = "var(--accent-teal)";
-                      e.target.style.boxShadow = "0 0 0 1px var(--accent-teal)";
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = "var(--bg-border)";
-                      e.target.style.boxShadow = "none";
-                    }}
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={agentName}
+                      onChange={(e) => {
+                        cancelAgentTyping();
+                        setAgentName(e.target.value);
+                      }}
+                      placeholder="Ej: Marco el de Ventas"
+                      className={`w-full rounded-xl border px-4 py-3 text-[14px] outline-none transition-all ${isTypingAgent ? 'typing-cursor' : ''}`}
+                      style={{
+                        background: "var(--bg-surface)",
+                        borderColor: "var(--bg-border)",
+                        color: "var(--text-primary)",
+                      }}
+                      onFocus={(e) => {
+                        cancelAgentTyping();
+                        e.target.style.borderColor = "var(--accent-teal)";
+                        e.target.style.boxShadow = "0 0 0 1px var(--accent-teal)";
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = "var(--bg-border)";
+                        e.target.style.boxShadow = "none";
+                      }}
+                    />
+                  </div>
                 </div>
 
-                <button
+                <motion.button
                   onClick={handleDeployAgent}
                   disabled={!selectedAgentType || !agentName}
+                  initial={{ scale: 0.97, opacity: 0.5 }}
+                  animate={{
+                    scale: ctaReady && selectedAgentType && agentName ? 1 : 0.97,
+                    opacity: ctaReady && selectedAgentType && agentName ? 1 : 0.5,
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{
                     background: "var(--brand)",
@@ -321,7 +535,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   }}
                 >
                   Desplegar Agente <ChevronRight className="h-4 w-4" />
-                </button>
+                </motion.button>
               </motion.div>
             )}
 
@@ -390,8 +604,14 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   </div>
                 </div>
 
-                <button
+                <motion.button
                   onClick={handleComplete}
+                  initial={{ scale: 0.97, opacity: 0.5 }}
+                  animate={{
+                    scale: ctaReady ? 1 : 0.97,
+                    opacity: ctaReady ? 1 : 0.5,
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   className="w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold transition-all"
                   style={{
                     background: "var(--brand)",
@@ -405,12 +625,34 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   }}
                 >
                   Iniciar Sentinel OS <ChevronRight className="h-4 w-4" />
-                </button>
+                </motion.button>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </div>
+      
+      {/* Blinking cursor CSS */}
+      <style jsx global>{`
+        .typing-cursor {
+          position: relative;
+        }
+        .typing-cursor::after {
+          content: '|';
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--accent-teal);
+          font-weight: 300;
+          animation: blink 0.7s step-end infinite;
+          pointer-events: none;
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 }
