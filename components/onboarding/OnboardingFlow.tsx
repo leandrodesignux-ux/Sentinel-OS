@@ -282,7 +282,8 @@ function VerticalStepper({ currentStep }: { currentStep: number }) {
 }
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
+  const [showIntro, setShowIntro] = useState(true);
   const [operatorName, setOperatorName] = useState("");
   const [signature, setSignature] = useState("");
   const [selectedAgentType, setSelectedAgentType] = useState<AgentType | null>(null);
@@ -437,60 +438,225 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex" style={{ background: "var(--bg-canvas)" }}>
-      {/* ── PANEL IZQUIERDO (40%) ── */}
-      <div className="w-[40%] relative overflow-hidden"
-        style={{
-          background: "var(--bg-void)",
-        }}>
-        {/* Animated orb */}
-        <motion.div
-          className="absolute rounded-full pointer-events-none blur-3xl"
-          animate={{
-            top: step === 1 ? "20%" : step === 2 ? "40%" : "60%",
-            left: step === 1 ? "10%" : step === 2 ? "30%" : "20%",
-            width: step === 1 ? 400 : step === 2 ? 500 : 450,
-            height: step === 1 ? 400 : step === 2 ? 500 : 450,
-            background: step === 1 
-              ? "rgba(215, 254, 250, 0.04)" 
-              : step === 2 
-                ? "rgba(246, 244, 210, 0.04)" 
-                : "rgba(52, 211, 153, 0.05)",
-          }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-        />
-        {/* Glassmorphism overlay */}
-        <div className="absolute inset-0 opacity-30"
-          style={{
-            background: "radial-gradient(ellipse at top left, rgba(215, 254, 250, 0.08) 0%, transparent 50%)",
-          }} />
-        <div className="relative h-full flex flex-col p-10">
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-12">
-            <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: "var(--brand)" }}>
-              <Shield className="h-5 w-5" style={{ color: "var(--brand-text)" }} />
+    <div className="fixed inset-0 z-50" style={{ background: "var(--bg-canvas)" }}>
+      <AnimatePresence mode="wait">
+        {/* STEP 0: Intro Screen */}
+        {step === 0 && (
+          <motion.div
+            key="intro"
+            className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
+            style={{
+              background: "var(--bg-void)",
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+              backgroundBlendMode: "overlay",
+            }}
+            exit={{ opacity: 0, scale: 1.05, filter: "blur(8px)" }}
+            transition={{ duration: 0.5 }}
+          >
+            {/* Animated Orbs */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {/* Orb 1 - Top Right */}
+              <motion.div
+                className="absolute rounded-full blur-3xl"
+                style={{
+                  top: "10%",
+                  right: "10%",
+                  width: 600,
+                  height: 600,
+                  background: "radial-gradient(circle, rgba(215,254,250,0.06) 0%, transparent 70%)",
+                }}
+                animate={{
+                  y: [-20, 20],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  ease: "easeInOut",
+                }}
+              />
+              {/* Orb 2 - Bottom Left */}
+              <motion.div
+                className="absolute rounded-full blur-3xl"
+                style={{
+                  bottom: "10%",
+                  left: "10%",
+                  width: 500,
+                  height: 500,
+                  background: "radial-gradient(circle, rgba(246,244,210,0.05) 0%, transparent 70%)",
+                }}
+                animate={{
+                  y: [20, -20],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  ease: "easeInOut",
+                }}
+              />
+              {/* Orb 3 - Center */}
+              <motion.div
+                className="absolute rounded-full blur-3xl"
+                style={{
+                  top: "50%",
+                  left: "50%",
+                  width: 800,
+                  height: 800,
+                  x: "-50%",
+                  y: "-50%",
+                  background: "radial-gradient(circle, rgba(52,211,153,0.03) 0%, transparent 70%)",
+                }}
+                animate={{
+                  scale: [0.9, 1.1],
+                }}
+                transition={{
+                  duration: 10,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  ease: "easeInOut",
+                }}
+              />
             </div>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Sentinel OS</p>
-              <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>Portfolio · Leandro Balbián</p>
+
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center">
+              {/* Logo with layoutId */}
+              <motion.div
+                layoutId="sentinel-logo"
+                className="h-20 w-20 rounded-2xl flex items-center justify-center mb-8"
+                style={{ background: "var(--brand)" }}
+                initial={{ scale: 0.3, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 120,
+                  damping: 14,
+                  delay: 0.2,
+                }}
+              >
+                <Shield className="h-10 w-10" style={{ color: "var(--brand-text)" }} />
+              </motion.div>
+
+              {/* Title */}
+              <motion.h1
+                className="text-[36px] font-semibold mb-4 text-center"
+                style={{ color: "var(--text-primary)" }}
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5, ease: "easeOut" }}
+              >
+                Bienvenido a Sentinel OS
+              </motion.h1>
+
+              {/* Subtitle */}
+              <motion.p
+                className="text-[16px] mb-10 text-center"
+                style={{ color: "var(--text-secondary)" }}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.5, ease: "easeOut" }}
+              >
+                Sistema de supervisión autónoma de agentes
+              </motion.p>
+
+              {/* CTA Button */}
+              <motion.button
+                className="flex items-center gap-2 rounded-xl px-8 py-4 text-[16px] font-semibold"
+                style={{
+                  background: "var(--brand)",
+                  color: "var(--brand-text)",
+                }}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.9, duration: 0.5, ease: "easeOut" }}
+                whileHover={{ scale: 1.02, backgroundColor: "var(--brand-hover)" }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setStep(1)}
+              >
+                Comenzar
+                <ChevronRight className="h-5 w-5" />
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
+        )}
 
-          {/* Stepper */}
-          <div className="flex-1 flex items-center justify-center">
-            <VerticalStepper currentStep={step} />
-          </div>
+        {/* STEPS 1-3: Split Layout */}
+        {step >= 1 && (
+          <motion.div
+            key="split-layout"
+            className="fixed inset-0 flex"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* ── PANEL IZQUIERDO (40%) ── */}
+            <motion.div
+              className="w-[40%] relative overflow-hidden"
+              style={{ background: "var(--bg-void)" }}
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              {/* Animated orb */}
+              <motion.div
+                className="absolute rounded-full pointer-events-none blur-3xl"
+                animate={{
+                  top: step === 1 ? "20%" : step === 2 ? "40%" : "60%",
+                  left: step === 1 ? "10%" : step === 2 ? "30%" : "20%",
+                  width: step === 1 ? 400 : step === 2 ? 500 : 450,
+                  height: step === 1 ? 400 : step === 2 ? 500 : 450,
+                  background: step === 1 
+                    ? "rgba(215, 254, 250, 0.04)" 
+                    : step === 2 
+                      ? "rgba(246, 244, 210, 0.04)" 
+                      : "rgba(52, 211, 153, 0.05)",
+                }}
+                transition={{ duration: 1.2, ease: "easeInOut" }}
+              />
+              {/* Glassmorphism overlay */}
+              <div className="absolute inset-0 opacity-30"
+                style={{
+                  background: "radial-gradient(ellipse at top left, rgba(215, 254, 250, 0.08) 0%, transparent 50%)",
+                }} />
+              <div className="relative h-full flex flex-col p-10">
+                {/* Header with layoutId */}
+                <div className="flex items-center gap-3 mb-12">
+                  <motion.div
+                    layoutId="sentinel-logo"
+                    className="h-10 w-10 rounded-xl flex items-center justify-center"
+                    style={{ background: "var(--brand)" }}
+                  >
+                    <Shield className="h-5 w-5" style={{ color: "var(--brand-text)" }} />
+                  </motion.div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Sentinel OS</p>
+                    <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>Portfolio · Leandro Balbián</p>
+                  </div>
+                </div>
 
-          {/* Footer */}
-          <div className="text-[11px]" style={{ color: "var(--accent-teal)" }}>
-            Paso {step} de 3
-          </div>
-        </div>
-      </div>
+                {/* Stepper */}
+                <div className="flex-1 flex items-center justify-center">
+                  <VerticalStepper currentStep={step} />
+                </div>
 
-      {/* ── PANEL DERECHO (60%) ── */}
-      <div className="w-[60%] flex flex-col" style={{ background: "var(--bg-canvas)" }}>
-        <div className="flex-1 flex items-center justify-center p-10">
+                {/* Footer */}
+                <div className="text-[11px]" style={{ color: "var(--accent-teal)" }}>
+                  Paso {step} de 3
+                </div>
+              </div>
+            </motion.div>
+
+            {/* ── PANEL DERECHO (60%) ── */}
+            <motion.div
+              className="w-[60%] flex flex-col"
+              style={{ background: "var(--bg-canvas)" }}
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              {/* Content area for steps 1-3 */}
+              <div className="flex-1 flex items-center justify-center p-10">
           <AnimatePresence mode="wait">
             {/* PASO 1: Configuración de Escudo */}
             {step === 1 && (
@@ -865,8 +1031,11 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-      </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Blinking cursor CSS */}
       <style jsx global>{`
