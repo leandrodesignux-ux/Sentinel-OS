@@ -87,17 +87,46 @@ function VerticalStepper({ currentStep }: { currentStep: number }) {
           <div key={s.id} className="flex gap-4">
             <div className="flex flex-col items-center">
               <motion.div
-                className="h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm"
+                className="h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm relative overflow-hidden"
                 animate={{
                   background: isActive ? "var(--brand)" : isCompleted ? "var(--status-nominal)" : "var(--bg-elevated)",
                   color: isActive ? "var(--brand-text)" : isCompleted ? "#FFFFFF" : "var(--text-muted)",
                 }}
                 transition={{ duration: 0.3 }}>
-                {isCompleted ? <Check className="h-5 w-5" /> : s.id}
+                <AnimatePresence mode="wait">
+                  {isCompleted ? (
+                    <motion.div
+                      key="check"
+                      initial={{ scale: 0, rotate: -90 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      exit={{ scale: 0, rotate: 90 }}
+                      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    >
+                      <Check className="h-5 w-5" />
+                    </motion.div>
+                  ) : (
+                    <motion.span
+                      key="number"
+                      initial={{ scale: 0, rotate: 90 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      exit={{ scale: 0, rotate: -90 }}
+                      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    >
+                      {s.id}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </motion.div>
               {i < steps.length - 1 && (
-                <div className="w-0.5 h-12 mt-2 rounded-full"
-                  style={{ background: isCompleted ? "var(--status-nominal)" : "var(--bg-border)" }} />
+                <div className="w-0.5 h-12 mt-2 rounded-full relative overflow-hidden" style={{ background: "var(--bg-border)" }}>
+                  <motion.div
+                    className="absolute inset-0 origin-top"
+                    style={{ background: "var(--status-nominal)" }}
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: isCompleted ? 1 : 0 }}
+                    transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  />
+                </div>
               )}
             </div>
             <div className="pt-1.5">
@@ -264,6 +293,22 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
         style={{
           background: "var(--bg-void)",
         }}>
+        {/* Animated orb */}
+        <motion.div
+          className="absolute rounded-full pointer-events-none blur-3xl"
+          animate={{
+            top: step === 1 ? "20%" : step === 2 ? "40%" : "60%",
+            left: step === 1 ? "10%" : step === 2 ? "30%" : "20%",
+            width: step === 1 ? 400 : step === 2 ? 500 : 450,
+            height: step === 1 ? 400 : step === 2 ? 500 : 450,
+            background: step === 1 
+              ? "rgba(215, 254, 250, 0.04)" 
+              : step === 2 
+                ? "rgba(246, 244, 210, 0.04)" 
+                : "rgba(52, 211, 153, 0.05)",
+          }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
+        />
         {/* Glassmorphism overlay */}
         <div className="absolute inset-0 opacity-30"
           style={{
@@ -301,24 +346,47 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             {step === 1 && (
               <motion.div
                 key="step1"
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
+                initial={{ opacity: 0, x: 60, filter: "blur(4px)", scale: 1.02 }}
+                animate={{ opacity: 1, x: 0, filter: "blur(0px)", scale: 1 }}
+                exit={{ opacity: 0, x: -60, filter: "blur(4px)", scale: 0.97 }}
+                transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="w-full max-w-md"
               >
-                <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent-teal)" }}>
+                <motion.p 
+                  className="text-[11px] font-semibold uppercase tracking-widest mb-2" 
+                  style={{ color: "var(--accent-teal)" }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   Paso 1 de 3
-                </p>
-                <h2 className="text-[28px] font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                </motion.p>
+                <motion.h2 
+                  className="text-[28px] font-semibold mb-2" 
+                  style={{ color: "var(--text-primary)" }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   Configuración de Escudo
-                </h2>
-                <p className="text-[14px] mb-8" style={{ color: "var(--text-secondary)" }}>
+                </motion.h2>
+                <motion.p 
+                  className="text-[14px] mb-8" 
+                  style={{ color: "var(--text-secondary)" }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 2 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   Establece tu identidad de operador para el sistema de seguridad.
-                </p>
+                </motion.p>
 
                 <div className="space-y-5">
-                  <div className="relative">
+                  <motion.div 
+                    className="relative"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 3 * 0.08, duration: 0.35, ease: "easeOut" }}
+                  >
                     <label className="block text-[13px] font-medium mb-2" style={{ color: "var(--text-primary)" }}>
                       Nombre del Operador
                     </label>
@@ -348,8 +416,13 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                         }}
                       />
                     </div>
-                  </div>
-                  <div className="relative">
+                  </motion.div>
+                  <motion.div 
+                    className="relative"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 4 * 0.08, duration: 0.35, ease: "easeOut" }}
+                  >
                     <label className="block text-[13px] font-medium mb-2" style={{ color: "var(--text-primary)" }}>
                       Firma de Seguridad
                     </label>
@@ -379,7 +452,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                         }}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
 
                 <motion.button
@@ -414,25 +487,48 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             {step === 2 && (
               <motion.div
                 key="step2"
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
+                initial={{ opacity: 0, x: 60, filter: "blur(4px)", scale: 1.02 }}
+                animate={{ opacity: 1, x: 0, filter: "blur(0px)", scale: 1 }}
+                exit={{ opacity: 0, x: -60, filter: "blur(4px)", scale: 0.97 }}
+                transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="w-full max-w-md"
               >
-                <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent-teal)" }}>
+                <motion.p 
+                  className="text-[11px] font-semibold uppercase tracking-widest mb-2" 
+                  style={{ color: "var(--accent-teal)" }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   Paso 2 de 3
-                </p>
-                <h2 className="text-[28px] font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                </motion.p>
+                <motion.h2 
+                  className="text-[28px] font-semibold mb-2" 
+                  style={{ color: "var(--text-primary)" }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   Despliegue del Primer Agente
-                </h2>
-                <p className="text-[14px] mb-6" style={{ color: "var(--text-secondary)" }}>
+                </motion.h2>
+                <motion.p 
+                  className="text-[14px] mb-6" 
+                  style={{ color: "var(--text-secondary)" }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 2 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   Selecciona el tipo de agente y asígnale un nombre.
-                </p>
+                </motion.p>
 
                 {/* Selector de tipo de agente */}
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  {agentTypes.map((type) => {
+                <motion.div 
+                  className="grid grid-cols-2 gap-3 mb-5"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 3 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
+                  {agentTypes.map((type, index) => {
                     const Icon = type.icon;
                     const isSelected = selectedAgentType === type.id;
                     const isHighlighted = highlightedCard === type.id;
@@ -476,10 +572,15 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                       </motion.button>
                     );
                   })}
-                </div>
+                </motion.div>
 
                 {/* Nombre del agente */}
-                <div className="relative">
+                <motion.div 
+                  className="relative"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 4 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   <label className="block text-[13px] font-medium mb-2" style={{ color: "var(--text-primary)" }}>
                     Nombre del Agente
                   </label>
@@ -509,7 +610,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                       }}
                     />
                   </div>
-                </div>
+                </motion.div>
 
                 <motion.button
                   onClick={handleDeployAgent}
@@ -543,29 +644,52 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             {step === 3 && (
               <motion.div
                 key="step3"
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
+                initial={{ opacity: 0, x: 60, filter: "blur(4px)", scale: 1.02 }}
+                animate={{ opacity: 1, x: 0, filter: "blur(0px)", scale: 1 }}
+                exit={{ opacity: 0, x: -60, filter: "blur(4px)", scale: 0.97 }}
+                transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="w-full max-w-md"
               >
-                <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--accent-teal)" }}>
+                <motion.p 
+                  className="text-[11px] font-semibold uppercase tracking-widest mb-2" 
+                  style={{ color: "var(--accent-teal)" }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   Paso 3 de 3
-                </p>
-                <h2 className="text-[28px] font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                </motion.p>
+                <motion.h2 
+                  className="text-[28px] font-semibold mb-2" 
+                  style={{ color: "var(--text-primary)" }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   Protocolos de Autonomía
-                </h2>
-                <p className="text-[14px] mb-8" style={{ color: "var(--text-secondary)" }}>
+                </motion.h2>
+                <motion.p 
+                  className="text-[14px] mb-8" 
+                  style={{ color: "var(--text-secondary)" }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 2 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   Define el umbral de confianza mínimo para que los agentes actúen sin supervisión.
-                </p>
+                </motion.p>
 
                 {/* Slider */}
-                <div className="rounded-2xl border p-6 mb-6"
+                <motion.div 
+                  className="rounded-2xl border p-6 mb-6"
                   style={{
                     background: "var(--bg-surface)",
                     borderColor: "var(--bg-border)",
                     boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.02)",
-                  }}>
+                  }}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 3 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>Umbral de Confianza</span>
                     <span className="text-[24px] font-bold font-mono" style={{ color: "var(--brand)" }}>{threshold}%</span>
@@ -586,10 +710,15 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                     <span>50% — Más supervisión</span>
                     <span>95% — Más autonomía</span>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Info cards */}
-                <div className="grid grid-cols-2 gap-3 mb-8">
+                <motion.div 
+                  className="grid grid-cols-2 gap-3 mb-8"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 4 * 0.08, duration: 0.35, ease: "easeOut" }}
+                >
                   <div className="rounded-xl p-3 border" style={{ background: "rgba(52, 211, 153, 0.15)", borderColor: "rgba(52, 211, 153, 0.3)" }}>
                     <p className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: "var(--status-nominal)" }}>
                       Por encima de {threshold}%
@@ -602,7 +731,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                     </p>
                     <p className="text-[12px]" style={{ color: "var(--text-primary)" }}>Requiere aprobación humana</p>
                   </div>
-                </div>
+                </motion.div>
 
                 <motion.button
                   onClick={handleComplete}
