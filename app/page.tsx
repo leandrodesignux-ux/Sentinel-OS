@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { SentinelShell } from "@/components/layout/SentinelShell";
 import { SentinelSidebar, type SentinelSection } from "@/components/layout/SentinelSidebar";
 
-const validSections: SentinelSection[] = ["resumen", "flota", "excepciones", "auditoria", "controles"];
+const validSections: SentinelSection[] = ["resumen", "flota", "excepciones", "auditoria", "controles", "docs"];
 
 export default function Home({ searchParams }: { searchParams?: { section?: string } }) {
   const router = useRouter();
