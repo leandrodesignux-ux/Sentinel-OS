@@ -17,36 +17,45 @@ function useTypewriter(
   const [displayValue, setDisplayValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const userInteracted = useRef(false);
+  const hasStarted = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const onCompleteRef = useRef(onComplete);
+
+  // Mantiene la referencia actualizada sin añadirla a deps de useCallback
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   const startTyping = useCallback(() => {
-    if (userInteracted.current) return;
-    
+    // Guardia: solo ejecuta una vez por montaje
+    if (userInteracted.current || hasStarted.current) return;
+    hasStarted.current = true;
+
     timeoutRef.current = setTimeout(() => {
       if (userInteracted.current) return;
-      
+
       setIsTyping(true);
       let currentIndex = 0;
-      
+
       intervalRef.current = setInterval(() => {
         if (userInteracted.current) {
           if (intervalRef.current) clearInterval(intervalRef.current);
           setIsTyping(false);
           return;
         }
-        
+
         if (currentIndex <= value.length) {
           setDisplayValue(value.slice(0, currentIndex));
           currentIndex++;
         } else {
           if (intervalRef.current) clearInterval(intervalRef.current);
           setIsTyping(false);
-          onComplete();
+          onCompleteRef.current();
         }
       }, charInterval);
     }, delay);
-  }, [value, delay, charInterval, onComplete]);
+  }, [value, delay, charInterval]); // onComplete ya NO está en deps
 
   const cancelTyping = useCallback(() => {
     userInteracted.current = true;
@@ -54,6 +63,13 @@ function useTypewriter(
     if (intervalRef.current) clearInterval(intervalRef.current);
     setIsTyping(false);
   }, []);
+
+  // Reset hasStarted cuando cambia el value (al cambiar de step)
+  useEffect(() => {
+    hasStarted.current = false;
+    userInteracted.current = false;
+    setDisplayValue("");
+  }, [value]);
 
   useEffect(() => {
     return () => {
