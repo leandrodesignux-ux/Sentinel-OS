@@ -90,7 +90,7 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
           </div>
         </header>
 
-        <section className="bg-[#1A1D1D] min-h-0 flex-1 overflow-hidden p-4">
+        <section className="bg-[#1A1D1D] min-h-0 flex-1 overflow-y-auto p-4">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
