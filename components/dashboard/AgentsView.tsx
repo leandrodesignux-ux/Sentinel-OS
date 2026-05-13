@@ -2,90 +2,81 @@
 
 import { useState, useMemo } from "react";
 import { Search, AlertTriangle } from "lucide-react";
-import { motion } from "framer-motion";
+import { AgentGrid } from "@/components/fleet/AgentGrid";
+import { AgentDetailPanel } from "@/components/fleet/AgentDetailPanel";
+import { AgentsTable } from "@/components/fleet/AgentsTable";
+import { FleetHealthBar } from "@/components/charts/FleetHealthBar";
 import { KPITicker } from "@/components/charts/KPITicker";
+import { useAgentStore } from "@/store/agentStore";
 import type { Agent, AgentType } from "@/types/agent";
 
-type FilterTab = "todos" | "ventas" | "activos" | "mantenimiento" | "evaluacion";
-
-const tabs: { id: FilterTab; label: string; type?: AgentType }[] = [
-  { id: "todos", label: "Todos" },
-  { id: "ventas", label: "Ventas", type: "sales" },
-  { id: "activos", label: "Activos", type: "asset_mgmt" },
-  { id: "mantenimiento", label: "Mant.", type: "maintenance" },
-  { id: "evaluacion", label: "Eval.", type: "screening" },
+const typeTabs: { id: AgentType | "all"; label: string }[] = [
+  { id: "all", label: "Todos" },
+  { id: "sales", label: "Ventas" },
+  { id: "asset_mgmt", label: "Activos" },
+  { id: "maintenance", label: "Mant." },
+  { id: "screening", label: "Eval." },
 ];
 
 export function AgentsView({ agents }: { agents: Agent[] }) {
-  const [activeTab, setActiveTab] = useState<FilterTab>("todos");
+  // State
   const [searchQuery, setSearchQuery] = useState("");
-  const [showOnlyAlerts, setShowOnlyAlerts] = useState(false);
-  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<AgentType | "all">("all");
+  const [alertOnly, setAlertOnly] = useState(false);
 
-  // Filter agents based on active tab, search query, and alert filter
-  const filteredAgents = useMemo(() => {
-    let result = agents;
+  // Selected agent from store
+  const selectedAgentId = useAgentStore((s) => s.selectedAgentId);
+  const selectedAgent = agents.find((a) => a.id === selectedAgentId) ?? null;
 
-    // Filter by type tab
-    if (activeTab !== "todos") {
-      const tabConfig = tabs.find((t) => t.id === activeTab);
-      if (tabConfig?.type) {
-        result = result.filter((a) => a.type === tabConfig.type);
-      }
-    }
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (a) =>
-          a.name.toLowerCase().includes(query) ||
-          a.id.toLowerCase().includes(query) ||
-          a.current_task.description.toLowerCase().includes(query)
+  // Filter logic
+  const visibleAgents = useMemo(() => {
+    let filtered = agents;
+    if (alertOnly) {
+      filtered = filtered.filter(
+        (a) => a.status === "intervention_required" || a.status === "circuit_open"
       );
     }
-
-    // Filter by alerts only
-    if (showOnlyAlerts) {
-      result = result.filter(
+    if (typeFilter !== "all") {
+      filtered = filtered.filter((a) => a.type === typeFilter);
+    }
+    if (searchQuery) {
+      filtered = filtered.filter(
         (a) =>
-          a.status === "intervention_required" ||
-          a.status === "circuit_open" ||
-          a.status === "suspended"
+          a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          a.id.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
+    return filtered;
+  }, [agents, alertOnly, typeFilter, searchQuery]);
 
-    return result;
-  }, [agents, activeTab, searchQuery, showOnlyAlerts]);
-
-  // Count active agents (running or idle)
+  // Count active agents
   const activeCount = agents.filter(
     (a) => a.status === "running" || a.status === "idle"
   ).length;
   const totalCount = agents.length;
 
   return (
-    <div className="flex flex-col h-full bg-[#1A1D1D] overflow-hidden">
-      {/* Header Row */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-[#3D4141]">
-        {/* Title + Counter */}
+    <div className="h-full flex flex-col gap-3 p-4 bg-[#111414]">
+      {/* ROW 1 — Header */}
+      <header className="flex items-center justify-between">
+        {/* Left: Title + Counter */}
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-white">Mis agentes</h1>
-          <span className="text-sm text-[#6B7272]">
+          <h1 className="font-accent text-xl text-white">Mis agentes</h1>
+          <span className="text-[#6B7272] text-sm">
             {activeCount} activos de {totalCount}
           </span>
         </div>
 
-        {/* Filters */}
+        {/* Center: Type Tabs */}
         <div className="flex items-center gap-2">
-          {tabs.map((tab) => (
+          {typeTabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => setTypeFilter(tab.id)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "bg-[#2B2E2E] text-white border border-[#4A5050]"
-                  : "text-[#6B7272] hover:text-[#A8AFAF]"
+                typeFilter === tab.id
+                  ? "bg-[#D7FEFA]/10 text-[#D7FEFA] border border-[#D7FEFA]/20"
+                  : "bg-[#2B2E2E] text-[#A8AFAF] hover:text-white"
               }`}
             >
               {tab.label}
@@ -93,22 +84,20 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
           ))}
         </div>
 
-        {/* Search + Alert Filter */}
+        {/* Right: Alert Toggle + Search */}
         <div className="flex items-center gap-3">
-          {/* Solo con alerta */}
           <button
-            onClick={() => setShowOnlyAlerts(!showOnlyAlerts)}
+            onClick={() => setAlertOnly(!alertOnly)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              showOnlyAlerts
+              alertOnly
                 ? "bg-[#F87171]/15 text-[#F87171] border border-[#F87171]/40"
-                : "text-[#6B7272] hover:text-[#A8AFAF] border border-[#3D4141]"
+                : "bg-[#2B2E2E] text-[#A8AFAF] hover:text-white"
             }`}
           >
             <AlertTriangle className="h-3.5 w-3.5" />
             Solo con alerta
           </button>
 
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7272]" />
             <input
@@ -116,33 +105,38 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
               placeholder="Buscar agente..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-1.5 bg-[#2B2E2E] border border-[#3D4141] rounded-full text-sm text-white placeholder:text-[#6B7272] focus:outline-none focus:border-[#4A5050] w-40"
+              className="pl-9 pr-3 py-1.5 bg-[#2B2E2E] border border-[#3D4141] rounded-lg text-sm placeholder-[#6B7272] text-white focus:outline-none focus:border-[#4A5050] w-48"
             />
           </div>
         </div>
       </header>
 
-      {/* KPI Strip */}
-      <div className="px-6 py-3 border-b border-[#3D4141]">
+      {/* ROW 2 — Fleet Health + KPI Ticker */}
+      <div className="flex flex-col gap-2">
+        <FleetHealthBar agents={agents} />
         <KPITicker agents={agents} />
       </div>
 
-      {/* Body — 2 Column Grid */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Column — Agent Grid */}
-        <div className="flex-[2] p-6 overflow-y-auto">
-          {/* AGENT_GRID */}
+      {/* ROW 3 — Agent Grid + Detail Panel */}
+      <div className="flex-1 flex flex-row gap-3 min-h-0">
+        {/* Left: Agent Grid */}
+        <div className="flex-[2] overflow-y-auto min-h-0">
+          <AgentGrid
+            agents={agents}
+            searchQuery={searchQuery}
+            typeFilter={typeFilter}
+          />
         </div>
 
-        {/* Right Column — Detail Panel */}
-        <div className="flex-1 p-6 pl-0 overflow-y-auto border-l border-[#3D4141]">
-          {/* DETAIL_PANEL */}
+        {/* Right: Detail Panel */}
+        <div className="flex-[1] min-h-0">
+          <AgentDetailPanel agent={selectedAgent} />
         </div>
       </div>
 
-      {/* Footer — Agents Table */}
-      <div className="px-6 py-4 border-t border-[#3D4141]">
-        {/* AGENTS_TABLE */}
+      {/* ROW 4 — Agents Table */}
+      <div className="max-h-[280px] overflow-y-auto">
+        <AgentsTable agents={visibleAgents} />
       </div>
     </div>
   );
