@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, Building2, Clock, Home, Pause, TrendingUp, Users, Wrench, Zap } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Bell, Building2, ChevronDown, Clock, Home, Pause, TrendingUp, Users, Wrench, Zap } from "lucide-react";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { economicImpactK } from "@/lib/utils/riskUtils";
 import type { Agent } from "@/types/agent";
@@ -157,43 +157,129 @@ function FleetHealthStrip({ agents }: { agents: Agent[] }) {
 
 // Subcomponent: Hero Activity Card (Nivel 3)
 function HeroActivityCard() {
+  // Hero number animation (0 → 12)
+  const motionVal = useMotionValue(0);
+  const spring = useSpring(motionVal, { stiffness: 50, damping: 15 });
+  const display = useTransform(spring, (v) => Math.round(v));
+  const [animatedValue, setAnimatedValue] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = display.on("change", (v) => setAnimatedValue(v));
+    motionVal.set(12);
+    return () => unsubscribe();
+  }, [motionVal, display]);
+
   return (
-    <section className="rounded-[20px] border border-[#3D4141] bg-[#2B2E2E] p-6 flex flex-col">
-      <div className="mb-5">
-        <h3 className="text-base font-semibold text-white">Trabajo completado hoy</h3>
-        <p className="mt-1 text-sm text-[#A8AFAF]">El sistema resuelve la mayoría sin interrumpirte</p>
+    <section className="rounded-[20px] border border-[#3D4141] bg-[#2B2E2E] p-6 flex flex-col h-[340px]">
+      {/* Header with dropdown */}
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="text-base font-semibold text-white">Trabajo completado hoy</h3>
+          <p className="mt-1 text-sm text-[#A8AFAF]">El sistema resuelve la mayoría sin interrumpirte</p>
+        </div>
+        <button className="flex items-center gap-1 text-xs text-[#6B7272] hover:text-[#A8AFAF] transition-colors">
+          Últimas 2 horas
+          <ChevronDown className="h-3.5 w-3.5" />
+        </button>
       </div>
-      <div className="mb-4 flex items-baseline gap-2">
-        <span className="text-5xl font-bold text-[#D7FEFA]">12</span>
+
+      {/* Hero number with animation */}
+      <div className="mb-4 flex items-baseline gap-3">
+        <motion.span
+          className="text-[64px] font-mono font-bold text-[#D7FEFA] leading-none"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          {animatedValue}
+        </motion.span>
         <span className="text-sm text-[#A8AFAF]">tareas completadas sin tu intervención</span>
       </div>
-      <div className="flex-1 min-h-[200px]">
+
+      {/* Chart with 220px height */}
+      <div className="flex-1" style={{ height: 220, minHeight: 220 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={activityData} margin={{ left: 0, right: 0, top: 4, bottom: 0 }}>
+          <AreaChart data={activityData} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
             <defs>
               <linearGradient id="gradNominal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#34D399" stopOpacity={0.1} />
+                <stop offset="5%" stopColor="#34D399" stopOpacity={0.15} />
                 <stop offset="95%" stopColor="#34D399" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gradWarning" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#FBBF24" stopOpacity={0.1} />
+                <stop offset="5%" stopColor="#FBBF24" stopOpacity={0.15} />
                 <stop offset="95%" stopColor="#FBBF24" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <Tooltip
-              contentStyle={{
-                background: "#2B2E2E",
-                border: "1px solid #3D4141",
-                borderRadius: 8,
-                fontSize: 12,
-              }}
-              labelStyle={{ color: "#A8AFAF" }}
-              itemStyle={{ color: "#FFFFFF" }}
+            <XAxis
+              dataKey="hora"
+              tick={{ fontSize: 10, fill: "#6B7272" }}
+              axisLine={false}
+              tickLine={false}
             />
-            <Area type="monotone" dataKey="resueltas" name="Resueltas" stroke="#34D399" fill="url(#gradNominal)" strokeWidth={1.5} dot={false} />
-            <Area type="monotone" dataKey="nuevas" name="Nuevas" stroke="#FBBF24" fill="url(#gradWarning)" strokeWidth={1.5} dot={false} />
+            <YAxis
+              tick={{ fontSize: 10, fill: "#6B7272" }}
+              axisLine={false}
+              tickLine={false}
+              width={28}
+            />
+            <Tooltip
+              cursor={{ stroke: "#4A5050", strokeWidth: 1, strokeDasharray: "4 4" }}
+              contentStyle={{
+                background: "#1A1D1D",
+                border: "1px solid #4A5050",
+                borderRadius: 10,
+                fontSize: 12,
+                padding: "8px 12px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+              }}
+              labelStyle={{ color: "#6B7272", marginBottom: 4 }}
+              itemStyle={{ color: "#FFFFFF", fontFamily: "monospace" }}
+            />
+            <Area
+              type="monotone"
+              dataKey="resueltas"
+              name="Resueltas"
+              stroke="#34D399"
+              fill="url(#gradNominal)"
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={true}
+              animationDuration={1400}
+              animationEasing="ease-out"
+              animationBegin={300}
+            />
+            <Area
+              type="monotone"
+              dataKey="nuevas"
+              name="Nuevas"
+              stroke="#FBBF24"
+              fill="url(#gradWarning)"
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={true}
+              animationDuration={1400}
+              animationEasing="ease-out"
+              animationBegin={600}
+            />
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Custom legend */}
+      <div className="mt-3 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <span className="flex items-center gap-1.5 text-xs text-[#A8AFAF]">
+            <span className="h-2 w-2 rounded-full bg-[#34D399]" />
+            Resueltas
+          </span>
+          <span className="flex items-center gap-1.5 text-xs text-[#A8AFAF]">
+            <span className="h-2 w-2 rounded-full bg-[#FBBF24]" />
+            Nuevas
+          </span>
+        </div>
+        <button className="text-xs text-[#F6F4D2] hover:text-[#EDEBBF] transition-colors">
+          Ver historial →
+        </button>
       </div>
     </section>
   );
