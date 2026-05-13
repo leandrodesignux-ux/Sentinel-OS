@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Building2, Check, Home, Shield, Users, Wrench, ChevronRight } from "lucide-react";
+import { Building2, Check, Home, Shield, Users, Wrench, ChevronRight, Lock } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAgentStore } from "@/store/agentStore";
 import type { AgentType } from "@/types/agent";
@@ -77,6 +77,145 @@ const agentTypes: { id: AgentType; label: string; icon: typeof Building2; desc: 
   { id: "screening", label: "Evaluación", icon: Users, desc: "Screening de inquilinos", color: "var(--accent-teal)", bg: "rgba(215, 254, 250, 0.08)" },
 ];
 
+// Rich CTA Button Component
+function StepButton({
+  step,
+  isReady,
+  isLoading,
+  isComplete,
+  onClick,
+  showSuccess: showSuccessProp,
+}: {
+  step: number;
+  isReady: boolean;
+  isLoading: boolean;
+  isComplete: boolean;
+  onClick: () => void;
+  showSuccess?: boolean;
+}) {
+  const [hasPulsed, setHasPulsed] = useState(false);
+  const [showShimmer, setShowShimmer] = useState(false);
+
+  useEffect(() => {
+    if (isReady && !hasPulsed) {
+      setHasPulsed(true);
+      setShowShimmer(true);
+      setTimeout(() => setShowShimmer(false), 600);
+    }
+  }, [isReady, hasPulsed]);
+
+  const buttonText = {
+    1: "Continuar →",
+    2: "Desplegar Agente →",
+    3: "Iniciar Sentinel OS →",
+  }[step];
+
+  const idleText = "Completa los campos";
+
+  // IDLE state
+  if (!isComplete) {
+    return (
+      <motion.button
+        disabled
+        className="mt-8 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold cursor-not-allowed"
+        style={{
+          background: "var(--bg-elevated)",
+          color: "var(--text-muted)",
+          opacity: 0.45,
+        }}
+      >
+        <Lock className="h-4 w-4" />
+        {idleText}
+      </motion.button>
+    );
+  }
+
+  // Step 3 with success state
+  if (step === 3 && showSuccessProp) {
+    return (
+      <motion.button
+        className="mt-8 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold"
+        style={{
+          background: "var(--status-nominal)",
+          color: "#FFFFFF",
+        }}
+        initial={{ scale: 1 }}
+        animate={{ scale: [1, 0.95, 1] }}
+        transition={{ duration: 0.3 }}
+      >
+        <Check className="h-4 w-4" />
+        Sistema Iniciado
+      </motion.button>
+    );
+  }
+
+  // READY / LOADING states
+  return (
+    <div className="relative mt-8">
+      <motion.button
+        onClick={onClick}
+        disabled={isLoading}
+        className="w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold transition-all overflow-hidden relative"
+        style={{
+          background: "var(--brand)",
+          color: "var(--brand-text)",
+          boxShadow: step === 3 ? "0 0 30px rgba(246,244,210,0.3)" : undefined,
+        }}
+        initial={{ scale: 0.97, opacity: 0.5 }}
+        animate={{
+          scale: isLoading ? 0.98 : isReady ? [1, 1.04, 1] : 0.97,
+          opacity: isLoading ? 0.8 : isReady ? 1 : 0.5,
+        }}
+        transition={{
+          scale: isReady && !isLoading ? { duration: 0.4, times: [0, 0.5, 1] } : { type: "spring", stiffness: 300, damping: 20 },
+          opacity: { duration: 0.2 },
+        }}
+        whileHover={!isLoading ? { backgroundColor: "var(--brand-hover)" } : {}}
+      >
+        {isLoading ? (
+          <>
+            <span
+              className="h-4 w-4 rounded-full border-2"
+              style={{
+                borderColor: "rgba(26, 29, 29, 0.3)",
+                borderTopColor: "var(--brand-text)",
+              }}
+            >
+              <motion.span
+                className="block h-full w-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                style={{
+                  borderRadius: "50%",
+                  border: "2px solid transparent",
+                  borderTop: "2px solid var(--brand-text)",
+                  margin: "-2px",
+                }}
+              />
+            </span>
+            <span className="ml-2">Procesando...</span>
+          </>
+        ) : (
+          buttonText
+        )}
+
+        {/* Shimmer effect */}
+        {showShimmer && (
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
+            }}
+            initial={{ x: -200, opacity: 0 }}
+            animate={{ x: 400, opacity: [0, 0.3, 0] }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+          />
+        )}
+      </motion.button>
+    </div>
+  );
+}
+
 function VerticalStepper({ currentStep }: { currentStep: number }) {
   return (
     <div className="flex flex-col gap-6">
@@ -151,6 +290,8 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [threshold, setThreshold] = useState(50);
   const [highlightedCard, setHighlightedCard] = useState<string | null>(null);
   const [ctaReady, setCtaReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const updateAgent = useAgentStore((s) => s.updateAgent);
   const agents = useAgentStore((s) => s.agents);
@@ -271,19 +412,28 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   }, [agentNameTyped, step]);
 
   const handleDeployAgent = () => {
-    if (!selectedAgentType || !agentName) return;
-    // Actualizar el primer agente del tipo seleccionado
-    const targetAgent = agents.find((a) => a.type === selectedAgentType);
-    if (targetAgent) {
-      updateAgent(targetAgent.id, { name: agentName });
-    }
-    setStep(3);
+    if (!selectedAgentType || !agentName || isLoading) return;
+    setIsLoading(true);
+    setTimeout(() => {
+      // Actualizar el primer agente del tipo seleccionado
+      const targetAgent = agents.find((a) => a.type === selectedAgentType);
+      if (targetAgent) {
+        updateAgent(targetAgent.id, { name: agentName });
+      }
+      setIsLoading(false);
+      setStep(3);
+    }, 600);
   };
 
   const handleComplete = () => {
-    // Actualizar el threshold global
-    useAgentStore.setState({ threshold });
-    onComplete();
+    if (isLoading) return;
+    setIsLoading(true);
+    setShowSuccess(true);
+    setTimeout(() => {
+      // Actualizar el threshold global
+      useAgentStore.setState({ threshold });
+      onComplete();
+    }, 800);
   };
 
   return (
@@ -455,31 +605,20 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   </motion.div>
                 </div>
 
-                <motion.button
-                  onClick={() => setStep(2)}
-                  disabled={!operatorName || !signature}
-                  initial={{ scale: 0.97, opacity: 0.5 }}
-                  animate={{
-                    scale: ctaReady && operatorName && signature ? 1 : 0.97,
-                    opacity: ctaReady && operatorName && signature ? 1 : 0.5,
+                <StepButton
+                  step={1}
+                  isReady={ctaReady && !!operatorName && !!signature}
+                  isLoading={isLoading}
+                  isComplete={!!operatorName && !!signature}
+                  onClick={() => {
+                    if (!operatorName || !signature || isLoading) return;
+                    setIsLoading(true);
+                    setTimeout(() => {
+                      setIsLoading(false);
+                      setStep(2);
+                    }, 600);
                   }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="mt-8 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{
-                    background: "var(--brand)",
-                    color: "var(--brand-text)",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!(!operatorName || !signature)) {
-                      e.currentTarget.style.background = "var(--brand-hover)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "var(--brand)";
-                  }}
-                >
-                  Continuar <ChevronRight className="h-4 w-4" />
-                </motion.button>
+                />
               </motion.div>
             )}
 
@@ -612,31 +751,13 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   </div>
                 </motion.div>
 
-                <motion.button
+                <StepButton
+                  step={2}
+                  isReady={ctaReady && !!selectedAgentType && !!agentName}
+                  isLoading={isLoading}
+                  isComplete={!!selectedAgentType && !!agentName}
                   onClick={handleDeployAgent}
-                  disabled={!selectedAgentType || !agentName}
-                  initial={{ scale: 0.97, opacity: 0.5 }}
-                  animate={{
-                    scale: ctaReady && selectedAgentType && agentName ? 1 : 0.97,
-                    opacity: ctaReady && selectedAgentType && agentName ? 1 : 0.5,
-                  }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{
-                    background: "var(--brand)",
-                    color: "var(--brand-text)",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!(!selectedAgentType || !agentName)) {
-                      e.currentTarget.style.background = "var(--brand-hover)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "var(--brand)";
-                  }}
-                >
-                  Desplegar Agente <ChevronRight className="h-4 w-4" />
-                </motion.button>
+                />
               </motion.div>
             )}
 
@@ -733,28 +854,14 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   </div>
                 </motion.div>
 
-                <motion.button
+                <StepButton
+                  step={3}
+                  isReady={ctaReady}
+                  isLoading={isLoading}
+                  isComplete={true}
+                  showSuccess={showSuccess}
                   onClick={handleComplete}
-                  initial={{ scale: 0.97, opacity: 0.5 }}
-                  animate={{
-                    scale: ctaReady ? 1 : 0.97,
-                    opacity: ctaReady ? 1 : 0.5,
-                  }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold transition-all"
-                  style={{
-                    background: "var(--brand)",
-                    color: "var(--brand-text)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "var(--brand-hover)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "var(--brand)";
-                  }}
-                >
-                  Iniciar Sentinel OS <ChevronRight className="h-4 w-4" />
-                </motion.button>
+                />
               </motion.div>
             )}
           </AnimatePresence>
