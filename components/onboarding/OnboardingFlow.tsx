@@ -788,7 +788,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
 
                 <StepButton
                   step={1}
-                  isReady={ctaReady && !!operatorName && !!signature}
+                  isReady={!!operatorName && !!signature}
                   isLoading={isLoading}
                   isComplete={!!operatorName && !!signature}
                   onClick={() => {
