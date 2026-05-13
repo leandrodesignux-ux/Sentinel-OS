@@ -53,7 +53,7 @@ function humanDescription(agent: Agent) {
 }
 
 // Subcomponent: Fleet Health Strip (Nivel 1)
-function FleetHealthStrip({ agents }: { agents: Agent[] }) {
+function FleetHealthStrip({ agents, hasMounted }: { agents: Agent[]; hasMounted?: boolean }) {
   const runningCount = agents.filter((a) => a.status === "running").length;
   const idleCount = agents.filter((a) => a.status === "idle").length;
   const monitoringCount = agents.filter((a) => a.status === "monitoring").length;
@@ -74,12 +74,18 @@ function FleetHealthStrip({ agents }: { agents: Agent[] }) {
   const tasksCompleted = agents.reduce((sum, a) => sum + (a.metadata?.exceptions_today || 0) * 12, 4750);
 
   return (
-    <motion.div
-      className="flex items-center gap-6 bg-[#2B2E2E] border border-[#3D4141] rounded-[16px] px-5 py-3 hover:border-[#4A5050] transition-colors duration-200"
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-    >
+    <div className="relative flex items-center gap-6 bg-[#2B2E2E] border border-[#3D4141] rounded-[16px] px-5 py-3 hover:border-[#4A5050] transition-colors duration-200">
+      {/* Scan effect overlay */}
+      <motion.div
+        className="absolute inset-0 rounded-[16px] pointer-events-none"
+        style={{
+          background: "linear-gradient(90deg, transparent 0%, rgba(215,254,250,0.06) 50%, transparent 100%)",
+          backgroundSize: "200% 100%",
+        }}
+        initial={{ backgroundPosition: "200% 0" }}
+        animate={{ backgroundPosition: "-200% 0" }}
+        transition={{ duration: 1.2, ease: "linear", delay: 0.2 }}
+      />
       {/* Dot + Counter */}
       <div className="flex items-center gap-2.5 shrink-0">
         <div className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
@@ -151,23 +157,29 @@ function FleetHealthStrip({ agents }: { agents: Agent[] }) {
         <span className="text-sm font-mono font-bold text-white">{tasksCompleted.toLocaleString()}</span>
         <span className="text-[10px] text-[#6B7272] uppercase tracking-wide">tareas</span>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 // Subcomponent: Hero Activity Card (Nivel 3)
-function HeroActivityCard() {
-  // Hero number animation (0 → 12)
+function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
+  // Hero number animation (0 → 12) with delay 600ms
   const motionVal = useMotionValue(0);
   const spring = useSpring(motionVal, { stiffness: 50, damping: 15 });
   const display = useTransform(spring, (v) => Math.round(v));
   const [animatedValue, setAnimatedValue] = useState(0);
 
   useEffect(() => {
+    if (!hasMounted) return;
     const unsubscribe = display.on("change", (v) => setAnimatedValue(v));
-    motionVal.set(12);
-    return () => unsubscribe();
-  }, [motionVal, display]);
+    const t = setTimeout(() => {
+      motionVal.set(12);
+    }, 600);
+    return () => {
+      clearTimeout(t);
+      unsubscribe();
+    };
+  }, [motionVal, display, hasMounted]);
 
   return (
     <section className="rounded-[20px] border border-[#3D4141] bg-[#2B2E2E] p-6 flex flex-col h-[340px]">
@@ -246,7 +258,7 @@ function HeroActivityCard() {
               isAnimationActive={true}
               animationDuration={1400}
               animationEasing="ease-out"
-              animationBegin={300}
+              animationBegin={400}
             />
             <Area
               type="monotone"
@@ -259,7 +271,7 @@ function HeroActivityCard() {
               isAnimationActive={true}
               animationDuration={1400}
               animationEasing="ease-out"
-              animationBegin={600}
+              animationBegin={700}
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -285,11 +297,11 @@ function HeroActivityCard() {
   );
 }
 
-// Animation variants for staggered entrance
-const containerVariants = {
+// Animation variants for staggered entrance (delayChildren adjusted based on hasMounted)
+const getContainerVariants = (hasMounted?: boolean) => ({
   hidden: {},
-  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.8 } }
-};
+  visible: { transition: { staggerChildren: 0.1, delayChildren: hasMounted ? 0 : 0.5 } }
+});
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -414,11 +426,11 @@ function KpiCard({
 }
 
 // Subcomponent: KPI Cards Row (Nivel 4)
-function KpiCardsRow({ onViewExceptions }: { onViewExceptions: () => void }) {
+function KpiCardsRow({ onViewExceptions, hasMounted }: { onViewExceptions: () => void; hasMounted?: boolean }) {
   return (
     <motion.div
       className="grid grid-cols-4 gap-3"
-      variants={containerVariants}
+      variants={getContainerVariants(hasMounted)}
       initial="hidden"
       animate="visible"
     >
@@ -466,11 +478,11 @@ function KpiCardsRow({ onViewExceptions }: { onViewExceptions: () => void }) {
   );
 }
 
-// Animation variants for exceptions list
-const listVariants = {
+// Animation variants for exceptions list (delayChildren adjusted based on hasMounted)
+const getListVariants = (hasMounted?: boolean) => ({
   hidden: {},
-  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.6 } }
-};
+  visible: { transition: { staggerChildren: 0.07, delayChildren: hasMounted ? 0 : 0.25 } }
+});
 
 const itemVariants = {
   hidden: { opacity: 0, x: 20 },
@@ -485,7 +497,7 @@ function getImpactColor(amount: number): string {
 }
 
 // Subcomponent: Exceptions Panel (Nivel 2)
-function ExceptionsPanel({ agents, onViewExceptions }: { agents: Agent[]; onViewExceptions: () => void }) {
+function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Agent[]; onViewExceptions: () => void; hasMounted?: boolean }) {
   const activeExceptions = agents
     .filter((agent) => agent.status === "intervention_required" || agent.status === "circuit_open" || agent.status === "suspended")
     .sort((left, right) => right.economic_risk.amount - left.economic_risk.amount);
@@ -512,7 +524,7 @@ function ExceptionsPanel({ agents, onViewExceptions }: { agents: Agent[]; onView
       {/* Scrollable List */}
       <motion.div
         className="flex-1 overflow-y-auto min-h-0 space-y-3"
-        variants={listVariants}
+        variants={getListVariants(hasMounted)}
         initial="hidden"
         animate="visible"
       >
@@ -596,16 +608,32 @@ function ExceptionsPanel({ agents, onViewExceptions }: { agents: Agent[]; onView
 // Main Component
 export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[]; onViewExceptions: () => void }) {
   const [time, setTime] = useState(new Date());
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
+  useEffect(() => {
+    const t = setTimeout(() => setHasMounted(true), 100);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
-    <div className="h-full min-h-0 overflow-y-auto bg-[#1A1D1D] px-6 py-6">
-      {/* Fila 1: Header */}
-      <header className="flex items-center justify-between mb-6">
+    <motion.div
+      className="h-full min-h-0 overflow-y-auto bg-[#1A1D1D] px-6 py-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: hasMounted ? 1 : 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Fila 1: Header — delay 0s */}
+      <motion.header
+        className="flex items-center justify-between mb-6"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: hasMounted ? 1 : 0, y: hasMounted ? 0 : -10 }}
+        transition={{ duration: 0.4, delay: 0 }}
+      >
         <div>
           <h1 className="text-2xl font-semibold text-white">
             Buenos días, <span className="text-[#D7FEFA]">Operador Vega</span>
@@ -621,24 +649,50 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
             Pausar flota
           </button>
         </div>
-      </header>
+      </motion.header>
 
-      {/* Fila 2: Fleet Health Strip */}
-      <div className="mb-6">
-        <FleetHealthStrip agents={agents} />
-      </div>
+      {/* Fila 2: Fleet Health Strip — delay 0.15s */}
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: hasMounted ? 1 : 0, y: hasMounted ? 0 : -10 }}
+        transition={{ duration: 0.4, delay: 0.15 }}
+      >
+        <FleetHealthStrip agents={agents} hasMounted={hasMounted} />
+      </motion.div>
 
       {/* Fila 3: Grid principal 65/35 */}
       <div className="grid gap-5" style={{ gridTemplateColumns: "1fr 380px" }}>
         {/* Columna izquierda */}
         <div className="flex flex-col gap-5">
-          <HeroActivityCard />
-          <KpiCardsRow onViewExceptions={onViewExceptions} />
+          {/* HeroActivityCard — delay 0.3s */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: hasMounted ? 1 : 0, y: hasMounted ? 0 : 20 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          >
+            <HeroActivityCard hasMounted={hasMounted} />
+          </motion.div>
+
+          {/* KpiCardsRow — base delay 0.5s + 0.1s stagger per card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: hasMounted ? 1 : 0, y: hasMounted ? 0 : 20 }}
+            transition={{ duration: 0.4, delay: 0.5 }}
+          >
+            <KpiCardsRow onViewExceptions={onViewExceptions} hasMounted={hasMounted} />
+          </motion.div>
         </div>
 
-        {/* Columna derecha */}
-        <ExceptionsPanel agents={agents} onViewExceptions={onViewExceptions} />
+        {/* Columna derecha — ExceptionsPanel delay 0.25s */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: hasMounted ? 1 : 0, x: hasMounted ? 0 : 30 }}
+          transition={{ duration: 0.4, delay: 0.25 }}
+        >
+          <ExceptionsPanel agents={agents} onViewExceptions={onViewExceptions} hasMounted={hasMounted} />
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
