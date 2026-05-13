@@ -68,28 +68,28 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
     <TooltipProvider>
       {showOnboarding && <OnboardingFlow onComplete={() => setShowOnboarding(false)} />}
       {emergencyHalt.active && (
-        <div className="fixed left-3 top-[72px] z-40 flex w-[196px] items-center gap-2 rounded-data border border-critical/30 bg-critical/15 px-3 py-2 font-display text-xs text-red-600">
-          <span className="h-2 w-2 animate-status-pulse rounded-full bg-critical" />
+        <div className="fixed left-3 top-[72px] z-40 flex w-[196px] items-center gap-2 rounded-data border border-[#F87171]/30 bg-[#F87171]/15 px-3 py-2 font-display text-xs text-[#F87171]">
+          <span className="h-2 w-2 animate-status-pulse rounded-full bg-[#F87171]" />
           <span>FLOTA DETENIDA</span>
         </div>
       )}
-      <main className="ml-[240px] flex min-h-screen flex-col overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--bg-border)] bg-white/80 backdrop-blur-sm px-6">
+      <main className="ml-[240px] flex min-h-screen flex-col overflow-hidden bg-[#1A1D1D]">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#3D4141] bg-[#1A1D1D] px-6">
           <div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+            <h2 className="text-xl font-semibold text-white">
               {sectionTitles[activeSection]}
             </h2>
-            <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+            <p className="mt-0.5 text-xs text-[#A8AFAF]">
               {sectionSubtitles[activeSection]}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-[var(--text-muted)]">{formatTime(now)}</span>
+            <span className="text-sm text-white font-mono">{formatTime(now)}</span>
             {hasCriticalAgents && <EmergencyStop />}
           </div>
         </header>
 
-        <section className="bg-[var(--bg-canvas)] min-h-0 flex-1 overflow-hidden p-4">
+        <section className="bg-[#1A1D1D] min-h-0 flex-1 overflow-hidden p-4">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
