@@ -38,7 +38,7 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: {
   };
 
   return (
-    <div className="h-full min-h-0 overflow-y-auto">
+    <div className="h-full min-h-0 overflow-y-auto bg-[#1A1D1D]">
       {/* Toast de confirmación */}
       <AnimatePresence>
         {toast && (
@@ -46,15 +46,14 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: {
             initial={{ opacity: 0, y: -12, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8 }}
-            className="fixed top-5 right-6 z-50 flex items-center gap-2.5 rounded-2xl bg-white border border-[#E4E7EC] px-4 py-3 shadow-lg"
-            style={{boxShadow: "0 8px 24px rgba(0,0,0,0.1)"}}
+            className="fixed top-5 right-6 z-50 flex items-center gap-2.5 rounded-2xl bg-[#2B2E2E] border border-[#3D4141] px-4 py-3 shadow-lg"
           >
-            <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
-              <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+            <div className="h-6 w-6 rounded-full bg-[#34D399]/20 flex items-center justify-center">
+              <CheckCircle className="h-3.5 w-3.5 text-[#34D399]" />
             </div>
             <div>
-              <p className="text-[13px] font-medium text-[#101828]">Excepción resuelta</p>
-              <p className="text-[11px] text-[#98A2B3]">{toast}</p>
+              <p className="text-[13px] font-medium text-white">Excepción resuelta</p>
+              <p className="text-[11px] text-[#6B7272]">{toast}</p>
             </div>
           </motion.div>
         )}
@@ -62,8 +61,8 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: {
 
       {/* Header con tabs */}
       <div className="mb-6">
-        <h1 className="text-[22px] font-semibold text-[#101828] mb-1">Para revisar</h1>
-        <p className="text-[13px] text-[#98A2B3]">Decisiones que necesitan tu criterio, ordenadas por impacto económico</p>
+        <h1 className="text-[22px] font-semibold text-white mb-1">Para revisar</h1>
+        <p className="text-[13px] text-[#A8AFAF]">Decisiones que necesitan tu criterio, ordenadas por impacto económico</p>
       </div>
 
       {/* Tabs */}
@@ -74,15 +73,15 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all ${
               activeTab === tab.id
-                ? "bg-[#2E90FA] text-white shadow-sm"
-                : "bg-white border border-[#E4E7EC] text-[#475467] hover:bg-[#F2F4F0]"
+                ? "bg-[#2B2E2E] border border-[#D7FEFA]/30 text-[#D7FEFA]"
+                : "bg-transparent border border-[#3D4141] text-[#A8AFAF] hover:bg-[#2B2E2E]"
             }`}
           >
             {tab.label}
             <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
               activeTab === tab.id
-                ? "bg-white/20 text-white"
-                : "bg-[#F2F4F0] text-[#475467]"
+                ? "bg-[#D7FEFA]/20 text-[#D7FEFA]"
+                : "bg-[#3D4141] text-[#A8AFAF]"
             }`}>
               {tab.count}
             </span>
@@ -93,11 +92,11 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: {
       {/* Grid 3 columnas */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="h-12 w-12 rounded-2xl bg-green-50 flex items-center justify-center mb-4">
-            <CheckCircle className="h-6 w-6 text-green-500" />
+          <div className="h-12 w-12 rounded-2xl bg-[#34D399]/10 flex items-center justify-center mb-4">
+            <CheckCircle className="h-6 w-6 text-[#34D399]" />
           </div>
-          <p className="text-[15px] font-medium text-[#101828] mb-1">Todo al día</p>
-          <p className="text-[13px] text-[#98A2B3]">No hay excepciones en esta categoría</p>
+          <p className="text-[15px] font-medium text-white mb-1">Todo al día</p>
+          <p className="text-[13px] text-[#6B7272]">No hay excepciones en esta categoría</p>
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-4">

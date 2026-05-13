@@ -29,41 +29,41 @@ export function ExceptionFeed() {
   ];
 
   return (
-    <div className="animate-critical-breach rounded-data border border-critical/30 bg-critical/10 p-3 shadow-danger">
-      <div className="flex items-center gap-3"><AlertTriangle className="h-5 w-5 text-red-600" /><h2 className="font-accent text-lg">Human escalation queue</h2></div>
+    <div className="rounded-data border border-[#F87171]/30 bg-[#F87171]/10 p-3 shadow-danger">
+      <div className="flex items-center gap-3"><AlertTriangle className="h-5 w-5 text-[#F87171]" /><h2 className="font-accent text-lg text-white">Human escalation queue</h2></div>
       <div className="mt-3 space-y-2">
         {priceLoopAlert && (
-          <div className="rounded-data border border-accent/60 bg-accent/10 p-2 shadow-danger">
-            <p className="font-display text-xs text-accent">CASCADA DETECTADA - 13 agentes afectados - $2.3M en riesgo</p>
-            <p className="mt-1 text-xs text-[var(--text-secondary)]">AGT-007 recibió dato corrupto: precio +20%, replicado por dependientes.</p>
-            <button onClick={containScenarioFamily} className="mt-2 rounded-badge border border-ok/40 px-2 py-1 font-display text-[10px] text-green-700">Contener familia</button>
+          <div className="rounded-data border border-[#D7FEFA]/30 bg-[#D7FEFA]/10 p-2 shadow-danger">
+            <p className="font-display text-xs text-[#D7FEFA]">CASCADA DETECTADA - 13 agentes afectados - $2.3M en riesgo</p>
+            <p className="mt-1 text-xs text-[#A8AFAF]">AGT-007 recibió dato corrupto: precio +20%, replicado por dependientes.</p>
+            <button onClick={containScenarioFamily} className="mt-2 rounded-badge border border-[#34D399]/40 bg-[#34D399]/10 px-2 py-1 font-display text-[10px] text-[#34D399] hover:bg-[#34D399]/20 transition-colors">Contener familia</button>
           </div>
         )}
         {screeningBiasAlert && (
-          <div className="rounded-data border border-warn/70 bg-warn/15 p-2 shadow-danger">
-            <p className="font-display text-xs text-yellow-700">Fair Housing Act potencial violación</p>
-            <p className="mt-1 text-xs text-[var(--text-secondary)]">Nova-N03 rechaza sistemáticamente solicitudes: tasa 73% vs. baseline 22%.</p>
-            <button onClick={forceScreeningHITL} className="mt-2 rounded-badge border border-critical/40 px-2 py-1 font-display text-[10px] text-red-600">Forzar HITL 100% screening</button>
+          <div className="rounded-data border border-[#FBBF24]/30 bg-[#FBBF24]/10 p-2 shadow-danger">
+            <p className="font-display text-xs text-[#FBBF24]">Fair Housing Act potencial violación</p>
+            <p className="mt-1 text-xs text-[#A8AFAF]">Nova-N03 rechaza sistemáticamente solicitudes: tasa 73% vs. baseline 22%.</p>
+            <button onClick={forceScreeningHITL} className="mt-2 rounded-badge border border-[#F87171]/40 bg-[#F87171]/10 px-2 py-1 font-display text-[10px] text-[#F87171] hover:bg-[#F87171]/20 transition-colors">Forzar HITL 100% screening</button>
           </div>
         )}
         {retryStormAlert && (
-          <div className="rounded-data border border-warn/70 bg-warn/15 p-2 shadow-danger">
-            <p className="font-display text-xs text-yellow-700">Budget cap al 50% - Requiere aprobación para continuar</p>
-            <p className="mt-1 text-xs text-[var(--text-secondary)]">Orion-M05 entró en retry loop contra HVAC provider: $120k gastados en 40 minutos.</p>
-            <div className="mt-2 h-20 text-yellow-700">
+          <div className="rounded-data border border-[#FBBF24]/30 bg-[#FBBF24]/10 p-2 shadow-danger">
+            <p className="font-display text-xs text-[#FBBF24]">Budget cap al 50% - Requiere aprobación para continuar</p>
+            <p className="mt-1 text-xs text-[#A8AFAF]">Orion-M05 entró en retry loop contra HVAC provider: $120k gastados en 40 minutos.</p>
+            <div className="mt-2 h-20 text-[#FBBF24]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={budgetData} margin={{ left: 0, right: 0, top: 6, bottom: 0 }}>
                   <Area type="monotone" dataKey="budget" stroke="currentColor" fill="currentColor" fillOpacity={0.18} strokeWidth={2} isAnimationActive />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            <p className="mt-1 font-display text-[10px] text-red-600">Circuit breaker automático: L2 State Freeze</p>
+            <p className="mt-1 font-display text-[10px] text-[#F87171]">Circuit breaker automático: L2 State Freeze</p>
           </div>
         )}
         {batchGroups.map(([kind, agents]) => (
-          <div key={kind} className="rounded-data border border-warn/40 bg-background/65 p-2">
+          <div key={kind} className="rounded-data border border-[#FBBF24]/30 bg-[#2B2E2E] p-2">
             <div className="flex items-center justify-between gap-2">
-              <p className="font-display text-xs text-yellow-700">{agents.length} agentes con mismo error: {getExceptionLabel(kind)}</p>
+              <p className="font-display text-xs text-[#FBBF24]">{agents.length} agentes con mismo error: {getExceptionLabel(kind)}</p>
               <BatchApproval kind={kind} agents={agents} />
             </div>
           </div>
