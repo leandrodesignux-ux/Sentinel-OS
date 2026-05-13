@@ -22,13 +22,13 @@ export function DependencyGraph({ agent }: { agent: Agent }) {
   }
 
   return (
-    <svg viewBox="0 0 680 260" className="h-64 w-full rounded-data border bg-white">
+    <svg viewBox="0 0 680 260" className="h-64 w-full rounded-data border border-[#3D4141] bg-[#1A1D1D]">
       <defs>
         <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-          <path d="M0,0 L8,4 L0,8 Z" className="fill-primary" />
+          <path d="M0,0 L8,4 L0,8 Z" fill="#D7FEFA" />
         </marker>
         <marker id="arrow-red" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-          <path d="M0,0 L8,4 L0,8 Z" className="fill-critical" />
+          <path d="M0,0 L8,4 L0,8 Z" fill="#F87171" />
         </marker>
       </defs>
 
@@ -38,7 +38,7 @@ export function DependencyGraph({ agent }: { agent: Agent }) {
 
         return (
           <g key={`up-${node}`}>
-            <line x1="170" y1={y} x2="315" y2="130" stroke="currentColor" strokeWidth={weight} markerEnd="url(#arrow-blue)" className="text-primary/45" />
+            <line x1="170" y1={y} x2="315" y2="130" stroke="#D7FEFA" strokeOpacity="0.45" strokeWidth={weight} markerEnd="url(#arrow-blue)" />
             <GraphNode x={110} y={y} label={node} subtitle={nodeLabel(node)} tone="upstream" onClick={() => selectAgent(node)} />
           </g>
         );
@@ -51,31 +51,45 @@ export function DependencyGraph({ agent }: { agent: Agent }) {
 
         return (
           <g key={`down-${node}`} className={cn(isCritical && inBlast && "animate-signal-blink")}>
-            <line x1="365" y1="130" x2="510" y2={y} stroke="currentColor" strokeWidth={weight} markerEnd="url(#arrow-red)" className={cn(inBlast ? "text-red-600" : "text-critical/45")} />
+            <line x1="365" y1="130" x2="510" y2={y} stroke={inBlast ? "#F87171" : "#F87171"} strokeOpacity={inBlast ? 1 : 0.45} strokeWidth={weight} markerEnd="url(#arrow-red)" />
             <GraphNode x={570} y={y} label={node} subtitle={nodeLabel(node)} tone={inBlast ? "blast" : "downstream"} onClick={() => selectAgent(node)} />
           </g>
         );
       })}
 
-      {isCritical && <circle cx="340" cy="130" r="52" className="animate-critical-breach fill-transparent stroke-critical/40" />}
+      {isCritical && <circle cx="340" cy="130" r="52" fill="transparent" stroke="#F87171" strokeOpacity="0.4" className="animate-critical-breach" />}
       <GraphNode x={340} y={130} label={agent.id} subtitle={agent.name} tone="center" onClick={() => selectAgent(agent.id)} />
     </svg>
   );
 }
 
 function GraphNode({ x, y, label, subtitle, tone, onClick }: { x: number; y: number; label: string; subtitle: string; tone: "center" | "upstream" | "downstream" | "blast"; onClick: () => void }) {
-  const circleClass = {
-    center: "fill-critical/35 stroke-critical",
-    upstream: "fill-primary/20 stroke-primary",
-    downstream: "fill-critical/20 stroke-critical/70",
-    blast: "fill-critical/45 stroke-critical",
+  const circleFill = {
+    center: "#2B2E2E",
+    upstream: "#2B2E2E",
+    downstream: "#2B2E2E",
+    blast: "#F87171",
+  }[tone];
+  
+  const circleStroke = {
+    center: "#D7FEFA",
+    upstream: "#3D4141",
+    downstream: "#3D4141",
+    blast: "#F87171",
+  }[tone];
+  
+  const circleFillOpacity = {
+    center: "0.35",
+    upstream: "1",
+    downstream: "1",
+    blast: "0.45",
   }[tone];
 
   return (
     <g className="cursor-pointer" onClick={onClick} transform={`translate(${x} ${y})`}>
-      <circle r={tone === "center" ? 24 : 18} className={circleClass} />
-      <text y={tone === "center" ? 4 : 3} textAnchor="middle" className="pointer-events-none fill-current font-display text-[10px] text-[var(--text-primary)]">{label}</text>
-      <text y={tone === "center" ? 40 : 34} textAnchor="middle" className="pointer-events-none fill-current text-[9px] text-[var(--text-muted)]">{subtitle.slice(0, 18)}</text>
+      <circle r={tone === "center" ? 24 : 18} fill={circleFill} fillOpacity={circleFillOpacity} stroke={circleStroke} strokeWidth="2" />
+      <text y={tone === "center" ? 4 : 3} textAnchor="middle" className="pointer-events-none fill-white font-display text-[10px]">{label}</text>
+      <text y={tone === "center" ? 40 : 34} textAnchor="middle" className="pointer-events-none fill-[#6B7272] text-[9px]">{subtitle.slice(0, 18)}</text>
     </g>
   );
 }

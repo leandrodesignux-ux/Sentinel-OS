@@ -8,14 +8,14 @@ export function XAIPanel({ agent }: { agent: Agent }) {
   ] as const;
 
   return (
-    <div className="rounded-data border bg-white p-3">
-      <p className="font-accent text-sm">XAI factors</p>
+    <div className="rounded-data border border-[#3D4141] bg-[#2B2E2E] p-3">
+      <p className="font-accent text-sm text-white">XAI factors</p>
       <div className="mt-3 space-y-2">
         {factors.map(([label, value]) => (
           <div key={label} className="grid grid-cols-[90px_1fr_40px] items-center gap-2 font-display text-xs">
-            <span className="text-[var(--text-muted)]">{label}</span>
-            <div className="h-1.5 bg-muted"><div className="h-full bg-primary" style={{ width: `${value}%` }} /></div>
-            <span>{value}</span>
+            <span className="text-[#6B7272]">{label}</span>
+            <div className="h-1.5 bg-[#3D4141] rounded-full overflow-hidden"><div className="h-full bg-[#D7FEFA]" style={{ width: `${value}%` }} /></div>
+            <span className="text-white">{value}</span>
           </div>
         ))}
       </div>
