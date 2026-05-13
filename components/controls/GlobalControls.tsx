@@ -10,8 +10,8 @@ export function GlobalControls() {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-data border bg-white p-3 backdrop-blur">
-        <div className="mb-3 flex items-center justify-between font-display text-sm"><span>Autonomy dial</span><span>{threshold}% AUTO</span></div>
+      <div className="rounded-data border border-[#3D4141] bg-[#2B2E2E] p-3">
+        <div className="mb-3 flex items-center justify-between font-display text-sm"><span className="text-white">Autonomy dial</span><span className="text-[#D7FEFA]">{threshold}% AUTO</span></div>
         <AutonomyDial value={threshold} onChange={setThreshold} />
       </div>
       <ScenarioSelector />

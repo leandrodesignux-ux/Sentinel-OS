@@ -31,26 +31,26 @@ export function EmergencyStop({ hasCriticalAgents = false }: { hasCriticalAgents
           Pausar toda la flota
         </motion.button>
       </DialogTrigger>
-      <DialogContent className="rounded-2xl border-[var(--bg-border)] bg-white shadow-card">
-        <DialogTitle className="text-2xl font-semibold text-[var(--text-primary)]">¿Pausar todos los agentes?</DialogTitle>
-        <DialogDescription className="text-sm leading-6 text-[var(--text-secondary)]">
+      <DialogContent className="rounded-2xl border-[#3D4141] bg-[#2B2E2E] shadow-card">
+        <DialogTitle className="text-2xl font-semibold text-white">¿Pausar todos los agentes?</DialogTitle>
+        <DialogDescription className="text-sm leading-6 text-[#A8AFAF]">
           Esto hará que todos tus agentes dejen de tomar decisiones de inmediato. Las tareas en curso quedarán en pausa hasta que tú las reactives manualmente.
           <br />
           <br />
           Úsalo si notas comportamiento extraño o si necesitas revisar lo que está pasando con calma.
         </DialogDescription>
-        <div className="space-y-2 rounded-xl border border-[var(--bg-border)] bg-[var(--bg-canvas)] p-4 text-sm text-[var(--text-secondary)]">
-          <div className="flex justify-between"><span>{affectedAgents.length} agentes dejarán de trabajar</span><span className="font-semibold text-[var(--status-critical)]">{affectedAgents.length}</span></div>
-          <div className="flex justify-between"><span>{pausedTasks} tareas quedarán pausadas</span><span className="font-semibold text-[var(--status-critical)]">{pausedTasks}</span></div>
-          <div className="flex justify-between"><span>Puedes reactivarlos cuando quieras</span><span className="font-semibold text-[var(--status-nominal)]">Sí</span></div>
+        <div className="space-y-2 rounded-xl border border-[#3D4141] bg-[#1A1D1D] p-4 text-sm text-[#A8AFAF]">
+          <div className="flex justify-between"><span>{affectedAgents.length} agentes dejarán de trabajar</span><span className="font-semibold text-[#F87171]">{affectedAgents.length}</span></div>
+          <div className="flex justify-between"><span>{pausedTasks} tareas quedarán pausadas</span><span className="font-semibold text-[#F87171]">{pausedTasks}</span></div>
+          <div className="flex justify-between"><span>Puedes reactivarlos cuando quieras</span><span className="font-semibold text-[#34D399]">Sí</span></div>
         </div>
-        <input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} placeholder="Escribe PAUSAR para confirmar" className="rounded-xl border border-[var(--bg-border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--status-critical)]" />
+        <input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} placeholder="Escribe PAUSAR para confirmar" className="rounded-xl border border-[#3D4141] bg-[#1A1D1D] px-3 py-2 text-sm text-white outline-none focus:border-[#D7FEFA]/40 placeholder:text-[#6B7272]" />
         <div className="flex justify-end gap-2">
           <DialogClose asChild>
-            <button className="rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-200">Cancelar</button>
+            <button className="rounded-xl bg-[#2B2E2E] border border-[#3D4141] px-4 py-2 text-sm font-medium text-[#A8AFAF] transition hover:bg-[#333737] hover:text-white">Cancelar</button>
           </DialogClose>
           <DialogClose asChild>
-            <button disabled={confirmation !== "PAUSAR"} onClick={() => { triggerEmergencyHalt("all"); setConfirmation(""); }} className="rounded-xl bg-[var(--status-critical)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40">Pausar la flota</button>
+            <button disabled={confirmation !== "PAUSAR"} onClick={() => { triggerEmergencyHalt("all"); setConfirmation(""); }} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40">Pausar la flota</button>
           </DialogClose>
         </div>
       </DialogContent>

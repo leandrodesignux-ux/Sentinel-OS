@@ -14,23 +14,40 @@ export function AutonomyDial({ value = 72, onChange }: { value?: number; onChang
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between font-display text-[10px] uppercase tracking-[0.18em]">
-        <span className="text-red-600">Tú decides todo</span>
-        <span className="text-green-700">El sistema decide solo</span>
+        <span className="text-[#F87171]">Tú decides todo</span>
+        <span className="text-[#34D399]">El sistema decide solo</span>
       </div>
-      <Slider value={[value]} min={0} max={100} step={1} onValueChange={(next: number[]) => onChange?.(next[0])} />
-      <p className="text-sm text-[var(--text-secondary)]">{supervisionLabel}</p>
+      <div className="relative h-2 bg-[#3D4141] rounded-full">
+        <div 
+          className="absolute h-full bg-[#D7FEFA] rounded-full transition-all"
+          style={{ width: `${value}%` }}
+        />
+        <input 
+          type="range" 
+          min={0} 
+          max={100} 
+          value={value} 
+          onChange={(e) => onChange?.(Number(e.target.value))}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 h-4 w-4 bg-[#F6F4D2] rounded-full shadow-lg transition-all"
+          style={{ left: `calc(${value}% - 8px)` }}
+        />
+      </div>
+      <p className="text-sm text-[#A8AFAF]">{supervisionLabel}</p>
       <div className="grid grid-cols-3 gap-2 font-display text-xs">
-        <div className="rounded-data border bg-background/50 p-2">
-          <span className="text-[var(--text-muted)]">Autonomía</span>
-          <p className="text-[var(--status-accent)]">{value}%</p>
+        <div className="rounded-data border border-[#3D4141] bg-[#2B2E2E] p-2">
+          <span className="text-[#6B7272]">Autonomía</span>
+          <p className="text-[#D7FEFA]">{value}%</p>
         </div>
-        <div className="rounded-data border bg-background/50 p-2">
-          <span className="text-[var(--text-muted)]">Alertas por hora</span>
-          <p className="text-yellow-700">~{expectedExceptions}</p>
+        <div className="rounded-data border border-[#3D4141] bg-[#2B2E2E] p-2">
+          <span className="text-[#6B7272]">Alertas por hora</span>
+          <p className="text-[#FBBF24]">~{expectedExceptions}</p>
         </div>
-        <div className="rounded-data border bg-background/50 p-2">
-          <span className="text-[var(--text-muted)]">Intervenciones por 1.000 tareas</span>
-          <p className="text-red-600">~{humanTouches}</p>
+        <div className="rounded-data border border-[#3D4141] bg-[#2B2E2E] p-2">
+          <span className="text-[#6B7272]">Intervenciones por 1.000 tareas</span>
+          <p className="text-[#F87171]">~{humanTouches}</p>
         </div>
       </div>
     </div>
