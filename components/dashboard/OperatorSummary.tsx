@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, Bot, Building2, ChevronDown, Clock, Home, Pause, Timer, TrendingUp, Users, Wrench, Zap } from "lucide-react";
+import { ArrowRight, Bell, Bot, Building2, ChevronDown, Clock, Home, Pause, Timer, TrendingUp, Users, Wrench, Zap } from "lucide-react";
 import { Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { economicImpactK } from "@/lib/utils/riskUtils";
@@ -466,53 +466,129 @@ function KpiCardsRow({ onViewExceptions }: { onViewExceptions: () => void }) {
   );
 }
 
+// Animation variants for exceptions list
+const listVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.6 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, x: 20 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.0, 0.0, 0.2, 1] as const } }
+};
+
+// Helper to get impact color based on amount
+function getImpactColor(amount: number): string {
+  if (amount > 150000) return "#F87171"; // Red for high impact
+  if (amount > 100000) return "#FBBF24"; // Yellow for medium-high
+  return "#D7FEFA"; // Teal for lower
+}
+
 // Subcomponent: Exceptions Panel (Nivel 2)
 function ExceptionsPanel({ agents, onViewExceptions }: { agents: Agent[]; onViewExceptions: () => void }) {
   const activeExceptions = agents
     .filter((agent) => agent.status === "intervention_required" || agent.status === "circuit_open" || agent.status === "suspended")
     .sort((left, right) => right.economic_risk.amount - left.economic_risk.amount);
 
+  const maxImpact = activeExceptions[0]?.economic_risk.amount ?? 1;
+
   return (
     <section className="flex flex-col rounded-[20px] border border-[#3D4141] bg-[#2B2E2E] p-6 h-full">
-      <div className="mb-5 flex items-center justify-between">
-        <div>
+      {/* Sticky Header */}
+      <div className="sticky top-0 bg-[#2B2E2E] pb-3 pt-1 z-10">
+        <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-white">Necesitan tu criterio ahora</h3>
-          <p className="mt-1 text-sm text-[#A8AFAF]">Prioriza por impacto económico</p>
+          <motion.span
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            className="rounded-full bg-[#F6F4D2]/10 border border-[#F6F4D2]/20 px-2.5 py-1 text-xs font-medium text-[#F6F4D2]"
+          >
+            {activeExceptions.length} esperando
+          </motion.span>
         </div>
-        <span className="rounded-full bg-[#F6F4D2]/10 px-2.5 py-1 text-xs font-medium text-[#F6F4D2] border border-[#F6F4D2]/20">
-          {activeExceptions.length} esperando
-        </span>
+        <p className="text-sm text-[#A8AFAF] mt-1">Prioriza por impacto económico</p>
       </div>
-      <div className="flex-1 space-y-3 overflow-y-auto min-h-0">
-        {activeExceptions.slice(0, 6).map((agent, i) => {
+
+      {/* Scrollable List */}
+      <motion.div
+        className="flex-1 overflow-y-auto min-h-0 space-y-3"
+        variants={listVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {activeExceptions.slice(0, 6).map((agent) => {
           const Icon = typeIcons[agent.type];
-          const accentColor = agent.type === "sales" ? "#FBBF24" : agent.type === "maintenance" ? "#F87171" : "#D7FEFA";
-          const accentBg = agent.type === "sales" ? "rgba(251, 191, 36, 0.08)" : agent.type === "maintenance" ? "rgba(248, 113, 113, 0.08)" : "rgba(215, 254, 250, 0.08)";
+          const impactColor = getImpactColor(agent.economic_risk.amount);
+
+          // Type colors for impact bar
+          const typeColors: Record<string, string> = {
+            sales: "#FBBF24",
+            maintenance: "#F87171",
+            asset_mgmt: "#D7FEFA",
+            screening: "#A78BFA",
+          };
+          const barColor = typeColors[agent.type] || "#6B7272";
+          const barWidth = (agent.economic_risk.amount / maxImpact) * 100;
 
           return (
-            <div
+            <motion.div
               key={agent.id}
-              className={`flex items-start gap-3 rounded-xl p-3 hover:bg-[#333737] transition-colors cursor-pointer ${i > 0 ? 'border-t border-[#3D4141]' : ''}`}
+              variants={itemVariants}
+              whileHover={{ x: 4, backgroundColor: "rgba(255,255,255,0.03)" }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              className="flex flex-col gap-2 rounded-xl p-3 cursor-pointer"
               onClick={onViewExceptions}
             >
-              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg" style={{ background: accentBg }}>
-                <Icon className="h-4 w-4" style={{ color: accentColor }} />
+              {/* Impact Bar */}
+              <div className="w-full h-0.5 bg-[#3D4141] rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: barColor }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${barWidth}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-white">{humanAgentName(agent)}</p>
-                <p className="mt-0.5 truncate text-xs text-[#A8AFAF]">{humanDescription(agent)}</p>
+
+              {/* Content */}
+              <div className="flex items-start gap-3">
+                {/* Icon with urgency indicator */}
+                <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg" style={{ background: barColor + "14" }}>
+                  <Icon className="h-4 w-4" style={{ color: barColor }} />
+                  {agent.status === "circuit_open" && (
+                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#F87171] animate-pulse" />
+                  )}
+                </div>
+
+                {/* Text content */}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-white">{humanAgentName(agent)}</p>
+                  <p className="mt-0.5 truncate text-xs text-[#A8AFAF]">{humanDescription(agent)}</p>
+                </div>
+
+                {/* Economic Impact - Prominent */}
+                <span
+                  className="flex-shrink-0 text-base font-bold font-mono"
+                  style={{ color: impactColor }}
+                >
+                  ${economicImpactK(agent)}K
+                </span>
               </div>
-              <span className="flex-shrink-0 text-sm font-semibold text-white">${economicImpactK(agent)}K</span>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
-      <button
+      </motion.div>
+
+      {/* CTA Button */}
+      <motion.button
+        whileHover={{ x: 3 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
         onClick={onViewExceptions}
-        className="mt-4 w-full text-center py-2.5 rounded-lg bg-[#F6F4D2]/10 border border-[#F6F4D2]/20 text-sm font-medium text-[#F6F4D2] hover:bg-[#F6F4D2]/20 transition-colors"
+        className="mt-4 flex items-center gap-2 text-sm font-medium text-[#F6F4D2] hover:text-[#EDEBBF] transition-colors"
       >
-        Revisar y aprobar →
-      </button>
+        Revisar y aprobar
+        <ArrowRight className="h-3.5 w-3.5" />
+      </motion.button>
     </section>
   );
 }
