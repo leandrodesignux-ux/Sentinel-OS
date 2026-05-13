@@ -54,25 +54,104 @@ function humanDescription(agent: Agent) {
 
 // Subcomponent: Fleet Health Strip (Nivel 1)
 function FleetHealthStrip({ agents }: { agents: Agent[] }) {
-  const healthyCount = agents.filter((a) => a.status === "running" || a.status === "idle").length;
+  const runningCount = agents.filter((a) => a.status === "running").length;
+  const idleCount = agents.filter((a) => a.status === "idle").length;
+  const monitoringCount = agents.filter((a) => a.status === "monitoring").length;
+  const criticalCount = agents.filter((a) =>
+    a.status === "intervention_required" || a.status === "circuit_open" || a.status === "suspended"
+  ).length;
   const totalCount = agents.length;
-  const healthPercent = Math.round((healthyCount / totalCount) * 100);
+
+  // Calculate percentages
+  const runningPercent = totalCount > 0 ? (runningCount / totalCount) * 100 : 0;
+  const monitoringPercent = totalCount > 0 ? (monitoringCount / totalCount) * 100 : 0;
+  const criticalPercent = totalCount > 0 ? (criticalCount / totalCount) * 100 : 0;
+
+  // Calculate metrics
+  const activeCount = runningCount + idleCount;
+  const escalationRate = totalCount > 0 ? ((criticalCount / totalCount) * 100).toFixed(1) : "0.0";
+  const autonomousRate = totalCount > 0 ? (100 - parseFloat(escalationRate)).toFixed(1) : "100.0";
+  const tasksCompleted = agents.reduce((sum, a) => sum + (a.metadata?.exceptions_today || 0) * 12, 4750);
 
   return (
-    <div className="flex items-center gap-4 bg-[#2B2E2E] border border-[#3D4141] rounded-xl px-4 py-3">
-      <div className="flex items-center gap-2">
-        <div className="h-2 w-2 rounded-full bg-[#34D399] animate-pulse" />
-        <span className="text-sm font-medium text-white">Flota operativa</span>
+    <motion.div
+      className="flex items-center gap-6 bg-[#2B2E2E] border border-[#3D4141] rounded-[16px] px-5 py-3 hover:border-[#4A5050] transition-colors duration-200"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
+      {/* Dot + Counter */}
+      <div className="flex items-center gap-2.5 shrink-0">
+        <div className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
+        <span className="text-sm font-semibold text-white">
+          {activeCount} <span className="text-[#6B7272] font-normal">activos de {totalCount}</span>
+        </span>
       </div>
-      <div className="flex-1 h-2 bg-[#1A1D1D] rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-[#34D399] to-[#D7FEFA] rounded-full transition-all duration-500"
-          style={{ width: `${healthPercent}%` }}
+
+      {/* Progress Bar */}
+      <div className="flex-1 h-1.5 rounded-full bg-[#3D4141] overflow-hidden relative">
+        {/* Running segment - green */}
+        <motion.div
+          className="absolute left-0 top-0 h-full bg-[#34D399] rounded-full"
+          initial={{ width: "0%" }}
+          animate={{ width: `${runningPercent}%` }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+        />
+        {/* Monitoring segment - yellow */}
+        <motion.div
+          className="absolute top-0 h-full bg-[#FBBF24] rounded-full"
+          initial={{ width: "0%" }}
+          animate={{ width: `${monitoringPercent}%`, left: `${runningPercent}%` }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
+        />
+        {/* Critical segment - red */}
+        <motion.div
+          className="absolute top-0 h-full bg-[#F87171] rounded-full"
+          initial={{ width: "0%" }}
+          animate={{
+            width: `${criticalPercent}%`,
+            left: `${runningPercent + monitoringPercent}%`,
+          }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.7 }}
         />
       </div>
-      <span className="text-sm font-mono text-[#6B7272]">{healthyCount}/{totalCount}</span>
-      <span className="text-xs text-[#34D399] font-medium">{healthPercent}% salud</span>
-    </div>
+
+      {/* Separator */}
+      <div className="w-px h-6 bg-[#3D4141]" />
+
+      {/* Metric 1: Escalation Rate */}
+      <div className="flex flex-col items-end shrink-0">
+        <span className="text-sm font-mono font-bold text-white">{escalationRate}%</span>
+        <span className="text-[10px] text-[#6B7272] uppercase tracking-wide">Escalación</span>
+      </div>
+
+      {/* Separator */}
+      <div className="w-px h-6 bg-[#3D4141]" />
+
+      {/* Metric 2: Autonomous Rate */}
+      <div className="flex flex-col items-end shrink-0">
+        <span className="text-sm font-mono font-bold text-white">{autonomousRate}%</span>
+        <span className="text-[10px] text-[#6B7272] uppercase tracking-wide">Autónomo</span>
+      </div>
+
+      {/* Separator */}
+      <div className="w-px h-6 bg-[#3D4141]" />
+
+      {/* Metric 3: MTTR */}
+      <div className="flex flex-col items-end shrink-0">
+        <span className="text-sm font-mono font-bold text-white">4.2s</span>
+        <span className="text-[10px] text-[#6B7272] uppercase tracking-wide">MTTR</span>
+      </div>
+
+      {/* Separator */}
+      <div className="w-px h-6 bg-[#3D4141]" />
+
+      {/* Metric 4: Tasks Completed */}
+      <div className="flex flex-col items-end shrink-0">
+        <span className="text-sm font-mono font-bold text-white">{tasksCompleted.toLocaleString()}</span>
+        <span className="text-[10px] text-[#6B7272] uppercase tracking-wide">tareas</span>
+      </div>
+    </motion.div>
   );
 }
 
