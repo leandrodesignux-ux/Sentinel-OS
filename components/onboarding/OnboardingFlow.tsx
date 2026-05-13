@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Building2, Check, Home, Shield, Users, Wrench, ChevronRight, Lock } from "lucide-react";
+import { Building2, Check, Home, Users, Wrench, ChevronRight, Lock } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAgentStore } from "@/store/agentStore";
 import type { AgentType } from "@/types/agent";
+import { SentinelLogo } from "@/components/brand/SentinelLogo";
 
 // Custom hook for typewriter effect
 function useTypewriter(
@@ -521,12 +522,9 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
 
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center">
-              {/* Logo with layoutId */}
+              {/* Isotipo with hover animation */}
               <motion.div
-                layoutId="sentinel-logo"
-                className="h-20 w-20 rounded-2xl flex items-center justify-center mb-8"
-                style={{ background: "var(--brand)" }}
-                initial={{ scale: 0.3, opacity: 0 }}
+                initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{
                   type: "spring",
@@ -534,48 +532,56 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   damping: 14,
                   delay: 0.2,
                 }}
+                className="mb-8"
               >
-                <Shield className="h-10 w-10" style={{ color: "var(--brand-text)" }} />
+                <SentinelLogo variant="isotipo" size="lg" hoverAnimation />
               </motion.div>
 
-              {/* Title */}
-              <motion.h1
-                className="text-[36px] font-semibold mb-4 text-center"
-                style={{ color: "var(--text-primary)" }}
-                initial={{ y: 30, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.5, ease: "easeOut" }}
+              {/* Wordmark */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut", delay: 0.55 }}
+                className="mb-8"
               >
-                Bienvenido a Sentinel OS
-              </motion.h1>
+                <SentinelLogo variant="wordmark" isotipoWidth={220} />
+              </motion.div>
 
               {/* Subtitle */}
               <motion.p
-                className="text-[16px] mb-10 text-center"
-                style={{ color: "var(--text-secondary)" }}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.5, ease: "easeOut" }}
+                className="mb-10 text-center"
+                style={{
+                  color: "var(--text-secondary)",
+                  fontSize: "15px",
+                  fontWeight: 400,
+                  letterSpacing: "0.01em",
+                }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: "easeOut", delay: 0.8 }}
               >
                 Sistema de supervisión autónoma de agentes
               </motion.p>
 
               {/* CTA Button */}
               <motion.button
-                className="flex items-center gap-2 rounded-xl px-8 py-4 text-[16px] font-semibold"
+                className="flex items-center gap-2 font-semibold"
                 style={{
                   background: "var(--brand)",
                   color: "var(--brand-text)",
+                  padding: "14px 36px",
+                  borderRadius: "12px",
+                  fontSize: "15px",
                 }}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.9, duration: 0.5, ease: "easeOut" }}
-                whileHover={{ scale: 1.02, backgroundColor: "var(--brand-hover)" }}
-                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut", delay: 1.0 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setStep(1)}
               >
                 Comenzar
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4" style={{ width: "16px", height: "16px" }} />
               </motion.button>
             </div>
           </motion.div>
@@ -620,15 +626,11 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   background: "radial-gradient(ellipse at top left, rgba(215, 254, 250, 0.08) 0%, transparent 50%)",
                 }} />
               <div className="relative h-full flex flex-col p-10">
-                {/* Header with layoutId */}
+                {/* Header */}
                 <div className="flex items-center gap-3 mb-12">
-                  <motion.div
-                    layoutId="sentinel-logo"
-                    className="h-10 w-10 rounded-xl flex items-center justify-center"
-                    style={{ background: "var(--brand)" }}
-                  >
-                    <Shield className="h-5 w-5" style={{ color: "var(--brand-text)" }} />
-                  </motion.div>
+                  <div className="h-10 w-10 flex items-center justify-center">
+                    <SentinelLogo variant="isotipo" size="sm" />
+                  </div>
                   <div>
                     <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Sentinel OS</p>
                     <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>Portfolio · Leandro Balbián</p>
