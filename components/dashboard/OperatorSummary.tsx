@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, Building2, ChevronDown, Clock, Home, Pause, TrendingUp, Users, Wrench, Zap } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bell, Bot, Building2, ChevronDown, Clock, Home, Pause, Timer, TrendingUp, Users, Wrench, Zap } from "lucide-react";
+import { Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { economicImpactK } from "@/lib/utils/riskUtils";
 import type { Agent } from "@/types/agent";
@@ -285,10 +285,44 @@ function HeroActivityCard() {
   );
 }
 
+// Animation variants for staggered entrance
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.8 } }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.0, 0.0, 0.2, 1] as const } }
+};
+
+// Sparkline data for each KPI
+const sparklineData = {
+  escalation: [14, 12, 11, 9, 8.3],
+  autonomous: [88, 89, 90, 91, 91.7],
+  time: [5.1, 4.8, 4.5, 4.3, 4.2],
+  agents: [48, 47, 49, 47, 47],
+};
+
 // Subcomponent: KPI Card (for KpiCardsRow)
-function KpiCard({ label, value, subtitle, badge, link, accentColor, Icon, onLinkClick }: {
-  label: string; value: string; subtitle: string; badge?: string;
-  link?: string; accentColor: string; Icon: typeof Zap; onLinkClick?: () => void;
+function KpiCard({
+  label,
+  value,
+  subtitle,
+  badge,
+  accentColor,
+  Icon,
+  sparklineData: sparkline,
+  sparklineColor,
+}: {
+  label: string;
+  value: string;
+  subtitle: string;
+  badge?: string;
+  accentColor: string;
+  Icon: typeof Zap;
+  sparklineData: number[];
+  sparklineColor: string;
 }) {
   const numericStr = value.replace(/[^0-9.]/g, '');
   const numeric = parseFloat(numericStr) || 0;
@@ -307,53 +341,96 @@ function KpiCard({ label, value, subtitle, badge, link, accentColor, Icon, onLin
     motionVal.set(numeric);
   }, [numeric, motionVal]);
 
-  const isSlash = value.includes('/');
-  const fontSize = isSlash ? '28px' : '32px';
-
-  const badgeColor = badge?.includes('debajo') || badge?.includes('Por encima')
-    ? 'text-[#34D399]'
-    : badge?.includes('Excelente')
-    ? 'text-[#D7FEFA]'
-    : 'text-[#F87171]';
+  // Convert sparkline data to chart format
+  const chartData = sparkline.map((val, idx) => ({ idx, val }));
 
   return (
-    <div className="flex flex-col bg-[#2B2E2E] border border-[#3D4141] rounded-[16px] p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="h-4 w-4" style={{ color: accentColor }} />
+    <motion.div
+      className="flex flex-col bg-[#2B2E2E] border border-[#3D4141] rounded-[16px] p-5 flex-1 h-[160px] cursor-pointer"
+      variants={cardVariants}
+      whileHover={{
+        y: -2,
+        boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+      }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      style={{
+        borderColor: "#3D4141",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = accentColor + "40";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "#3D4141";
+      }}
+    >
+      {/* Header with icon */}
+      <div className="flex items-center gap-2 mb-3">
+        <div
+          className="w-7 h-7 rounded-lg flex items-center justify-center"
+          style={{ backgroundColor: accentColor + "14" }} // 8% opacity
+        >
+          <Icon className="h-4 w-4" style={{ color: accentColor }} />
+        </div>
         <p className="text-[10px] font-medium uppercase tracking-wider text-[#6B7272]">{label}</p>
       </div>
+
+      {/* Animated number */}
       <motion.p
-        className="font-mono font-bold leading-none text-white mb-1"
-        style={{ fontSize }}
+        className="font-mono font-bold leading-none text-white mb-2"
+        style={{ fontSize: "32px" }}
       >
         {display}
       </motion.p>
-      <p className="text-[11px] text-[#A8AFAF] leading-relaxed mb-2 flex-1">{subtitle}</p>
+
+      {/* Sparkline micro-chart */}
+      <div className="mb-3">
+        <LineChart width={40} height={20} data={chartData}>
+          <Line
+            type="monotone"
+            dataKey="val"
+            stroke={sparklineColor}
+            strokeWidth={1.5}
+            dot={false}
+            isAnimationActive={true}
+            animationDuration={800}
+          />
+        </LineChart>
+      </div>
+
+      {/* Description */}
+      <p className="text-[11px] text-[#A8AFAF] leading-relaxed mb-3 flex-1">{subtitle}</p>
+
+      {/* Divider */}
+      <div className="h-px bg-[#3D4141] mb-3" />
+
+      {/* Badge */}
       {badge && (
-        <span className={`text-[10px] font-medium ${badgeColor}`}>
+        <span className="text-[10px] font-medium" style={{ color: accentColor }}>
           {badge}
         </span>
       )}
-      {link && (
-        <button onClick={onLinkClick} className="text-[11px] text-[#F6F4D2] font-medium hover:text-[#EDEBBF] hover:underline text-left">
-          {link}
-        </button>
-      )}
-    </div>
+    </motion.div>
   );
 }
 
 // Subcomponent: KPI Cards Row (Nivel 4)
 function KpiCardsRow({ onViewExceptions }: { onViewExceptions: () => void }) {
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <motion.div
+      className="grid grid-cols-4 gap-3"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <KpiCard
         label="Piloto automático"
         value="8.3%"
         subtitle="Tasa de escalación"
         badge="Por debajo del límite"
-        accentColor="#34D399"
+        accentColor="#FBBF24"
         Icon={Zap}
+        sparklineData={sparklineData.escalation}
+        sparklineColor="#34D399"
       />
       <KpiCard
         label="Sin intervención"
@@ -361,7 +438,9 @@ function KpiCardsRow({ onViewExceptions }: { onViewExceptions: () => void }) {
         subtitle="Tareas autónomas"
         badge="Por encima de la meta"
         accentColor="#34D399"
-        Icon={Bell}
+        Icon={Bot}
+        sparklineData={sparklineData.autonomous}
+        sparklineColor="#34D399"
       />
       <KpiCard
         label="Tiempo decisión"
@@ -369,18 +448,21 @@ function KpiCardsRow({ onViewExceptions }: { onViewExceptions: () => void }) {
         subtitle="Promedio de aprobación"
         badge="Excelente"
         accentColor="#D7FEFA"
-        Icon={Clock}
+        Icon={Timer}
+        sparklineData={sparklineData.time}
+        sparklineColor="#D7FEFA"
       />
       <KpiCard
         label="Agentes activos"
         value="47/50"
         subtitle="3 necesitan revisión"
-        link="Revisar →"
+        badge="Revisar →"
         accentColor="#F6F4D2"
-        Icon={TrendingUp}
-        onLinkClick={onViewExceptions}
+        Icon={Users}
+        sparklineData={sparklineData.agents}
+        sparklineColor="#F6F4D2"
       />
-    </div>
+    </motion.div>
   );
 }
 
