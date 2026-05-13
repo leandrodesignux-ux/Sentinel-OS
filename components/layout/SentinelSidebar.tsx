@@ -1,9 +1,10 @@
 "use client";
 
-import { Bell, BookOpen, ClipboardList, Command, LayoutDashboard, Settings, Users } from "lucide-react";
+import { Bell, BookOpen, ClipboardList, LayoutDashboard, Settings, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { SentinelLogo } from "@/components/brand/SentinelLogo";
 
 export type SentinelSection = "resumen" | "flota" | "excepciones" | "auditoria" | "controles" | "docs";
 
@@ -78,15 +79,8 @@ export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCou
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col bg-[#1A1D1D] border-r border-[#3D4141] px-6 py-6">
       <div className="mb-6 flex flex-col gap-1 px-2">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F6F4D2]">
-            <Command className="h-7 w-7 text-[#1A1D1D]" />
-          </div>
-          <span className="text-[15px] font-semibold text-white">
-            Sentinel OS
-          </span>
-        </div>
-        <p className="ml-9.5 text-[10px] text-[#6B7272]">by Leandro Balbián</p>
+        <SentinelLogo variant="isotipo" size="sm" hoverAnimation={true} />
+        <p className="ml-9 text-[10px] text-[#6B7272]">by Leandro Balbián</p>
       </div>
 
       <div className="mx-2 mb-5 rounded-xl border border-[#3D4141] bg-[#2B2E2E] px-3 py-2">

@@ -627,14 +627,11 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                 }} />
               <div className="relative h-full flex flex-col p-10">
                 {/* Header */}
-                <div className="flex items-center gap-3 mb-12">
-                  <div className="h-10 w-10 flex items-center justify-center">
-                    <SentinelLogo variant="isotipo" size="sm" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Sentinel OS</p>
-                    <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>Portfolio · Leandro Balbián</p>
-                  </div>
+                <div className="mb-12">
+                  <SentinelLogo variant="full" size="xs" hoverAnimation={true} />
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                    Portfolio · Leandro Balbián
+                  </p>
                 </div>
 
                 {/* Stepper */}

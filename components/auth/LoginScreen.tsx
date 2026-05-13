@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bot, Shield, Zap, Users } from "lucide-react";
+import { SentinelLogo } from "@/components/brand/SentinelLogo";
 
 export function LoginScreen() {
   const [name, setName] = useState("");
@@ -47,11 +48,8 @@ export function LoginScreen() {
       <div className="relative w-full max-w-[400px] mx-6">
         {/* Header del producto sobre la card */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2.5 mb-4">
-            <div className="h-10 w-10 rounded-2xl bg-[#F6F4D2] flex items-center justify-center shadow-lg shadow-[#F6F4D2]/20">
-              <Shield className="h-5 w-5 text-[#1A1D1D]" />
-            </div>
-            <span className="text-[22px] font-semibold text-white tracking-tight">Sentinel OS</span>
+          <div className="flex flex-col items-center gap-2 mb-4">
+            <SentinelLogo variant="full" size="sm" hoverAnimation={true} />
           </div>
           <p className="text-[14px] text-[#A8AFAF] leading-relaxed">
             Una persona supervisando 50 agentes de IA.<br />
