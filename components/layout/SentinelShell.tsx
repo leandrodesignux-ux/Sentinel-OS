@@ -10,6 +10,7 @@ import { DocsSection } from "@/components/docs/DocsSection";
 import { OperatorSummary } from "@/components/dashboard/OperatorSummary";
 import { ExceptionsWorkbench } from "@/components/exceptions/ExceptionsWorkbench";
 import { FleetMapSection } from "@/components/fleet/FleetMapSection";
+import { AgentsView } from "@/components/dashboard/AgentsView";
 import type { SentinelSection } from "@/components/layout/SentinelSidebar";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -101,7 +102,7 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
               {activeSection === "resumen" && (
                 <OperatorSummary agents={agents} onViewExceptions={() => navigateSection("excepciones")} />
               )}
-              {activeSection === "flota" && <FleetMapSection agents={agents} onOpenAudit={() => navigateSection("auditoria")} />}
+              {activeSection === "flota" && <AgentsView agents={agents} />}
               {activeSection === "excepciones" && <ExceptionsWorkbench agents={agents} onOpenAudit={(agentId) => { selectAgent(agentId); navigateSection("auditoria"); }} />}
               {activeSection === "auditoria" && <DecisionAuditPanel agents={agents} />}
               {activeSection === "controles" && <ControlsSection agents={agents} />}
