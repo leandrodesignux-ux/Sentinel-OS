@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  /* Fondo y superficies — Ultra-Clean White Mode */
-  --bg-void: #FFFFFF;
-  --bg-canvas: #FAFBFC;
-  --bg-surface: #FFFFFF;
-  --bg-elevated: #FFFFFF;
-  --bg-hover: #F8FAFC;
-  --bg-border: #F1F5F9;
-  --bg-border-strong: #E2E8F0;
+  /* Fondos */
+  --bg-void: #111414;
+  --bg-canvas: #1A1D1D;
+  --bg-surface: #2B2E2E;
+  --bg-elevated: #333737;
+  --bg-hover: #383C3C;
+  --bg-border: #3D4141;
+  --bg-border-strong: #4A4F4F;
 
   /* Radios */
   --radius-card: 20px;
@@ -21,42 +21,58 @@
   --text-kpi-sm: 32px;
   --text-section-title: 22px;
 
-  /* Sombras — Ultra-sutil */
-  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.02), 0 1px 2px -1px rgb(0 0 0 / 0.02);
+  /* Color de marca — solo para botones y CTAs */
+  --brand: #F6F4D2;
+  --brand-hover: #EDEBBF;
+  --brand-text: #1A1D1D;
 
-  /* Semánticos — High-Authority */
-  --status-nominal: #10B981;
-  --status-warning: #F59E0B;
-  --status-critical: #EF4444;
-  --status-offline: #94A3B8;
-  --status-accent: #6366F1;
+  /* Acento de interfaz */
+  --accent-teal: #D7FEFA;
+  --accent-teal-muted: rgba(215, 254, 250, 0.15);
 
-  /* Textos — Slate scale */
-  --text-primary: #0F172A;
-  --text-secondary: #64748B;
-  --text-muted: #94A3B8;
-  --text-accent: #6366F1;
+  /* Textos */
+  --text-primary: #FFFFFF;
+  --text-secondary: #A8AFAF;
+  --text-muted: #6B7272;
+  --text-accent: #D7FEFA;
+
+  /* Estados semánticos */
+  --status-nominal: #34D399;
+  --status-warning: #FBBF24;
+  --status-critical: #F87171;
+  --status-offline: #6B7272;
+  --status-accent: #D7FEFA;
 
   /* Confianza */
-  --conf-high: #10B981;
-  --conf-mid: #F59E0B;
-  --conf-low: #EF4444;
+  --conf-high: #34D399;
+  --conf-mid: #FBBF24;
+  --conf-low: #F87171;
 
-  /* Shadcn tokens para white mode */
-  --background: 210 20% 98%;
-  --foreground: 220 26% 6%;
-  --card: 0 0% 100%;
-  --border: 220 13% 90%;
-  --input: 220 13% 90%;
-  --ring: 213 94% 58%;
-  --primary: 213 94% 58%;
-  --secondary: 210 20% 96%;
-  --destructive: 4 86% 58%;
-  --muted: 210 20% 96%;
-  --accent: 213 94% 58%;
-  --ok: 145 60% 38%;
-  --warn: 36 91% 50%;
-  --critical: 4 86% 58%;
+  /* Shadcn tokens — dark mode */
+  --background: 180 5% 10%;
+  --foreground: 0 0% 100%;
+  --card: 180 4% 18%;
+  --border: 180 4% 24%;
+  --input: 180 4% 24%;
+  --ring: 178 95% 84%;
+  --primary: 57 80% 89%;
+  --primary-foreground: 180 5% 10%;
+  --secondary: 180 4% 22%;
+  --secondary-foreground: 0 0% 100%;
+  --destructive: 0 70% 70%;
+  --muted: 180 4% 22%;
+  --muted-foreground: 180 3% 60%;
+  --accent: 178 95% 84%;
+  --accent-foreground: 180 5% 10%;
+  --ok: 158 63% 52%;
+  --warn: 43 96% 56%;
+  --critical: 0 70% 70%;
+  --popover: 180 4% 16%;
+  --popover-foreground: 0 0% 100%;
+
+  /* Sombras */
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-brand: 0 4px 20px rgba(246,244,210,0.2);
 }
 
 * { border-color: hsl(var(--border)); }
@@ -76,27 +92,28 @@ body {
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1;
+  color: var(--text-primary);
 }
 
 .card-surface {
   background: var(--bg-surface);
-  border: none;
+  border: 1px solid var(--bg-border);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.02), 0 1px 2px -1px rgb(0 0 0 / 0.02);
+  box-shadow: var(--shadow-card);
 }
 
 ::selection { background: hsl(var(--primary) / 0.15); }
 
 .bg-card\/50, .bg-card\/70, .bg-card\/75 {
-  background-color: white;
+  background-color: var(--bg-surface);
 }
 
-/* Scrollbar custom — Ultra-clean */
+/* Scrollbar custom — dark mode */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+::-webkit-scrollbar-thumb { background: #3D4141; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #4A4F4F; }
 
-/* Fondo ultra-clean para html/body */
-html, body { background: #FAFBFC; }
+/* Fondo dark mode para html/body */
+html, body { background: var(--bg-canvas); color: var(--text-primary); }
