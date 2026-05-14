@@ -89,23 +89,12 @@ export function AgentsTable({ agents, onRowClick, onPauseResume }: AgentsTablePr
 
   return (
     <div 
-      className="backdrop-blur-sm overflow-hidden"
-      style={{ 
-        backgroundColor: 'rgba(26, 29, 29, 0.4)', 
-        border: '1px solid #3D4141',
-        borderRadius: 'var(--radius-card)'
-      }}
+      className="bg-[#1A1D1D] border border-[#3D4141] rounded-[20px] overflow-hidden"
     >
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr 
-              className="border-b"
-              style={{ 
-                borderColor: '#3D4141', 
-                backgroundColor: 'rgba(43, 46, 46, 0.3)'
-              }}
-            >
+            <tr className="bg-[#2B2E2E] border-b border-[#3D4141]">
               <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>
                 ID
               </th>
@@ -154,8 +143,8 @@ export function AgentsTable({ agents, onRowClick, onPauseResume }: AgentsTablePr
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.02 }}
                   className={cn(
-                    "border-b border-white/5 hover:bg-white/5 transition-colors",
-                    isExpanded && "bg-white/5"
+                    "border-b border-[#3D4141] hover:bg-[#2B2E2E] transition-colors",
+                    isExpanded && "bg-[#2B2E2E]"
                   )}
                 >
                   <td className="px-4 py-3">
@@ -256,35 +245,21 @@ export function AgentsTable({ agents, onRowClick, onPauseResume }: AgentsTablePr
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => onRowClick(agent)}
-                        className="p-2 hover:text-white transition-colors"
-                        style={{ 
-                          borderRadius: 'var(--radius-inner)',
-                          color: '#A8AFAF',
-                          '--hover-bg': 'rgba(168, 175, 175, 0.1)'
-                        } as React.CSSProperties}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(168, 175, 175, 0.1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        className="p-2 text-[#6B7272] hover:text-white hover:bg-[#2B2E2E] transition-colors"
+                        style={{ borderRadius: 'var(--radius-inner)' }}
                         title="Ver detalles"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onPauseResume(agent.id)}
-                        className="p-2 transition-colors"
-                        style={{ 
-                          borderRadius: 'var(--radius-inner)',
-                          color: '#A8AFAF',
-                          '--hover-bg': isPaused ? 'rgba(52, 211, 153, 0.1)' : 'rgba(248, 113, 113, 0.1)',
-                          '--hover-color': isPaused ? '#34D399' : '#F87171'
-                        } as React.CSSProperties}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = isPaused ? 'rgba(52, 211, 153, 0.1)' : 'rgba(248, 113, 113, 0.1)';
-                          e.currentTarget.style.color = isPaused ? '#34D399' : '#F87171';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = '#A8AFAF';
-                        }}
+                        className={cn(
+                          "p-2 transition-colors",
+                          isPaused
+                            ? "text-[#6B7272] hover:text-[#34D399] hover:bg-[rgba(52,211,153,0.1)]"
+                            : "text-[#6B7272] hover:text-[#F87171] hover:bg-[rgba(248,113,113,0.1)]"
+                        )}
+                        style={{ borderRadius: 'var(--radius-inner)' }}
                         title={isPaused ? "Reanudar" : "Pausar"}
                       >
                         {isPaused ? (

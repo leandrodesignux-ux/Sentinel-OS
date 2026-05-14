@@ -130,9 +130,9 @@ export function AgentModal({ agent, isOpen, onClose, onPauseResume }: AgentModal
               "z-50 overflow-hidden backdrop-blur-xl"
             )}
             style={{
-              backgroundColor: 'rgba(17, 20, 20, 0.95)',
+              backgroundColor: '#1A1D1D',
               border: '1px solid #3D4141',
-              borderRadius: 'var(--radius-card)',
+              borderRadius: '20px',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
             }}
           >
@@ -169,15 +169,10 @@ export function AgentModal({ agent, isOpen, onClose, onPauseResume }: AgentModal
 
               <button
                 onClick={onClose}
-                className="p-2 transition-colors"
-                style={{ 
-                  borderRadius: 'var(--radius-inner)',
-                  '--hover-bg': 'rgba(168, 175, 175, 0.1)'
-                } as React.CSSProperties}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(168, 175, 175, 0.1)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                className="p-2 text-[#6B7272] hover:text-white hover:bg-[#2B2E2E] transition-colors"
+                style={{ borderRadius: 'var(--radius-inner)' }}
               >
-                <X className="w-5 h-5" style={{ color: '#A8AFAF' }} />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
