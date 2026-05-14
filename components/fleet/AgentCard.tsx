@@ -102,7 +102,7 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
       transition={{ duration: 0.18, delay: index * 0.04 }}
       whileHover={{ y: -2, transition: { duration: 0.15 } }}
       onClick={() => selectAgent(agent.id)}
-      className="relative w-full text-left rounded-[20px] border bg-white p-5 flex flex-col gap-3 transition-shadow duration-200 hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.12)]"
+      className="relative w-full text-left rounded-[20px] border bg-[#2B2E2E] p-5 flex flex-col gap-3 transition-shadow duration-200 hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.5)]"
       style={{
         borderColor: isSelected ? accentColor : isAlert ? "#F87171" : "#E5E7EB",
         boxShadow: isSelected ? `0 0 0 2px ${accentColor}30` : undefined,
@@ -119,8 +119,8 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
             <Icon className="h-5 w-5" style={{ color: accentColor }} />
           </div>
           <div>
-            <p className="text-[13px] font-semibold text-gray-900 leading-tight">{agent.name}</p>
-            <p className="text-[11px] text-gray-400 mt-0.5">{typeLabels[agent.type]}</p>
+            <p className="text-[13px] font-semibold text-white leading-tight">{agent.name}</p>
+            <p className="text-[11px] text-[#6B7272] mt-0.5">{typeLabels[agent.type]}</p>
           </div>
         </div>
         {/* Status dot */}
@@ -133,7 +133,7 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
       {/* MAIN METRIC — Confidence */}
       <div className="flex items-end justify-between">
         <div>
-          <p className="text-[11px] text-gray-400 uppercase tracking-wide mb-0.5">Confianza</p>
+          <p className="text-[11px] text-[#6B7272] uppercase tracking-wide mb-0.5">Confianza</p>
           <div className="flex items-baseline gap-1">
             <span
               className="text-[28px] font-bold leading-none"
@@ -141,7 +141,7 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
             >
               {confidence}
             </span>
-            <span className="text-[13px] text-gray-400">%</span>
+            <span className="text-[13px] text-[#6B7272]">%</span>
             {trend !== 0 && (
               <span
                 className="flex items-center gap-0.5 text-[11px] ml-1"
@@ -158,7 +158,7 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
       </div>
 
       {/* CONFIDENCE BAR */}
-      <div className="h-1.5 rounded-full overflow-hidden bg-gray-100">
+      <div className="h-1.5 rounded-full overflow-hidden bg-[#3D4141]">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${confidence}%`, background: confidenceColor }}
@@ -166,10 +166,10 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
       </div>
 
       {/* BOTTOM ROW — Economic risk + Status label */}
-      <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+      <div className="flex items-center justify-between pt-1 border-t border-[#3D4141]">
         <div>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wide">Riesgo económico</p>
-          <p className="text-[13px] font-semibold text-gray-800 mt-0.5">${impact}K</p>
+          <p className="text-[10px] text-[#6B7272] uppercase tracking-wide">Riesgo económico</p>
+          <p className="text-[13px] font-semibold text-white mt-0.5">${impact}K</p>
         </div>
         <span
           className="px-2 py-0.5 rounded-full text-[10px] font-medium"
@@ -181,7 +181,7 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
 
       {/* ID badge */}
       <span
-        className="absolute top-3 right-3 font-mono text-[9px] text-gray-300"
+        className="absolute top-3 right-3 font-mono text-[9px] text-[#4A5050]"
         style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
       >
         {agent.id.replace("AGT-", "#")}
