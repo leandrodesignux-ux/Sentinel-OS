@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { memo, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Building2, 
   Home, 
@@ -10,57 +10,50 @@ import {
   MoreVertical, 
   Play, 
   Pause,
-  Activity,
-  Settings,
-  FileText,
+  ExternalLink,
+  Zap,
+  ChevronRight,
   Loader2
 } from "lucide-react";
 import { confidencePercent } from "@/lib/utils/confidenceUtils";
-import { economicImpactK } from "@/lib/utils/riskUtils";
 import { cn } from "@/lib/utils";
 import type { Agent, AgentType, AgentStatus } from "@/types/agent";
 
+// Status configuration - minimal badges
 const STATUS_CONFIG: Record<AgentStatus, { 
   label: string; 
-  color: string; 
-  bg: string;
   dot: string;
+  bg: string;
 }> = {
   idle: { 
-    label: "En espera", 
-    color: "text-emerald-400", 
+    label: "Idle", 
+    dot: "bg-emerald-400",
     bg: "bg-emerald-400/10",
-    dot: "bg-emerald-400"
   },
   running: { 
-    label: "Activo", 
-    color: "text-emerald-400", 
+    label: "Active", 
+    dot: "bg-emerald-400",
     bg: "bg-emerald-400/10",
-    dot: "bg-emerald-400"
   },
   monitoring: { 
-    label: "Observación", 
-    color: "text-amber-400", 
+    label: "Watch", 
+    dot: "bg-amber-400",
     bg: "bg-amber-400/10",
-    dot: "bg-amber-400"
   },
   intervention_required: { 
-    label: "Error", 
-    color: "text-rose-400", 
+    label: "Alert", 
+    dot: "bg-rose-400",
     bg: "bg-rose-400/10",
-    dot: "bg-rose-400"
   },
   circuit_open: { 
-    label: "Error", 
-    color: "text-rose-400", 
+    label: "Alert", 
+    dot: "bg-rose-400",
     bg: "bg-rose-400/10",
-    dot: "bg-rose-400"
   },
   suspended: { 
-    label: "Pausado", 
-    color: "text-slate-400", 
+    label: "Paused", 
+    dot: "bg-slate-400",
     bg: "bg-slate-400/10",
-    dot: "bg-slate-400"
   },
 };
 
@@ -71,11 +64,18 @@ const TYPE_ICONS: Record<AgentType, typeof Building2> = {
   screening: Users,
 };
 
-const TYPE_LABELS: Record<AgentType, string> = {
-  sales: "Ventas",
-  asset_mgmt: "Activos",
-  maintenance: "Mantenimiento",
-  screening: "Evaluación",
+const TYPE_COLORS: Record<AgentType, string> = {
+  sales: "from-amber-500/20 to-orange-500/20",
+  asset_mgmt: "from-blue-500/20 to-cyan-500/20",
+  maintenance: "from-rose-500/20 to-pink-500/20",
+  screening: "from-violet-500/20 to-purple-500/20",
+};
+
+const TYPE_ACCENT: Record<AgentType, string> = {
+  sales: "text-amber-400",
+  asset_mgmt: "text-blue-400",
+  maintenance: "text-rose-400",
+  screening: "text-violet-400",
 };
 
 interface AgentCardProps {
@@ -84,277 +84,282 @@ interface AgentCardProps {
   onPauseResume: () => Promise<void>;
 }
 
-// Circular progress component for confidence
-function ConfidenceRing({ 
-  percentage, 
+// Memoized confidence bar component
+const ConfidenceBar = memo(function ConfidenceBar({ 
+  confidence, 
   color 
 }: { 
-  percentage: number; 
+  confidence: number; 
   color: string;
 }) {
-  const radius = 28;
-  const strokeWidth = 4;
-  const normalizedRadius = radius - strokeWidth / 2;
-  const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
   return (
-    <div className="relative w-16 h-16 flex items-center justify-center">
-      <svg
-        height={radius * 2}
-        width={radius * 2}
-        className="rotate-[-90deg]"
-      >
-        <circle
-          stroke="rgba(255,255,255,0.1)"
-          fill="transparent"
-          strokeWidth={strokeWidth}
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-        />
-        <circle
-          stroke={color}
-          fill="transparent"
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference + ' ' + circumference}
-          style={{ strokeDashoffset }}
-          strokeLinecap="round"
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-        />
-      </svg>
-      <span className="absolute text-sm font-semibold text-white">
-        {percentage}%
-      </span>
+    <div className="w-full h-1.5 bg-slate-800/50 rounded-full overflow-hidden">
+      <motion.div 
+        initial={{ width: 0 }}
+        animate={{ width: `${confidence}%` }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="h-full rounded-full"
+        style={{ backgroundColor: color }}
+      />
     </div>
   );
-}
+});
 
-export function AgentCard({ agent, onClick, onPauseResume }: AgentCardProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+// Memoized action button
+const ActionButton = memo(function ActionButton({
+  icon: Icon,
+  onClick,
+  label,
+  variant = "default"
+}: {
+  icon: typeof Play;
+  onClick: (e: React.MouseEvent) => void;
+  label: string;
+  variant?: "default" | "primary" | "danger";
+}) {
+  const variants = {
+    default: "bg-white/5 hover:bg-white/10 text-slate-300",
+    primary: "bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300",
+    danger: "bg-rose-500/20 hover:bg-rose-500/30 text-rose-300"
+  };
+
+  return (
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      className={cn(
+        "flex items-center justify-center w-8 h-8 rounded-lg",
+        "transition-all duration-200",
+        variants[variant]
+      )}
+      title={label}
+    >
+      <Icon className="w-4 h-4" />
+    </motion.button>
+  );
+});
+
+export const AgentCard = memo(function AgentCard({ 
+  agent, 
+  onClick, 
+  onPauseResume 
+}: AgentCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showActions, setShowActions] = useState(false);
   
   const confidence = confidencePercent(agent);
-  const risk = economicImpactK(agent);
   const isPaused = agent.status === "suspended";
   const status = STATUS_CONFIG[agent.status];
   const TypeIcon = TYPE_ICONS[agent.type];
   
   const confidenceColor = confidence > 90 ? "#34D399" : confidence >= 80 ? "#FBBF24" : "#F87171";
-  
-  // Linear progress bar for confidence
-  const ConfidenceBar = () => (
-    <div className="w-full h-2.5 bg-slate-700/50 rounded-full overflow-hidden">
-      <div 
-        className="h-full rounded-full transition-all duration-500"
-        style={{ 
-          width: `${confidence}%`,
-          background: `linear-gradient(90deg, ${confidenceColor}80, ${confidenceColor})`
-        }}
-      />
-    </div>
-  );
+  const confidenceTextColor = confidence > 90 ? "text-emerald-400" : confidence >= 80 ? "text-amber-400" : "text-rose-400";
 
-  const handlePauseResume = async () => {
+  const handlePauseResume = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsLoading(true);
     try {
       await onPauseResume();
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onPauseResume]);
+
+  const handleDetails = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClick();
+  }, [onClick]);
+
+  const handleRun = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Trigger agent execution
+    console.log(`Running agent ${agent.id}`);
+  }, [agent.id]);
 
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
+      layoutId={`agent-card-${agent.id}`}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02, y: -4 }}
-      transition={{ duration: 0.2 }}
-      className={cn(
-        "relative group rounded-2xl p-6 cursor-pointer",
-        "bg-white/10 backdrop-blur-md border border-white/20",
-        "shadow-lg hover:shadow-xl hover:shadow-indigo-500/20",
-        "transition-all duration-300",
-        isPaused && "opacity-60 grayscale"
-      )}
+      whileHover={{ y: -2 }}
+      transition={{ 
+        duration: 0.25, 
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }}
+      onHoverStart={() => {
+        setIsHovered(true);
+        setShowActions(true);
+      }}
+      onHoverEnd={() => {
+        setIsHovered(false);
+        setShowActions(false);
+      }}
       onClick={onClick}
+      className={cn(
+        "relative group rounded-xl overflow-hidden cursor-pointer",
+        "bg-slate-900/40 backdrop-blur-xl",
+        "border border-white/[0.06]",
+        "shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)]",
+        "hover:shadow-[0_8px_24px_-4px_rgba(99,102,241,0.15)]",
+        "hover:border-white/[0.12]",
+        "transition-shadow duration-300",
+        isPaused && "opacity-75"
+      )}
     >
-      {/* Glass effect overlay */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 via-transparent to-indigo-500/5 pointer-events-none" />
-      
-      {/* Header: Icon + Menu */}
-      <div className="relative flex items-start justify-between mb-5">
-        <div className="flex items-center gap-4">
-          <div 
+      {/* Gradient overlay on hover */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isHovered ? 1 : 0 }}
+        transition={{ duration: 0.2 }}
+        className={cn(
+          "absolute inset-0 bg-gradient-to-br",
+          TYPE_COLORS[agent.type],
+          "opacity-30"
+        )}
+      />
+
+      {/* Top accent line */}
+      <div className={cn(
+        "absolute top-0 left-4 right-4 h-[2px] rounded-full",
+        "bg-gradient-to-r from-transparent via-white/20 to-transparent",
+        "opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      )} />
+
+      <div className="relative p-5">
+        {/* Header: Icon + Name */}
+        <div className="flex items-start gap-3 mb-4">
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
             className={cn(
-              "w-14 h-14 rounded-2xl flex items-center justify-center",
-              "bg-gradient-to-br from-indigo-500/30 to-purple-500/30",
-              "border border-white/20 shadow-inner"
+              "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
+              "bg-white/5 border border-white/[0.06]",
+              TYPE_ACCENT[agent.type]
             )}
           >
-            <TypeIcon className="w-7 h-7 text-indigo-300" />
-          </div>
+            <TypeIcon className="w-5 h-5" />
+          </motion.div>
           
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-white text-base truncate max-w-[160px]">
+            <h3 className="font-medium text-white text-sm truncate">
               {agent.name}
             </h3>
-            <p className="text-sm text-slate-400 font-mono mt-0.5">
-              {agent.id.replace('AGT-', '#')}
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={cn(
+                "w-1.5 h-1.5 rounded-full",
+                status.dot,
+                agent.status === "running" && "animate-pulse"
+              )} />
+              <span className="text-xs text-slate-400">
+                {status.label}
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Kebab Menu */}
-        <div className="relative">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMenuOpen(!isMenuOpen);
-            }}
-            className="p-2.5 rounded-xl hover:bg-white/10 transition-colors"
-          >
-            <MoreVertical className="w-5 h-5 text-slate-400" />
-          </button>
-          
-          {isMenuOpen && (
-            <>
-              <div 
-                className="fixed inset-0 z-40" 
-                onClick={() => setIsMenuOpen(false)} 
-              />
+          {/* Quick Actions - appear on hover */}
+          <AnimatePresence>
+            {showActions && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className={cn(
-                  "absolute right-0 top-full mt-2 w-52 z-50",
-                  "bg-slate-800/95 backdrop-blur-xl border border-white/10",
-                  "rounded-xl shadow-2xl overflow-hidden"
-                )}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 5 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
               >
-                <div className="p-1.5">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onClick();
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/10 hover:text-white rounded-lg flex items-center gap-3 transition-colors"
-                  >
-                    <FileText className="w-4 h-4" />
-                    Ver tarea actual
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/10 hover:text-white rounded-lg flex items-center gap-3 transition-colors"
-                  >
-                    <Settings className="w-4 h-4" />
-                    Ajustar confianza
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/10 hover:text-white rounded-lg flex items-center gap-3 transition-colors"
-                  >
-                    <Activity className="w-4 h-4" />
-                    Verificar estado
-                  </button>
-                </div>
+                <ActionButton
+                  icon={isPaused ? Play : Pause}
+                  onClick={handlePauseResume}
+                  label={isPaused ? "Resume" : "Pause"}
+                  variant={isPaused ? "primary" : "default"}
+                />
+                <ActionButton
+                  icon={Zap}
+                  onClick={handleRun}
+                  label="Run Agent"
+                  variant="primary"
+                />
+                <ActionButton
+                  icon={ExternalLink}
+                  onClick={handleDetails}
+                  label="Open Details"
+                />
+                <ActionButton
+                  icon={MoreVertical}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Show more menu
+                  }}
+                  label="More"
+                />
               </motion.div>
-            </>
-          )}
+            )}
+          </AnimatePresence>
+
+          {/* Chevron indicator on hover */}
+          <motion.div
+            initial={{ opacity: 0, x: -5 }}
+            animate={{ opacity: isHovered ? 0.5 : 0, x: 0 }}
+            className="text-slate-500"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </motion.div>
         </div>
-      </div>
 
-      {/* Status Badge */}
-      <div className="relative flex items-center gap-2 mb-5">
-        <span className={cn(
-          "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium",
-          status.bg,
-          status.color
-        )}>
-          <span className={cn("w-2 h-2 rounded-full animate-pulse", status.dot)} />
-          {status.label}
-        </span>
-      </div>
-
-      {/* Metrics: Confidence Bar + Risk */}
-      <div className="relative mb-5">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-slate-400">Confianza</span>
-          <span className={cn(
-            "text-lg font-semibold font-mono",
-            confidence > 90 ? "text-emerald-400" : confidence >= 80 ? "text-amber-400" : "text-rose-400"
-          )}>
-            {confidence}%
-          </span>
+        {/* Confidence Section */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">
+              Confidence
+            </span>
+            <motion.span 
+              className={cn(
+                "text-sm font-semibold tabular-nums",
+                confidenceTextColor
+              )}
+            >
+              {confidence}%
+            </motion.span>
+          </div>
+          <ConfidenceBar confidence={confidence} color={confidenceColor} />
         </div>
-        <ConfidenceBar />
-        
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
-          <span className="text-sm text-slate-400">Riesgo asociado</span>
-          <span className={cn(
-            "text-lg font-semibold font-mono",
-            risk > 50 ? "text-rose-400" : risk > 25 ? "text-amber-400" : "text-emerald-400"
-          )}>
-            ${risk}K
-          </span>
-        </div>
-      </div>
 
-      {/* Current Task */}
-      <div className="relative mb-5">
-        <p className="text-sm text-slate-500 mb-2">Tarea actual</p>
-        <p className="text-base text-slate-300 line-clamp-2 leading-relaxed">
-          {agent.current_task.description}
-        </p>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="relative flex gap-3">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handlePauseResume();
-          }}
-          disabled={isLoading}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all",
-            isPaused 
-              ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10"
-              : "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 border border-rose-500/30 hover:shadow-lg hover:shadow-rose-500/10"
+        {/* Expanded info on hover */}
+        <AnimatePresence>
+          {isHovered && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <div className="pt-3 mt-3 border-t border-white/[0.06]">
+                <p className="text-xs text-slate-400 line-clamp-2">
+                  {agent.current_task.description}
+                </p>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="text-[10px] text-slate-500">
+                    {agent.id}
+                  </span>
+                  <span className="w-1 h-1 rounded-full bg-slate-600" />
+                  <span className="text-[10px] text-slate-500">
+                    {agent.metadata.region}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
           )}
-        >
-          {isLoading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : isPaused ? (
-            <>
-              <Play className="w-5 h-5" />
-              Reanudar
-            </>
-          ) : (
-            <>
-              <Pause className="w-5 h-5" />
-              Pausar
-            </>
-          )}
-        </button>
+        </AnimatePresence>
       </div>
 
-      {/* Hover Detail Button */}
-      <div className="absolute top-6 right-16 opacity-0 group-hover:opacity-100 transition-opacity">
-        <span className="text-xs text-slate-500 uppercase tracking-wider bg-slate-800/80 px-2 py-1 rounded">
-          {TYPE_LABELS[agent.type]}
-        </span>
-      </div>
+      {/* Bottom glow effect */}
+      <div className={cn(
+        "absolute bottom-0 left-0 right-0 h-px",
+        "bg-gradient-to-r from-transparent via-white/10 to-transparent",
+        "opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+      )} />
     </motion.div>
   );
-}
+});

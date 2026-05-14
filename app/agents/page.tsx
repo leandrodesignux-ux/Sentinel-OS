@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, AlertTriangle, Users, Activity, Shield } from "lucide-react";
+import { Search, AlertTriangle, Users, Activity, Shield, Bot } from "lucide-react";
 import { AgentGrid } from "@/components/agents/AgentGrid";
 import { AgentModal } from "@/components/agents/AgentModal";
 import { AgentsTable } from "@/components/agents/AgentsTable";
@@ -11,11 +11,11 @@ import { cn } from "@/lib/utils";
 import type { Agent, AgentType } from "@/types/agent";
 
 const typeTabs: { id: AgentType | "all"; label: string; icon: typeof Users }[] = [
-  { id: "all", label: "Todos", icon: Users },
-  { id: "sales", label: "Ventas", icon: Activity },
-  { id: "asset_mgmt", label: "Activos", icon: Shield },
-  { id: "maintenance", label: "Mant.", icon: Activity },
-  { id: "screening", label: "Eval.", icon: Shield },
+  { id: "all", label: "All", icon: Users },
+  { id: "sales", label: "Sales", icon: Activity },
+  { id: "asset_mgmt", label: "Assets", icon: Shield },
+  { id: "maintenance", label: "Maint.", icon: Activity },
+  { id: "screening", label: "Screening", icon: Shield },
 ];
 
 export default function AgentsPage() {
@@ -68,20 +68,20 @@ export default function AgentsPage() {
   ).length;
   const pausedCount = agents.filter((a) => a.status === "suspended").length;
 
-  const handleAgentClick = (agent: Agent) => {
+  const handleAgentClick = useCallback((agent: Agent) => {
     setSelectedAgent(agent);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handlePauseResume = async (agentId: string) => {
+  const handlePauseResume = useCallback(async (agentId: string) => {
     const agent = agents.find((a) => a.id === agentId);
     if (!agent) return;
     
     const newStatus = agent.status === "suspended" ? "idle" : "suspended";
     updateAgent(agentId, { status: newStatus });
-  };
+  }, [agents, updateAgent]);
 
-  const handleModalPauseResume = async () => {
+  const handleModalPauseResume = useCallback(async () => {
     if (!selectedAgent) return;
     await handlePauseResume(selectedAgent.id);
     // Update selected agent reference after state change
@@ -89,7 +89,7 @@ export default function AgentsPage() {
     if (updated) {
       setSelectedAgent(updated);
     }
-  };
+  }, [selectedAgent, agents, handlePauseResume]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900">
@@ -181,44 +181,75 @@ export default function AgentsPage() {
           </div>
         </motion.header>
 
-        {/* KPI Cards */}
+        {/* Compact KPI Cards - Linear/Vercel Style */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+          className="flex items-center gap-3 mb-6 overflow-x-auto pb-1"
         >
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-            <p className="text-xs text-slate-400 uppercase tracking-wider">Total Agentes</p>
-            <p className="text-2xl font-bold text-white mt-1">{agents.length}</p>
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-900/40 border border-white/[0.06] backdrop-blur-sm shrink-0">
+            <div className="w-8 h-8 rounded-md bg-indigo-500/20 flex items-center justify-center">
+              <Bot className="w-4 h-4 text-indigo-400" />
+            </div>
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Total</p>
+              <p className="text-lg font-semibold text-white leading-tight">{agents.length}</p>
+            </div>
           </div>
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-            <p className="text-xs text-slate-400 uppercase tracking-wider">Activos</p>
-            <p className="text-2xl font-bold text-emerald-400 mt-1">{activeCount}</p>
+          
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-900/40 border border-white/[0.06] backdrop-blur-sm shrink-0">
+            <div className="w-8 h-8 rounded-md bg-emerald-500/20 flex items-center justify-center">
+              <Activity className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Active</p>
+              <p className="text-lg font-semibold text-emerald-400 leading-tight">{activeCount}</p>
+            </div>
           </div>
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-            <p className="text-xs text-slate-400 uppercase tracking-wider">Alertas</p>
-            <p className={cn("text-2xl font-bold mt-1", alertCount > 0 ? "text-rose-400" : "text-slate-400")}>
-              {alertCount}
-            </p>
+          
+          <div className={cn(
+            "flex items-center gap-3 px-4 py-2.5 rounded-lg border backdrop-blur-sm shrink-0",
+            alertCount > 0 
+              ? "bg-rose-500/10 border-rose-500/20" 
+              : "bg-slate-900/40 border-white/[0.06]"
+          )}>
+            <div className={cn(
+              "w-8 h-8 rounded-md flex items-center justify-center",
+              alertCount > 0 ? "bg-rose-500/20" : "bg-slate-500/20"
+            )}>
+              <AlertTriangle className={cn("w-4 h-4", alertCount > 0 ? "text-rose-400" : "text-slate-400")} />
+            </div>
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Alerts</p>
+              <p className={cn("text-lg font-semibold leading-tight", alertCount > 0 ? "text-rose-400" : "text-slate-400")}>
+                {alertCount}
+              </p>
+            </div>
           </div>
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-            <p className="text-xs text-slate-400 uppercase tracking-wider">Pausados</p>
-            <p className="text-2xl font-bold text-slate-400 mt-1">{pausedCount}</p>
+          
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-900/40 border border-white/[0.06] backdrop-blur-sm shrink-0">
+            <div className="w-8 h-8 rounded-md bg-slate-500/20 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-slate-400" />
+            </div>
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Paused</p>
+              <p className="text-lg font-semibold text-slate-400 leading-tight">{pausedCount}</p>
+            </div>
           </div>
         </motion.div>
 
         {/* Agent Cards Grid */}
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          className="mb-4"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Agentes Principales</h2>
-            <span className="text-sm text-slate-400">
-              {gridAgents.length} de {filteredAgents.length}
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-medium text-slate-300">Active Agents</h2>
+            <span className="text-xs text-slate-500">
+              {gridAgents.length} shown
             </span>
           </div>
           
@@ -231,14 +262,14 @@ export default function AgentsPage() {
 
         {/* Detailed Table - positioned immediately after grid */}
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mt-1"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Todos los Agentes</h2>
-            <span className="text-sm text-slate-400">{tableAgents.length} agentes</span>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-medium text-slate-300">Agent Fleet</h2>
+            <span className="text-xs text-slate-500">{tableAgents.length} total</span>
           </div>
           
           <AgentsTable
