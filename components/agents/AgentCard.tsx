@@ -143,6 +143,19 @@ export function AgentCard({ agent, onClick, onPauseResume }: AgentCardProps) {
   const TypeIcon = TYPE_ICONS[agent.type];
   
   const confidenceColor = confidence > 90 ? "#34D399" : confidence >= 80 ? "#FBBF24" : "#F87171";
+  
+  // Linear progress bar for confidence
+  const ConfidenceBar = () => (
+    <div className="w-full h-2.5 bg-slate-700/50 rounded-full overflow-hidden">
+      <div 
+        className="h-full rounded-full transition-all duration-500"
+        style={{ 
+          width: `${confidence}%`,
+          background: `linear-gradient(90deg, ${confidenceColor}80, ${confidenceColor})`
+        }}
+      />
+    </div>
+  );
 
   const handlePauseResume = async () => {
     setIsLoading(true);
@@ -161,35 +174,35 @@ export function AgentCard({ agent, onClick, onPauseResume }: AgentCardProps) {
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "relative group rounded-2xl p-5 cursor-pointer",
-        "bg-white/5 backdrop-blur-md border border-white/10",
-        "shadow-lg hover:shadow-xl hover:shadow-indigo-500/10",
+        "relative group rounded-2xl p-6 cursor-pointer",
+        "bg-white/10 backdrop-blur-md border border-white/20",
+        "shadow-lg hover:shadow-xl hover:shadow-indigo-500/20",
         "transition-all duration-300",
         isPaused && "opacity-60 grayscale"
       )}
       onClick={onClick}
     >
       {/* Glass effect overlay */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 via-transparent to-indigo-500/5 pointer-events-none" />
       
       {/* Header: Icon + Menu */}
-      <div className="relative flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
+      <div className="relative flex items-start justify-between mb-5">
+        <div className="flex items-center gap-4">
           <div 
             className={cn(
-              "w-12 h-12 rounded-xl flex items-center justify-center",
-              "bg-gradient-to-br from-indigo-500/20 to-purple-500/20",
-              "border border-white/10"
+              "w-14 h-14 rounded-2xl flex items-center justify-center",
+              "bg-gradient-to-br from-indigo-500/30 to-purple-500/30",
+              "border border-white/20 shadow-inner"
             )}
           >
-            <TypeIcon className="w-6 h-6 text-indigo-400" />
+            <TypeIcon className="w-7 h-7 text-indigo-300" />
           </div>
           
-          <div>
-            <h3 className="font-semibold text-white text-sm truncate max-w-[140px]">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-white text-base truncate max-w-[160px]">
               {agent.name}
             </h3>
-            <p className="text-xs text-slate-400 font-mono">
+            <p className="text-sm text-slate-400 font-mono mt-0.5">
               {agent.id.replace('AGT-', '#')}
             </p>
           </div>
@@ -202,9 +215,9 @@ export function AgentCard({ agent, onClick, onPauseResume }: AgentCardProps) {
               e.stopPropagation();
               setIsMenuOpen(!isMenuOpen);
             }}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="p-2.5 rounded-xl hover:bg-white/10 transition-colors"
           >
-            <MoreVertical className="w-4 h-4 text-slate-400" />
+            <MoreVertical className="w-5 h-5 text-slate-400" />
           </button>
           
           {isMenuOpen && (
@@ -214,45 +227,47 @@ export function AgentCard({ agent, onClick, onPauseResume }: AgentCardProps) {
                 onClick={() => setIsMenuOpen(false)} 
               />
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
                 className={cn(
-                  "absolute right-0 top-full mt-1 w-48 z-50",
-                  "bg-slate-800/95 backdrop-blur-md border border-white/10",
-                  "rounded-xl shadow-xl overflow-hidden"
+                  "absolute right-0 top-full mt-2 w-52 z-50",
+                  "bg-slate-800/95 backdrop-blur-xl border border-white/10",
+                  "rounded-xl shadow-2xl overflow-hidden"
                 )}
               >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onClick();
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/10 flex items-center gap-2"
-                >
-                  <FileText className="w-4 h-4" />
-                  Ver tarea actual
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/10 flex items-center gap-2"
-                >
-                  <Settings className="w-4 h-4" />
-                  Ajustar confianza
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/10 flex items-center gap-2"
-                >
-                  <Activity className="w-4 h-4" />
-                  Verificar estado
-                </button>
+                <div className="p-1.5">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClick();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/10 hover:text-white rounded-lg flex items-center gap-3 transition-colors"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Ver tarea actual
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/10 hover:text-white rounded-lg flex items-center gap-3 transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Ajustar confianza
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/10 hover:text-white rounded-lg flex items-center gap-3 transition-colors"
+                  >
+                    <Activity className="w-4 h-4" />
+                    Verificar estado
+                  </button>
+                </div>
               </motion.div>
             </>
           )}
@@ -260,42 +275,51 @@ export function AgentCard({ agent, onClick, onPauseResume }: AgentCardProps) {
       </div>
 
       {/* Status Badge */}
-      <div className="relative flex items-center gap-2 mb-4">
+      <div className="relative flex items-center gap-2 mb-5">
         <span className={cn(
-          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+          "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium",
           status.bg,
           status.color
         )}>
-          <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", status.dot)} />
+          <span className={cn("w-2 h-2 rounded-full animate-pulse", status.dot)} />
           {status.label}
         </span>
       </div>
 
-      {/* Metrics: Confidence Ring + Risk */}
-      <div className="relative flex items-center justify-between mb-4">
-        <ConfidenceRing percentage={confidence} color={confidenceColor} />
+      {/* Metrics: Confidence Bar + Risk */}
+      <div className="relative mb-5">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-slate-400">Confianza</span>
+          <span className={cn(
+            "text-lg font-semibold font-mono",
+            confidence > 90 ? "text-emerald-400" : confidence >= 80 ? "text-amber-400" : "text-rose-400"
+          )}>
+            {confidence}%
+          </span>
+        </div>
+        <ConfidenceBar />
         
-        <div className="text-right">
-          <p className="text-xs text-slate-400 mb-1">Riesgo asociado</p>
-          <p className={cn(
-            "text-lg font-semibold",
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+          <span className="text-sm text-slate-400">Riesgo asociado</span>
+          <span className={cn(
+            "text-lg font-semibold font-mono",
             risk > 50 ? "text-rose-400" : risk > 25 ? "text-amber-400" : "text-emerald-400"
           )}>
             ${risk}K
-          </p>
+          </span>
         </div>
       </div>
 
       {/* Current Task */}
-      <div className="relative mb-4">
-        <p className="text-xs text-slate-500 mb-1">Tarea actual</p>
-        <p className="text-sm text-slate-300 line-clamp-2">
+      <div className="relative mb-5">
+        <p className="text-sm text-slate-500 mb-2">Tarea actual</p>
+        <p className="text-base text-slate-300 line-clamp-2 leading-relaxed">
           {agent.current_task.description}
         </p>
       </div>
 
       {/* Action Buttons */}
-      <div className="relative flex gap-2">
+      <div className="relative flex gap-3">
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -303,31 +327,31 @@ export function AgentCard({ agent, onClick, onPauseResume }: AgentCardProps) {
           }}
           disabled={isLoading}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+            "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all",
             isPaused 
-              ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30"
-              : "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 border border-rose-500/30"
+              ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10"
+              : "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 border border-rose-500/30 hover:shadow-lg hover:shadow-rose-500/10"
           )}
         >
           {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-5 h-5 animate-spin" />
           ) : isPaused ? (
             <>
-              <Play className="w-4 h-4" />
+              <Play className="w-5 h-5" />
               Reanudar
             </>
           ) : (
             <>
-              <Pause className="w-4 h-4" />
+              <Pause className="w-5 h-5" />
               Pausar
             </>
           )}
         </button>
       </div>
 
-      {/* Type Label */}
-      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-        <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+      {/* Hover Detail Button */}
+      <div className="absolute top-6 right-16 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="text-xs text-slate-500 uppercase tracking-wider bg-slate-800/80 px-2 py-1 rounded">
           {TYPE_LABELS[agent.type]}
         </span>
       </div>

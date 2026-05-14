@@ -33,7 +33,7 @@ export function AgentGrid({
   return (
     <div className="w-full">
       {/* Grid - Fixed 4 columns on desktop, responsive on smaller screens */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {visibleAgents.map((agent, index) => (
           <motion.div
             key={agent.id}
@@ -60,7 +60,7 @@ export function AgentGrid({
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 mt-6">
+        <div className="flex items-center justify-center gap-4 mt-4">
           <button
             onClick={() => setPage(p => Math.max(0, p - 1))}
             disabled={!canGoPrevious}
@@ -94,7 +94,7 @@ export function AgentGrid({
       )}
 
       {/* Agent count indicator */}
-      <div className="text-center mt-4">
+      <div className="text-center mt-2">
         <span className="text-xs text-slate-500">
           Mostrando {visibleAgents.length} de {agents.length} agentes
         </span>
