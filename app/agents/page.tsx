@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
-import { Search, AlertTriangle, Users, Activity, Shield, Bot } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, AlertTriangle, Users, Activity, Shield, Bot, ChevronDown, ChevronUp } from "lucide-react";
 import { AgentGrid } from "@/components/agents/AgentGrid";
 import { AgentModal } from "@/components/agents/AgentModal";
 import { AgentsTable } from "@/components/agents/AgentsTable";
@@ -29,6 +29,7 @@ export default function AgentsPage() {
   const [alertOnly, setAlertOnly] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAllAgents, setShowAllAgents] = useState(false);
 
   // Filter logic
   const filteredAgents = useMemo(() => {
@@ -55,8 +56,15 @@ export default function AgentsPage() {
     return filtered;
   }, [agents, alertOnly, typeFilter, searchQuery]);
 
-  // Split agents for grid (top 8) and table (remaining)
-  const gridAgents = filteredAgents.slice(0, 8);
+  // Featured agent (first) + remaining for grid
+  const featuredAgent = filteredAgents[0] || null;
+  const remainingAgents = filteredAgents.slice(1);
+  
+  // Agents to show in grid (limit when collapsed)
+  const gridLimit = showAllAgents ? remainingAgents.length : 3;
+  const visibleAgents = remainingAgents.slice(0, gridLimit);
+  
+  // Table shows all agents (for detailed view)
   const tableAgents = filteredAgents;
 
   // Stats
@@ -239,35 +247,57 @@ export default function AgentsPage() {
           </div>
         </motion.div>
 
-        {/* Agent Cards Grid - Premium Compact */}
+        {/* Cinematic Agent Layout - Featured + Horizontal Grid */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="mb-3"
+          className="mb-4"
         >
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Agents</h2>
-            <span className="text-[10px] text-slate-600 tabular-nums">
-              {gridAgents.length} / {agents.length}
-            </span>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider">Agent Overview</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-600 tabular-nums">
+                {filteredAgents.length} agents
+              </span>
+              {remainingAgents.length > 3 && (
+                <button
+                  onClick={() => setShowAllAgents(!showAllAgents)}
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors"
+                >
+                  {showAllAgents ? (
+                    <>
+                      <ChevronUp className="w-3 h-3" />
+                      Show less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3 h-3" />
+                      View all
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
           
           <AgentGrid
-            agents={gridAgents}
+            featuredAgent={featuredAgent}
+            agents={visibleAgents}
             onAgentClick={handleAgentClick}
             onPauseResume={handlePauseResume}
+            expanded={showAllAgents}
           />
         </motion.section>
 
-        {/* Detailed Table - Seamless continuation */}
+        {/* Detailed Fleet Table */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider">Agent Fleet</h2>
+            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider">Fleet Details</h2>
             <span className="text-[10px] text-slate-600 tabular-nums">{tableAgents.length} total</span>
           </div>
           

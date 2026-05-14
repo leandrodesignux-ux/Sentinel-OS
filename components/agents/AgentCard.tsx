@@ -68,13 +68,17 @@ interface AgentCardProps {
   agent: Agent;
   onClick: () => void;
   onPauseResume: () => Promise<void>;
+  featured?: boolean;
+  index?: number;
 }
 
 // Compact confidence indicator - just the number with color
 const ConfidenceIndicator = memo(function ConfidenceIndicator({ 
-  confidence 
+  confidence,
+  featured = false
 }: { 
   confidence: number;
+  featured?: boolean;
 }) {
   const colorClass = confidence > 90 
     ? "text-emerald-400" 
@@ -90,11 +94,16 @@ const ConfidenceIndicator = memo(function ConfidenceIndicator({
 
   return (
     <div className={cn(
-      "flex items-center gap-1.5 px-2 py-1 rounded-md",
+      "flex items-center rounded-md",
+      featured ? "gap-2 px-2.5 py-1.5" : "gap-1.5 px-2 py-1",
       bgClass
     )}>
-      <Activity className={cn("w-3 h-3", colorClass)} />
-      <span className={cn("text-xs font-semibold tabular-nums", colorClass)}>
+      <Activity className={cn(featured ? "w-4 h-4" : "w-3 h-3", colorClass)} />
+      <span className={cn(
+        "font-semibold tabular-nums",
+        featured ? "text-sm" : "text-xs",
+        colorClass
+      )}>
         {confidence}%
       </span>
     </div>
@@ -138,7 +147,9 @@ const IconButton = memo(function IconButton({
 export const AgentCard = memo(function AgentCard({ 
   agent, 
   onClick, 
-  onPauseResume 
+  onPauseResume,
+  featured = false,
+  index = 0
 }: AgentCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -148,6 +159,9 @@ export const AgentCard = memo(function AgentCard({
   const status = STATUS_CONFIG[agent.status];
   const TypeIcon = TYPE_ICONS[agent.type];
   const typeStyle = TYPE_COLORS[agent.type];
+  
+  // Featured card shows more prominent styling
+  const isFeatured = featured;
 
   const handlePauseResume = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -175,8 +189,8 @@ export const AgentCard = memo(function AgentCard({
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ 
-        y: -1,
-        transition: { duration: 0.15, ease: "easeOut" }
+        y: isFeatured ? -2 : -1,
+        transition: { duration: 0.2, ease: "easeOut" }
       }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
@@ -184,46 +198,55 @@ export const AgentCard = memo(function AgentCard({
       className={cn(
         "relative group cursor-pointer",
         "rounded-xl overflow-hidden",
-        "bg-slate-900/40 backdrop-blur-xl",
-        "border border-white/[0.06]",
-        "hover:border-white/[0.12]",
-        "shadow-[0_2px_8px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.02)]",
-        "hover:shadow-[0_8px_24px_-6px_rgba(99,102,241,0.15),0_4px_12px_-4px_rgba(0,0,0,0.3)]",
+        isFeatured ? "bg-slate-800/60" : "bg-slate-900/40",
+        "backdrop-blur-xl",
+        "border",
+        isFeatured ? "border-white/[0.1]" : "border-white/[0.06]",
+        "hover:border-white/[0.15]",
+        isFeatured 
+          ? "shadow-[0_4px_20px_-8px_rgba(99,102,241,0.25),inset_0_1px_0_rgba(255,255,255,0.03)]"
+          : "shadow-[0_2px_8px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.02)]",
+        "hover:shadow-[0_12px_32px_-8px_rgba(99,102,241,0.2),0_4px_12px_-4px_rgba(0,0,0,0.3)]",
         "hover:bg-slate-800/50",
         "transition-all duration-300 ease-out",
         isPaused && "opacity-50 saturate-50"
       )}
     >
-      {/* Main row - ultra compact horizontal layout */}
-      <div className="flex items-center gap-3 px-3 py-2.5">
+      {/* Main row - horizontal layout, taller for featured */}
+      <div className={cn(
+        "flex items-center gap-3",
+        isFeatured ? "px-4 py-4" : "px-3 py-2.5"
+      )}>
         
-        {/* Status indicator with premium glow */}
+        {/* Status indicator with premium glow - larger for featured */}
         <div className="relative shrink-0">
           <motion.div 
             animate={agent.status === "running" ? {
               boxShadow: [
                 "0 0 0 0 rgba(52, 211, 153, 0)",
-                "0 0 0 4px rgba(52, 211, 153, 0.3)",
+                isFeatured ? "0 0 0 6px rgba(52, 211, 153, 0.3)" : "0 0 0 4px rgba(52, 211, 153, 0.3)",
                 "0 0 0 0 rgba(52, 211, 153, 0)"
               ]
             } : {}}
             transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
             className={cn(
-              "w-2 h-2 rounded-full relative z-10",
+              "rounded-full relative z-10",
+              isFeatured ? "w-2.5 h-2.5" : "w-2 h-2",
               status.dot,
-              agent.status === "running" && "shadow-[0_0_8px_currentColor]"
+              agent.status === "running" && (isFeatured ? "shadow-[0_0_12px_currentColor]" : "shadow-[0_0_8px_currentColor]")
             )}
           />
           {/* Ambient glow ring */}
           {agent.status === "running" && (
             <motion.div
               animate={{ 
-                scale: [1, 1.5], 
+                scale: [1, 1.6], 
                 opacity: [0.4, 0],
               }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
               className={cn(
-                "absolute inset-0 rounded-full -m-1",
+                "absolute inset-0 rounded-full",
+                isFeatured ? "-m-1.5" : "-m-1",
                 status.dot,
                 "blur-sm"
               )}
@@ -231,30 +254,42 @@ export const AgentCard = memo(function AgentCard({
           )}
         </div>
 
-        {/* Type icon - glass badge */}
+        {/* Type icon - glass badge, larger for featured */}
         <div className={cn(
-          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+          "rounded-lg flex items-center justify-center shrink-0",
+          isFeatured ? "w-10 h-10" : "w-8 h-8",
           "bg-gradient-to-br from-white/[0.08] to-white/[0.02]",
           "border border-white/[0.08]",
           "shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
           typeStyle.split(" ")[0]
         )}>
-          <TypeIcon className="w-4 h-4" />
+          <TypeIcon className={isFeatured ? "w-5 h-5" : "w-4 h-4"} />
         </div>
 
-        {/* Name with subtle gradient text */}
+        {/* Name with subtle gradient text - larger for featured */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-white/90 truncate group-hover:text-white transition-colors">
+          <h3 className={cn(
+            "font-medium text-white/90 truncate group-hover:text-white transition-colors",
+            isFeatured ? "text-base" : "text-sm"
+          )}>
             {agent.name}
           </h3>
+          {isFeatured && (
+            <p className="text-xs text-slate-500 mt-0.5 truncate">
+              {agent.current_task.description}
+            </p>
+          )}
         </div>
 
-        {/* Confidence - compact badge */}
-        <ConfidenceIndicator confidence={confidence} />
+        {/* Confidence badge */}
+        <ConfidenceIndicator confidence={confidence} featured={isFeatured} />
 
-        {/* Quick actions - always visible but subtle */}
+        {/* Quick actions */}
         <div 
-          className="flex items-center gap-0.5 shrink-0"
+          className={cn(
+            "flex items-center shrink-0",
+            isFeatured ? "gap-1" : "gap-0.5"
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           <IconButton
@@ -284,9 +319,9 @@ export const AgentCard = memo(function AgentCard({
         </div>
       </div>
 
-      {/* Expandable footer - premium slide down */}
+      {/* Expandable footer - hidden for featured (already shows task), visible on hover for others */}
       <AnimatePresence>
-        {isHovered && (
+        {!isFeatured && isHovered && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -296,12 +331,9 @@ export const AgentCard = memo(function AgentCard({
           >
             <div className="px-3 py-2.5 bg-gradient-to-b from-white/[0.03] to-transparent">
               <div className="flex items-center justify-between gap-4">
-                {/* Task description */}
                 <p className="text-[11px] text-slate-400 truncate flex-1 leading-relaxed">
                   {agent.current_task.description}
                 </p>
-                
-                {/* Meta info - subtle pills */}
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className="text-[10px] text-slate-500 font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">
                     {agent.id.split("-").pop()}
