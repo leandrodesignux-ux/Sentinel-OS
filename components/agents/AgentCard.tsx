@@ -59,9 +59,9 @@ const TYPE_ICONS: Record<AgentType, typeof Building2> = {
 
 const TYPE_COLORS: Record<AgentType, { text: string; bg: string; border: string }> = {
   sales: { text: "#FBBF24", bg: "rgba(251, 191, 36, 0.1)", border: "rgba(251, 191, 36, 0.2)" },
-  asset_mgmt: { text: "#60A5FA", bg: "rgba(96, 165, 250, 0.1)", border: "rgba(96, 165, 250, 0.2)" },
+  asset_mgmt: { text: "#D7FEFA", bg: "rgba(215, 254, 250, 0.1)", border: "rgba(215, 254, 250, 0.2)" },
   maintenance: { text: "#F87171", bg: "rgba(248, 113, 113, 0.1)", border: "rgba(248, 113, 113, 0.2)" },
-  screening: { text: "#A78BFA", bg: "rgba(167, 139, 250, 0.1)", border: "rgba(167, 139, 250, 0.2)" },
+  screening: { text: "#A8AFAF", bg: "rgba(168, 175, 175, 0.1)", border: "rgba(168, 175, 175, 0.2)" },
 };
 
 interface AgentCardProps {
@@ -129,9 +129,9 @@ const IconButton = memo(function IconButton({
       case "primary":
         return { color: '#D7FEFA', hoverBg: 'rgba(215, 254, 250, 0.1)' };
       case "danger":
-        return { color: '#F87171', hoverBg: 'rgba(248, 113, 113, 0.1)' };
+        return { color: '#F87171', hoverBg: 'rgba(248, 113, 113, 0.15)' };
       default:
-        return { color: '#A8AFAF', hoverBg: 'rgba(168, 175, 175, 0.1)' };
+        return { color: '#A8AFAF', hoverBg: '#3D4141', hoverText: '#FFFFFF' };
     }
   };
   
@@ -150,9 +150,11 @@ const IconButton = memo(function IconButton({
       } as React.CSSProperties}
       onMouseEnter={(e) => {
         e.currentTarget.style.backgroundColor = styles.hoverBg;
+        if (styles.hoverText) e.currentTarget.style.color = styles.hoverText;
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.backgroundColor = 'transparent';
+        e.currentTarget.style.color = styles.color;
       }}
       title={label}
     >
@@ -217,12 +219,20 @@ export const AgentCard = memo(function AgentCard({
         isPaused && "opacity-50"
       )}
       style={{
-        borderRadius: 'var(--radius-card)',
-        backgroundColor: isFeatured ? 'rgba(43, 46, 46, 0.6)' : 'rgba(26, 29, 29, 0.4)',
-        border: `1px solid ${isFeatured ? 'rgba(61, 65, 65, 0.5)' : '#3D4141'}`,
-        boxShadow: isFeatured 
-          ? '0 4px 20px -8px rgba(215, 254, 250, 0.15), inset 0 1px 0 rgba(255,255,255,0.03)'
-          : 'var(--shadow-card)'
+        borderRadius: '20px',
+        backgroundColor: '#2B2E2E',
+        border: `1px solid #3D4141`,
+        boxShadow: isHovered
+          ? '0 12px 32px -8px rgba(215, 254, 250, 0.08), 0 4px 12px -4px rgba(0, 0, 0, 0.5)'
+          : isFeatured 
+            ? '0 4px 20px -8px rgba(215, 254, 250, 0.15), inset 0 1px 0 rgba(255,255,255,0.03)'
+            : 'var(--shadow-card)'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'rgba(215, 254, 250, 0.3)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = '#3D4141';
       }}
     >
       {/* Main row - horizontal layout, taller for featured */}
@@ -292,7 +302,7 @@ export const AgentCard = memo(function AgentCard({
         <div className="flex-1 min-w-0">
           <h3 
             className={cn(
-              "font-medium truncate group-hover:text-white transition-colors",
+              "font-semibold truncate group-hover:text-white transition-colors",
               isFeatured ? "text-base" : "text-sm"
             )}
             style={{ color: 'rgba(255,255,255,0.9)' }}
@@ -356,16 +366,16 @@ export const AgentCard = memo(function AgentCard({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
             className="overflow-hidden"
-            style={{ borderTop: '1px solid rgba(61, 65, 65, 0.5)' }}
+            style={{ borderTop: '1px solid #3D4141' }}
           >
             <div 
               className="px-3 py-2.5"
-              style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.03), transparent)' }}
+              style={{ backgroundColor: '#333737' }}
             >
               <div className="flex items-center justify-between gap-4">
                 <p 
                   className="text-[11px] truncate flex-1 leading-relaxed"
-                  style={{ color: '#A8AFAF' }}
+                  style={{ color: '#6B7272' }}
                 >
                   {agent.current_task.description}
                 </p>
@@ -373,8 +383,8 @@ export const AgentCard = memo(function AgentCard({
                   <span 
                     className="text-[10px] font-mono px-1.5 py-0.5"
                     style={{ 
-                      color: '#6B7272', 
-                      backgroundColor: 'rgba(255,255,255,0.04)',
+                      color: '#A8AFAF', 
+                      backgroundColor: '#3D4141',
                       borderRadius: 'var(--radius-inner)',
                       fontFamily: 'var(--font-jetbrains-mono), monospace'
                     }}
@@ -402,8 +412,8 @@ export const AgentCard = memo(function AgentCard({
         transition={{ duration: 0.3 }}
         className="absolute inset-0 pointer-events-none"
         style={{
-          borderRadius: 'var(--radius-card)',
-          background: `radial-gradient(400px circle at 50% 0%, rgba(215, 254, 250, 0.08), transparent 50%)`
+          borderRadius: '20px',
+          background: `radial-gradient(400px circle at 50% 0%, rgba(215, 254, 250, 0.06), transparent 50%)`
         }}
       />
       
@@ -417,7 +427,7 @@ export const AgentCard = memo(function AgentCard({
         transition={{ duration: 0.3 }}
         className="absolute top-0 left-4 right-4 h-px"
         style={{
-          background: 'linear-gradient(to right, transparent, rgba(215, 254, 250, 0.3), transparent)'
+          background: 'linear-gradient(to right, transparent, rgba(215, 254, 250, 0.2), transparent)'
         }}
       />
     </motion.div>
