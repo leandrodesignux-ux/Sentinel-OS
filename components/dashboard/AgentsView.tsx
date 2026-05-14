@@ -56,7 +56,7 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
   const totalCount = agents.length;
 
   return (
-    <div className="h-full flex flex-col gap-3 p-4 bg-transparent">
+    <div className="h-full flex flex-col gap-3 p-4 bg-[#F2F3F3]">
       {/* ROW 1 — Header */}
       <header className="flex items-center justify-between">
         {/* Left: Title + Counter */}
@@ -129,7 +129,7 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
         </div>
 
         {/* Right: Detail Panel */}
-        <div className="flex-[1] min-h-0">
+        <div className="flex-[1] min-h-0 overflow-y-auto" style={{ minWidth: '280px', maxWidth: '320px' }}>
           <AgentDetailPanel agent={selectedAgent} />
         </div>
       </div>
