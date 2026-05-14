@@ -142,5 +142,5 @@ function buildAgent(index: number): Agent {
 }
 
 export function generateAgentFleet(): Agent[] {
-  return Array.from({ length: 50 }, (_, index) => buildAgent(index));
+  return Array.from({ length: 12 }, (_, index) => buildAgent(index));
 }

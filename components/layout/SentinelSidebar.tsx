@@ -94,7 +94,7 @@ export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCou
           </span>
         </div>
         <p className="ml-4 mt-0.5 text-[11px] text-[#6B7272]">
-          de 50 en tu flota
+          de 12 en tu flota
         </p>
       </div>
 

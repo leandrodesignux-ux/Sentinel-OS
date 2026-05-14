@@ -28,7 +28,7 @@ const sectionTitles: Record<SentinelSection, string> = {
 
 const sectionSubtitles: Record<SentinelSection, string> = {
   resumen: "Resumen de actividad de tu flota de IA",
-  flota: "50 agentes trabajando en tiempo real",
+  flota: "12 agentes trabajando en tiempo real",
   excepciones: "Decisiones que necesitan tu criterio",
   auditoria: "Rastro completo de cada acción tomada",
   controles: "Ajusta el comportamiento de tus agentes",
