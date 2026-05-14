@@ -25,7 +25,7 @@ export function AgentGrid({ agents, statusFilter, typeFilter, searchQuery }: Age
 
   if (visible.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+      <div className="flex flex-col items-center justify-center py-16 text-[#6B7272]">
         <Search className="h-8 w-8 mb-3" />
         <span className="text-sm">Sin agentes que coincidan</span>
       </div>

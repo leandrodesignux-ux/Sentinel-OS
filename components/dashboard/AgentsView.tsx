@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import { Search, AlertTriangle } from "lucide-react";
 import { AgentGrid } from "@/components/fleet/AgentGrid";
 import { AgentDetailPanel } from "@/components/fleet/AgentDetailPanel";
-import { AgentsTable } from "@/components/fleet/AgentsTable";
 import { FleetHealthBar } from "@/components/charts/FleetHealthBar";
 import { KPITicker } from "@/components/charts/KPITicker";
 import { useAgentStore } from "@/store/agentStore";
@@ -56,7 +55,7 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
   const totalCount = agents.length;
 
   return (
-    <div className="h-full flex flex-col gap-3 p-4 bg-[#F2F3F3]">
+    <div className="h-full flex flex-col gap-3 p-4 bg-transparent">
       {/* ROW 1 — Header */}
       <header className="flex items-center justify-between">
         {/* Left: Title + Counter */}
@@ -134,10 +133,6 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
         </div>
       </div>
 
-      {/* ROW 4 — Agents Table */}
-      <div className="max-h-[280px] overflow-y-auto">
-        <AgentsTable agents={visibleAgents} />
-      </div>
     </div>
   );
 }
