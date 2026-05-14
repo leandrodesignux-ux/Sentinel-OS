@@ -79,7 +79,7 @@ export function AgentCard({ agent, index = 0 }: { agent: Agent; index?: number }
           whileHover={{ scale: 1.02 }}
           onClick={() => selectAgent(agent.id)}
           className={cn(
-            "group relative h-[110px] w-[140px] rounded-xl bg-[#2B2E2E] border border-[#3D4141] p-2.5 flex flex-col transition-all duration-150 hover:border-[#D7FEFA]/30",
+            "group relative h-[120px] w-full rounded-[12px] bg-[#2B2E2E] border border-[#3D4141] p-2.5 flex flex-col transition-all duration-150 hover:border-[#D7FEFA]/30",
             isIntervention && "border-[#F87171]/50",
             inScenarioCascade && "border-[#F87171]/50",
             hasLegalFlag && "border-[#FBBF24]/50",
