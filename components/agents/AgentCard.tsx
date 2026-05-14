@@ -183,58 +183,68 @@ export const AgentCard = memo(function AgentCard({
       onClick={onClick}
       className={cn(
         "relative group cursor-pointer",
-        "rounded-lg overflow-hidden",
-        "bg-slate-900/60 backdrop-blur-sm",
-        "border border-white/[0.05]",
-        "hover:border-white/[0.1]",
-        "hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.2)]",
-        "transition-all duration-200",
-        isPaused && "opacity-60"
+        "rounded-xl overflow-hidden",
+        "bg-slate-900/40 backdrop-blur-xl",
+        "border border-white/[0.06]",
+        "hover:border-white/[0.12]",
+        "shadow-[0_2px_8px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.02)]",
+        "hover:shadow-[0_8px_24px_-6px_rgba(99,102,241,0.15),0_4px_12px_-4px_rgba(0,0,0,0.3)]",
+        "hover:bg-slate-800/50",
+        "transition-all duration-300 ease-out",
+        isPaused && "opacity-50 saturate-50"
       )}
     >
       {/* Main row - ultra compact horizontal layout */}
       <div className="flex items-center gap-3 px-3 py-2.5">
         
-        {/* Status dot with glow for running agents */}
+        {/* Status indicator with premium glow */}
         <div className="relative shrink-0">
           <motion.div 
             animate={agent.status === "running" ? {
-              scale: [1, 1.2, 1],
-              opacity: [0.5, 1, 0.5]
+              boxShadow: [
+                "0 0 0 0 rgba(52, 211, 153, 0)",
+                "0 0 0 4px rgba(52, 211, 153, 0.3)",
+                "0 0 0 0 rgba(52, 211, 153, 0)"
+              ]
             } : {}}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
             className={cn(
-              "w-2 h-2 rounded-full",
+              "w-2 h-2 rounded-full relative z-10",
               status.dot,
-              agent.status === "running" && cn("shadow-lg", status.glow)
+              agent.status === "running" && "shadow-[0_0_8px_currentColor]"
             )}
           />
-          {/* Pulse ring for running */}
+          {/* Ambient glow ring */}
           {agent.status === "running" && (
-            <motion.span
-              animate={{ scale: [1, 2], opacity: [0.5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
+            <motion.div
+              animate={{ 
+                scale: [1, 1.5], 
+                opacity: [0.4, 0],
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
               className={cn(
-                "absolute inset-0 rounded-full",
+                "absolute inset-0 rounded-full -m-1",
                 status.dot,
-                "opacity-30"
+                "blur-sm"
               )}
             />
           )}
         </div>
 
-        {/* Type icon - small badge */}
+        {/* Type icon - glass badge */}
         <div className={cn(
-          "w-7 h-7 rounded-md flex items-center justify-center shrink-0",
-          "border",
-          typeStyle
+          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+          "bg-gradient-to-br from-white/[0.08] to-white/[0.02]",
+          "border border-white/[0.08]",
+          "shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+          typeStyle.split(" ")[0]
         )}>
-          <TypeIcon className="w-3.5 h-3.5" />
+          <TypeIcon className="w-4 h-4" />
         </div>
 
-        {/* Name - single line, truncated */}
+        {/* Name with subtle gradient text */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-white truncate">
+          <h3 className="text-sm font-medium text-white/90 truncate group-hover:text-white transition-colors">
             {agent.name}
           </h3>
         </div>
@@ -274,30 +284,30 @@ export const AgentCard = memo(function AgentCard({
         </div>
       </div>
 
-      {/* Expandable footer on hover - secondary info */}
+      {/* Expandable footer - premium slide down */}
       <AnimatePresence>
         {isHovered && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="overflow-hidden border-t border-white/[0.03]"
+            transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+            className="overflow-hidden border-t border-white/[0.06]"
           >
-            <div className="px-3 py-2 bg-white/[0.02]">
+            <div className="px-3 py-2.5 bg-gradient-to-b from-white/[0.03] to-transparent">
               <div className="flex items-center justify-between gap-4">
                 {/* Task description */}
-                <p className="text-[11px] text-slate-500 truncate flex-1">
+                <p className="text-[11px] text-slate-400 truncate flex-1 leading-relaxed">
                   {agent.current_task.description}
                 </p>
                 
-                {/* Meta info */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px] text-slate-600 font-mono">
-                    {agent.id}
+                {/* Meta info - subtle pills */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[10px] text-slate-500 font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">
+                    {agent.id.split("-").pop()}
                   </span>
-                  <span className="w-1 h-1 rounded-full bg-slate-700" />
-                  <span className="text-[10px] text-slate-600">
+                  <span className="w-1 h-1 rounded-full bg-slate-600" />
+                  <span className="text-[10px] text-slate-500">
                     {agent.metadata.region}
                   </span>
                 </div>
@@ -307,15 +317,26 @@ export const AgentCard = memo(function AgentCard({
         )}
       </AnimatePresence>
 
-      {/* Subtle gradient glow on hover */}
+      {/* Premium ambient glow */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: isHovered ? 1 : 0 }}
-        transition={{ duration: 0.2 }}
-        className="absolute inset-0 rounded-lg pointer-events-none"
+        transition={{ duration: 0.3 }}
+        className="absolute inset-0 rounded-xl pointer-events-none"
         style={{
-          background: `radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 0%), rgba(99,102,241,0.06), transparent 40%)`
+          background: `radial-gradient(400px circle at 50% 0%, rgba(99,102,241,0.08), transparent 50%)`
         }}
+      />
+      
+      {/* Top accent line */}
+      <motion.div
+        initial={{ opacity: 0, scaleX: 0.8 }}
+        animate={{ 
+          opacity: isHovered ? 1 : 0,
+          scaleX: isHovered ? 1 : 0.8
+        }}
+        transition={{ duration: 0.3 }}
+        className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent"
       />
     </motion.div>
   );

@@ -181,12 +181,12 @@ export default function AgentsPage() {
           </div>
         </motion.header>
 
-        {/* Compact KPI Cards - Linear/Vercel Style */}
+        {/* KPI Stats - Premium Compact */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex items-center gap-3 mb-6 overflow-x-auto pb-1"
+          transition={{ delay: 0.1, duration: 0.3 }}
+          className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide"
         >
           <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-900/40 border border-white/[0.06] backdrop-blur-sm shrink-0">
             <div className="w-8 h-8 rounded-md bg-indigo-500/20 flex items-center justify-center">
@@ -239,17 +239,17 @@ export default function AgentsPage() {
           </div>
         </motion.div>
 
-        {/* Agent Cards Grid */}
+        {/* Agent Cards Grid - Premium Compact */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="mb-4"
+          className="mb-3"
         >
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-medium text-slate-300">Active Agents</h2>
-            <span className="text-xs text-slate-500">
-              {gridAgents.length} shown
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Agents</h2>
+            <span className="text-[10px] text-slate-600 tabular-nums">
+              {gridAgents.length} / {agents.length}
             </span>
           </div>
           
@@ -260,16 +260,15 @@ export default function AgentsPage() {
           />
         </motion.section>
 
-        {/* Detailed Table - positioned immediately after grid */}
+        {/* Detailed Table - Seamless continuation */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mt-1"
         >
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-medium text-slate-300">Agent Fleet</h2>
-            <span className="text-xs text-slate-500">{tableAgents.length} total</span>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider">Agent Fleet</h2>
+            <span className="text-[10px] text-slate-600 tabular-nums">{tableAgents.length} total</span>
           </div>
           
           <AgentsTable

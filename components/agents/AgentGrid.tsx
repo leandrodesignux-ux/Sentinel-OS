@@ -32,17 +32,17 @@ export const AgentGrid = memo(function AgentGrid({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2"
     >
       {visibleAgents.map((agent, index) => (
         <motion.div
           key={agent.id}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 8, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ 
-            duration: 0.25, 
-            delay: index * 0.04,
-            ease: [0.25, 0.46, 0.45, 0.94]
+            duration: 0.3, 
+            delay: index * 0.03,
+            ease: [0.25, 0.1, 0.25, 1]
           }}
         >
           <AgentCard
