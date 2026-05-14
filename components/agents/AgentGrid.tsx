@@ -57,7 +57,7 @@ export const AgentGrid = memo(function AgentGrid({
   return (
     <div className="space-y-3">
       {/* Cinematic Layout: Featured (left) + Grid (right) on large screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-12" style={{ gap: '0.75rem' }}>
         
         {/* Featured Agent - Takes 5/12 on large screens */}
         <AnimatePresence mode="wait">
@@ -85,7 +85,8 @@ export const AgentGrid = memo(function AgentGrid({
         <div className="lg:col-span-7">
           <motion.div 
             layout
-            className="grid grid-cols-1 gap-2"
+            className="grid grid-cols-1"
+            style={{ gap: '0.5rem' }}
           >
             <AnimatePresence mode="popLayout">
               {agents.map((agent, index) => (

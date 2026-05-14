@@ -43,47 +43,47 @@ const STATUS_CONFIG: Record<AgentStatus, {
 }> = {
   idle: { 
     label: "En espera", 
-    color: "text-emerald-400", 
-    bg: "bg-emerald-400/10",
+    color: "#34D399", 
+    bg: "rgba(52, 211, 153, 0.1)",
     icon: Clock
   },
   running: { 
     label: "Activo", 
-    color: "text-emerald-400", 
-    bg: "bg-emerald-400/10",
+    color: "#34D399", 
+    bg: "rgba(52, 211, 153, 0.1)",
     icon: CheckCircle
   },
   monitoring: { 
     label: "Bajo observación", 
-    color: "text-amber-400", 
-    bg: "bg-amber-400/10",
+    color: "#FBBF24", 
+    bg: "rgba(251, 191, 36, 0.1)",
     icon: Activity
   },
   intervention_required: { 
     label: "Requiere atención", 
-    color: "text-rose-400", 
-    bg: "bg-rose-400/10",
+    color: "#F87171", 
+    bg: "rgba(248, 113, 113, 0.1)",
     icon: AlertTriangle
   },
   circuit_open: { 
     label: "Circuito abierto", 
-    color: "text-rose-400", 
-    bg: "bg-rose-400/10",
+    color: "#F87171", 
+    bg: "rgba(248, 113, 113, 0.1)",
     icon: AlertTriangle
   },
   suspended: { 
     label: "Pausado", 
-    color: "text-slate-400", 
-    bg: "bg-slate-400/10",
+    color: "#6B7272", 
+    bg: "rgba(107, 114, 114, 0.1)",
     icon: Pause
   },
 };
 
 const RISK_COLORS = {
-  low: "text-emerald-400",
-  medium: "text-amber-400",
-  high: "text-rose-400",
-  critical: "text-rose-500",
+  low: "#34D399",
+  medium: "#FBBF24",
+  high: "#F87171",
+  critical: "#EF4444",
 };
 
 interface AgentModalProps {
@@ -103,7 +103,7 @@ export function AgentModal({ agent, isOpen, onClose, onPauseResume }: AgentModal
   const StatusIcon = status.icon;
   const isPaused = agent.status === "suspended";
 
-  // Calculate sparkline color based on confidence
+  // Calculate sparkline color based on confidence (using design system colors)
   const sparklineColor = confidence > 90 ? "#34D399" : confidence >= 80 ? "#FBBF24" : "#F87171";
 
   return (
@@ -127,30 +127,40 @@ export function AgentModal({ agent, isOpen, onClose, onPauseResume }: AgentModal
             className={cn(
               "fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2",
               "md:w-full md:max-w-2xl md:max-h-[85vh]",
-              "z-50 overflow-hidden",
-              "bg-slate-900/95 backdrop-blur-xl border border-white/10",
-              "rounded-2xl shadow-2xl"
+              "z-50 overflow-hidden backdrop-blur-xl"
             )}
+            style={{
+              backgroundColor: 'rgba(17, 20, 20, 0.95)',
+              border: '1px solid #3D4141',
+              borderRadius: 'var(--radius-card)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            }}
           >
             {/* Header */}
-            <div className="flex items-start justify-between p-6 border-b border-white/10">
+            <div className="flex items-start justify-between p-6" style={{ borderBottom: '1px solid #3D4141' }}>
               <div className="flex items-center gap-4">
-                <div className={cn(
-                  "w-14 h-14 rounded-xl flex items-center justify-center",
-                  "bg-gradient-to-br from-indigo-500/20 to-purple-500/20",
-                  "border border-white/10"
-                )}>
-                  <TypeIcon className="w-7 h-7 text-indigo-400" />
+                <div 
+                  className="w-14 h-14 flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(to bottom right, rgba(215, 254, 250, 0.1), rgba(168, 175, 175, 0.05))',
+                    border: '1px solid rgba(215, 254, 250, 0.2)',
+                    borderRadius: 'var(--radius-inner)'
+                  }}
+                >
+                  <TypeIcon className="w-7 h-7" style={{ color: '#D7FEFA' }} />
                 </div>
                 
                 <div>
                   <h2 className="text-xl font-semibold text-white">{agent.name}</h2>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm text-slate-400 font-mono">
+                    <span 
+                      className="text-sm font-mono"
+                      style={{ color: '#6B7272', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                    >
                       {agent.id}
                     </span>
-                    <span className="text-slate-600">·</span>
-                    <span className="text-sm text-slate-400">
+                    <span style={{ color: '#3D4141' }}>·</span>
+                    <span className="text-sm" style={{ color: '#A8AFAF' }}>
                       {TYPE_LABELS[agent.type]}
                     </span>
                   </div>
@@ -159,21 +169,30 @@ export function AgentModal({ agent, isOpen, onClose, onPauseResume }: AgentModal
 
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="p-2 transition-colors"
+                style={{ 
+                  borderRadius: 'var(--radius-inner)',
+                  '--hover-bg': 'rgba(168, 175, 175, 0.1)'
+                } as React.CSSProperties}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(168, 175, 175, 0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <X className="w-5 h-5 text-slate-400" />
+                <X className="w-5 h-5" style={{ color: '#A8AFAF' }} />
               </button>
             </div>
 
             {/* Content */}
             <div className="p-6 overflow-y-auto max-h-[calc(85vh-200px)]">
               {/* Status Banner */}
-              <div className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl mb-6",
-                status.bg
-              )}>
-                <StatusIcon className={cn("w-5 h-5", status.color)} />
-                <span className={cn("font-medium", status.color)}>
+              <div 
+                className="flex items-center gap-3 px-4 py-3 mb-6"
+                style={{ 
+                  backgroundColor: status.bg, 
+                  borderRadius: 'var(--radius-inner)' 
+                }}
+              >
+                <StatusIcon className="w-5 h-5" style={{ color: status.color }} />
+                <span className="font-medium" style={{ color: status.color }}>
                   {status.label}
                 </span>
               </div>
@@ -181,77 +200,131 @@ export function AgentModal({ agent, isOpen, onClose, onPauseResume }: AgentModal
               {/* Metrics Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {/* Confidence */}
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Confianza</p>
+                <div 
+                  className="p-4"
+                  style={{ 
+                    backgroundColor: 'rgba(26, 29, 29, 0.4)', 
+                    border: '1px solid #3D4141',
+                    borderRadius: 'var(--radius-inner)'
+                  }}
+                >
+                  <p className="text-xs uppercase tracking-wider mb-2" style={{ color: '#A8AFAF' }}>Confianza</p>
                   <div className="flex items-baseline gap-1">
-                    <span className={cn(
-                      "text-2xl font-bold",
-                      confidence > 90 ? "text-emerald-400" : 
-                      confidence >= 80 ? "text-amber-400" : "text-rose-400"
-                    )}>
+                    <span 
+                      className="text-2xl font-bold"
+                      style={{ 
+                        color: confidence > 90 ? '#34D399' : confidence >= 80 ? '#FBBF24' : '#F87171',
+                        fontFamily: 'var(--font-jetbrains-mono), monospace'
+                      }}
+                    >
                       {confidence}%
                     </span>
                   </div>
-                  <div className="mt-2 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                  <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#2B2E2E' }}>
                     <div 
-                      className="h-full rounded-full transition-all"
+                      className="h-full transition-all"
                       style={{ 
                         width: `${confidence}%`,
-                        background: confidence > 90 ? "#34D399" : confidence >= 80 ? "#FBBF24" : "#F87171"
+                        background: confidence > 90 ? '#34D399' : confidence >= 80 ? '#FBBF24' : '#F87171',
+                        borderRadius: '9999px'
                       }}
                     />
                   </div>
                 </div>
 
                 {/* Risk */}
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Riesgo Económico</p>
+                <div 
+                  className="p-4"
+                  style={{ 
+                    backgroundColor: 'rgba(26, 29, 29, 0.4)', 
+                    border: '1px solid #3D4141',
+                    borderRadius: 'var(--radius-inner)'
+                  }}
+                >
+                  <p className="text-xs uppercase tracking-wider mb-2" style={{ color: '#A8AFAF' }}>Riesgo Económico</p>
                   <div className="flex items-baseline gap-1">
-                    <span className={cn("text-2xl font-bold", RISK_COLORS[agent.risk_level])}>
+                    <span 
+                      className="text-2xl font-bold"
+                      style={{ 
+                        color: RISK_COLORS[agent.risk_level],
+                        fontFamily: 'var(--font-jetbrains-mono), monospace'
+                      }}
+                    >
                       ${risk}K
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">{agent.risk_level} risk</p>
+                  <p className="text-xs mt-2" style={{ color: '#6B7272' }}>{agent.risk_level} risk</p>
                 </div>
 
                 {/* Task Progress */}
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Progreso</p>
+                <div 
+                  className="p-4"
+                  style={{ 
+                    backgroundColor: 'rgba(26, 29, 29, 0.4)', 
+                    border: '1px solid #3D4141',
+                    borderRadius: 'var(--radius-inner)'
+                  }}
+                >
+                  <p className="text-xs uppercase tracking-wider mb-2" style={{ color: '#A8AFAF' }}>Progreso</p>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold text-white">
+                    <span 
+                      className="text-2xl font-bold text-white"
+                      style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                    >
                       {agent.current_task.progress}%
                     </span>
                   </div>
-                  <div className="mt-2 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                  <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#2B2E2E' }}>
                     <div 
-                      className="h-full rounded-full bg-indigo-400 transition-all"
-                      style={{ width: `${agent.current_task.progress}%` }}
+                      className="h-full transition-all"
+                      style={{ 
+                        width: `${agent.current_task.progress}%`,
+                        backgroundColor: '#D7FEFA',
+                        borderRadius: '9999px'
+                      }}
                     />
                   </div>
                 </div>
 
                 {/* Exceptions */}
-                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Excepciones Hoy</p>
+                <div 
+                  className="p-4"
+                  style={{ 
+                    backgroundColor: 'rgba(26, 29, 29, 0.4)', 
+                    border: '1px solid #3D4141',
+                    borderRadius: 'var(--radius-inner)'
+                  }}
+                >
+                  <p className="text-xs uppercase tracking-wider mb-2" style={{ color: '#A8AFAF' }}>Excepciones Hoy</p>
                   <div className="flex items-baseline gap-1">
-                    <span className={cn(
-                      "text-2xl font-bold",
-                      agent.metadata.exceptions_today > 0 ? "text-rose-400" : "text-emerald-400"
-                    )}>
+                    <span 
+                      className="text-2xl font-bold"
+                      style={{ 
+                        color: agent.metadata.exceptions_today > 0 ? '#F87171' : '#34D399',
+                        fontFamily: 'var(--font-jetbrains-mono), monospace'
+                      }}
+                    >
                       {agent.metadata.exceptions_today}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">
+                  <p className="text-xs mt-2" style={{ color: '#6B7272' }}>
                     {agent.metadata.exceptions_today === 0 ? "Sin incidencias" : "Revisar logs"}
                   </p>
                 </div>
               </div>
 
               {/* Current Task */}
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10 mb-6">
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Tarea Actual</p>
+              <div 
+                className="p-4 mb-6"
+                style={{ 
+                  backgroundColor: 'rgba(26, 29, 29, 0.4)', 
+                  border: '1px solid #3D4141',
+                  borderRadius: 'var(--radius-inner)'
+                }}
+              >
+                <p className="text-xs uppercase tracking-wider mb-2" style={{ color: '#A8AFAF' }}>Tarea Actual</p>
                 <p className="text-white">{agent.current_task.description}</p>
-                <div className="flex items-center gap-4 mt-3 text-xs text-slate-400">
+                <div className="flex items-center gap-4 mt-3 text-xs" style={{ color: '#A8AFAF' }}>
                   <span>Iniciada: {new Date(agent.current_task.started_at).toLocaleString()}</span>
                   <span>·</span>
                   <span>Estimada: {new Date(agent.current_task.estimated_completion).toLocaleString()}</span>
@@ -260,10 +333,15 @@ export function AgentModal({ agent, isOpen, onClose, onPauseResume }: AgentModal
 
               {/* Confidence History Sparkline */}
               <div className="mb-6">
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-3">Historial de Confianza</p>
+                <p className="text-xs uppercase tracking-wider mb-3" style={{ color: '#A8AFAF' }}>Historial de Confianza</p>
                 <div 
-                  className="bg-white/5 rounded-xl p-4 border border-white/10 h-32"
-                  style={{ color: sparklineColor }}
+                  className="p-4 h-32"
+                  style={{ 
+                    backgroundColor: 'rgba(26, 29, 29, 0.4)', 
+                    border: '1px solid #3D4141',
+                    borderRadius: 'var(--radius-inner)',
+                    color: sparklineColor
+                  }}
                 >
                   <ConfidenceSparkline agent={agent} />
                 </div>
@@ -272,34 +350,41 @@ export function AgentModal({ agent, isOpen, onClose, onPauseResume }: AgentModal
               {/* Metadata */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-slate-500">Modelo:</span>
-                  <span className="text-slate-300 ml-2">{agent.metadata.model_version}</span>
+                  <span style={{ color: '#6B7272' }}>Modelo:</span>
+                  <span className="ml-2" style={{ color: '#A8AFAF' }}>{agent.metadata.model_version}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500">Región:</span>
-                  <span className="text-slate-300 ml-2">{agent.metadata.region}</span>
+                  <span style={{ color: '#6B7272' }}>Región:</span>
+                  <span className="ml-2" style={{ color: '#A8AFAF' }}>{agent.metadata.region}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500">Tokens usados:</span>
-                  <span className="text-slate-300 ml-2">{agent.metadata.tokens_used.toLocaleString()}</span>
+                  <span style={{ color: '#6B7272' }}>Tokens usados:</span>
+                  <span className="ml-2" style={{ color: '#A8AFAF' }}>{agent.metadata.tokens_used.toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500">Última intervención:</span>
-                  <span className="text-slate-300 ml-2">{new Date(agent.metadata.last_human_touch).toLocaleDateString()}</span>
+                  <span style={{ color: '#6B7272' }}>Última intervención:</span>
+                  <span className="ml-2" style={{ color: '#A8AFAF' }}>{new Date(agent.metadata.last_human_touch).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
 
             {/* Footer Actions */}
-            <div className="flex items-center gap-3 p-6 border-t border-white/10 bg-white/5">
+            <div 
+              className="flex items-center gap-3 p-6"
+              style={{ 
+                borderTop: '1px solid #3D4141', 
+                backgroundColor: 'rgba(26, 29, 29, 0.4)'
+              }}
+            >
               <button
                 onClick={onPauseResume}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all",
-                  isPaused 
-                    ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30"
-                    : "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 border border-rose-500/30"
-                )}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 font-medium transition-all"
+                style={{
+                  borderRadius: 'var(--radius-inner)',
+                  backgroundColor: isPaused ? 'rgba(52, 211, 153, 0.1)' : 'rgba(248, 113, 113, 0.1)',
+                  color: isPaused ? '#34D399' : '#F87171',
+                  border: `1px solid ${isPaused ? 'rgba(52, 211, 153, 0.2)' : 'rgba(248, 113, 113, 0.2)'}`
+                }}
               >
                 {isPaused ? (
                   <>
@@ -316,7 +401,12 @@ export function AgentModal({ agent, isOpen, onClose, onPauseResume }: AgentModal
               
               <button
                 onClick={onClose}
-                className="px-6 py-3 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors font-medium"
+                className="px-6 py-3 font-medium transition-colors hover:bg-white/20"
+                style={{ 
+                  borderRadius: 'var(--radius-inner)',
+                  backgroundColor: 'rgba(168, 175, 175, 0.1)',
+                  color: 'white'
+                }}
               >
                 Cerrar
               </button>

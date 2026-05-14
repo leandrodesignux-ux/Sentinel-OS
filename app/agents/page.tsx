@@ -100,7 +100,7 @@ export default function AgentsPage() {
   }, [selectedAgent, agents, handlePauseResume]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900">
+    <div className="min-h-screen" style={{ background: 'var(--bg-void)' }}>
       {/* Subtle dot pattern background */}
       <div 
         className="fixed inset-0 opacity-[0.02]"
@@ -121,10 +121,10 @@ export default function AgentsPage() {
             {/* Title */}
             <div>
               <h1 className="text-3xl font-bold text-white mb-1">Mis Agentes</h1>
-              <p className="text-slate-400">
+              <p className="text-[#A8AFAF]">
                 {activeCount} activos de {agents.length} agentes
                 {alertCount > 0 && (
-                  <span className="ml-2 text-rose-400">
+                  <span className="ml-2" style={{ color: 'var(--status-critical)' }}>
                     · {alertCount} requieren atención
                   </span>
                 )}
@@ -137,11 +137,12 @@ export default function AgentsPage() {
               <button
                 onClick={() => setAlertOnly(!alertOnly)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all",
                   alertOnly
-                    ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-                    : "bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10"
+                    ? "border bg-[#F87171]/10 text-[#F87171]"
+                    : "border bg-[#1A1D1D] text-[#A8AFAF] hover:bg-[#2B2E2E]"
                 )}
+                style={{ borderRadius: 'var(--radius-inner)', borderColor: alertOnly ? 'rgba(248, 113, 113, 0.2)' : '#3D4141' }}
               >
                 <AlertTriangle className="w-4 h-4" />
                 Solo alertas
@@ -149,18 +150,23 @@ export default function AgentsPage() {
 
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A8AFAF]" />
                 <input
                   type="text"
                   placeholder="Buscar agente..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={cn(
-                    "pl-10 pr-4 py-2 w-48 rounded-xl text-sm",
-                    "bg-white/5 border border-white/10 text-white placeholder-slate-400",
-                    "focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50",
+                    "pl-10 pr-4 py-2 w-48 text-sm",
+                    "text-white placeholder-[#A8AFAF]",
+                    "focus:outline-none focus:ring-1",
                     "transition-all"
                   )}
+                  style={{ 
+                    backgroundColor: '#1A1D1D', 
+                    borderRadius: 'var(--radius-inner)',
+                    border: '1px solid #3D4141'
+                  }}
                 />
               </div>
             </div>
@@ -175,11 +181,15 @@ export default function AgentsPage() {
                   key={tab.id}
                   onClick={() => setTypeFilter(tab.id)}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap",
+                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all whitespace-nowrap",
                     typeFilter === tab.id
-                      ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-                      : "bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10 hover:text-white"
+                      ? "bg-[#D7FEFA]/10 text-[#D7FEFA]"
+                      : "bg-[#1A1D1D] text-[#A8AFAF] hover:bg-[#2B2E2E] hover:text-white"
                   )}
+                  style={{ 
+                    borderRadius: 'var(--radius-inner)',
+                    border: `1px solid ${typeFilter === tab.id ? 'rgba(215, 254, 250, 0.2)' : '#3D4141'}`
+                  }}
                 >
                   <Icon className="w-4 h-4" />
                   {tab.label}
@@ -196,53 +206,79 @@ export default function AgentsPage() {
           transition={{ delay: 0.1, duration: 0.3 }}
           className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide"
         >
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-900/40 border border-white/[0.06] backdrop-blur-sm shrink-0">
-            <div className="w-8 h-8 rounded-md bg-indigo-500/20 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-indigo-400" />
+          <div 
+            className="flex items-center gap-3 px-4 py-2.5 border backdrop-blur-sm shrink-0"
+            style={{ backgroundColor: '#1A1D1D', borderRadius: 'var(--radius-inner)', borderColor: '#3D4141' }}
+          >
+            <div 
+              className="w-8 h-8 flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(215, 254, 250, 0.1)', borderRadius: 'var(--radius-inner)' }}
+            >
+              <Bot className="w-4 h-4" style={{ color: '#D7FEFA' }} />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Total</p>
-              <p className="text-lg font-semibold text-white leading-tight">{agents.length}</p>
+              <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: '#6B7272' }}>Total</p>
+              <p className="text-lg font-semibold leading-tight text-white" style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}>{agents.length}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-900/40 border border-white/[0.06] backdrop-blur-sm shrink-0">
-            <div className="w-8 h-8 rounded-md bg-emerald-500/20 flex items-center justify-center">
-              <Activity className="w-4 h-4 text-emerald-400" />
+          <div 
+            className="flex items-center gap-3 px-4 py-2.5 border backdrop-blur-sm shrink-0"
+            style={{ backgroundColor: '#1A1D1D', borderRadius: 'var(--radius-inner)', borderColor: '#3D4141' }}
+          >
+            <div 
+              className="w-8 h-8 flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(52, 211, 153, 0.1)', borderRadius: 'var(--radius-inner)' }}
+            >
+              <Activity className="w-4 h-4" style={{ color: '#34D399' }} />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Active</p>
-              <p className="text-lg font-semibold text-emerald-400 leading-tight">{activeCount}</p>
+              <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: '#6B7272' }}>Active</p>
+              <p className="text-lg font-semibold leading-tight" style={{ color: '#34D399', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>{activeCount}</p>
             </div>
           </div>
           
-          <div className={cn(
-            "flex items-center gap-3 px-4 py-2.5 rounded-lg border backdrop-blur-sm shrink-0",
-            alertCount > 0 
-              ? "bg-rose-500/10 border-rose-500/20" 
-              : "bg-slate-900/40 border-white/[0.06]"
-          )}>
-            <div className={cn(
-              "w-8 h-8 rounded-md flex items-center justify-center",
-              alertCount > 0 ? "bg-rose-500/20" : "bg-slate-500/20"
-            )}>
-              <AlertTriangle className={cn("w-4 h-4", alertCount > 0 ? "text-rose-400" : "text-slate-400")} />
+          <div 
+            className="flex items-center gap-3 px-4 py-2.5 border backdrop-blur-sm shrink-0"
+            style={{ 
+              backgroundColor: alertCount > 0 ? 'rgba(248, 113, 113, 0.1)' : '#1A1D1D', 
+              borderRadius: 'var(--radius-inner)', 
+              borderColor: alertCount > 0 ? 'rgba(248, 113, 113, 0.2)' : '#3D4141'
+            }}
+          >
+            <div 
+              className="w-8 h-8 flex items-center justify-center"
+              style={{ 
+                backgroundColor: alertCount > 0 ? 'rgba(248, 113, 113, 0.2)' : 'rgba(107, 114, 114, 0.2)', 
+                borderRadius: 'var(--radius-inner)' 
+              }}
+            >
+              <AlertTriangle className="w-4 h-4" style={{ color: alertCount > 0 ? '#F87171' : '#6B7272' }} />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Alerts</p>
-              <p className={cn("text-lg font-semibold leading-tight", alertCount > 0 ? "text-rose-400" : "text-slate-400")}>
+              <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: '#6B7272' }}>Alerts</p>
+              <p 
+                className="text-lg font-semibold leading-tight" 
+                style={{ color: alertCount > 0 ? '#F87171' : '#6B7272', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+              >
                 {alertCount}
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-900/40 border border-white/[0.06] backdrop-blur-sm shrink-0">
-            <div className="w-8 h-8 rounded-md bg-slate-500/20 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-slate-400" />
+          <div 
+            className="flex items-center gap-3 px-4 py-2.5 border backdrop-blur-sm shrink-0"
+            style={{ backgroundColor: '#1A1D1D', borderRadius: 'var(--radius-inner)', borderColor: '#3D4141' }}
+          >
+            <div 
+              className="w-8 h-8 flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(107, 114, 114, 0.2)', borderRadius: 'var(--radius-inner)' }}
+            >
+              <Shield className="w-4 h-4" style={{ color: '#6B7272' }} />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Paused</p>
-              <p className="text-lg font-semibold text-slate-400 leading-tight">{pausedCount}</p>
+              <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: '#6B7272' }}>Paused</p>
+              <p className="text-lg font-semibold leading-tight" style={{ color: '#6B7272', fontFamily: 'var(--font-jetbrains-mono), monospace' }}>{pausedCount}</p>
             </div>
           </div>
         </motion.div>
@@ -255,15 +291,16 @@ export default function AgentsPage() {
           className="mb-4"
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider">Agent Overview</h2>
+            <h2 className="text-xs font-medium uppercase tracking-wider" style={{ color: '#A8AFAF' }}>Agent Overview</h2>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-600 tabular-nums">
+              <span className="text-[10px] tabular-nums" style={{ color: '#6B7272' }}>
                 {filteredAgents.length} agents
               </span>
               {remainingAgents.length > 3 && (
                 <button
                   onClick={() => setShowAllAgents(!showAllAgents)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium transition-colors hover:bg-[#D7FEFA]/10"
+                  style={{ color: '#D7FEFA', borderRadius: 'var(--radius-inner)' }}
                 >
                   {showAllAgents ? (
                     <>
@@ -297,8 +334,8 @@ export default function AgentsPage() {
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider">Fleet Details</h2>
-            <span className="text-[10px] text-slate-600 tabular-nums">{tableAgents.length} total</span>
+            <h2 className="text-xs font-medium uppercase tracking-wider" style={{ color: '#A8AFAF' }}>Fleet Details</h2>
+            <span className="text-[10px] tabular-nums" style={{ color: '#6B7272' }}>{tableAgents.length} total</span>
           </div>
           
           <AgentsTable

@@ -16,11 +16,11 @@ import { economicImpactK } from "@/lib/utils/riskUtils";
 import { cn } from "@/lib/utils";
 import type { Agent, AgentType, AgentStatus } from "@/types/agent";
 
-const TYPE_COLORS: Record<AgentType, string> = {
-  sales: "#FBBF24",
-  asset_mgmt: "#60A5FA",
-  maintenance: "#F87171",
-  screening: "#A78BFA",
+const TYPE_COLORS: Record<AgentType, { bg: string; text: string }> = {
+  sales: { bg: "rgba(251, 191, 36, 0.15)", text: "#FBBF24" },
+  asset_mgmt: { bg: "rgba(96, 165, 250, 0.15)", text: "#60A5FA" },
+  maintenance: { bg: "rgba(248, 113, 113, 0.15)", text: "#F87171" },
+  screening: { bg: "rgba(167, 139, 250, 0.15)", text: "#A78BFA" },
 };
 
 const TYPE_LABELS: Record<AgentType, string> = {
@@ -38,39 +38,39 @@ const STATUS_CONFIG: Record<AgentStatus, {
 }> = {
   idle: { 
     label: "En espera", 
-    color: "text-emerald-400", 
-    bg: "bg-emerald-400/10",
-    dot: "bg-emerald-400"
+    color: "#34D399", 
+    bg: "rgba(52, 211, 153, 0.1)",
+    dot: "#34D399"
   },
   running: { 
     label: "Activo", 
-    color: "text-emerald-400", 
-    bg: "bg-emerald-400/10",
-    dot: "bg-emerald-400"
+    color: "#34D399", 
+    bg: "rgba(52, 211, 153, 0.1)",
+    dot: "#34D399"
   },
   monitoring: { 
     label: "Observación", 
-    color: "text-amber-400", 
-    bg: "bg-amber-400/10",
-    dot: "bg-amber-400"
+    color: "#FBBF24", 
+    bg: "rgba(251, 191, 36, 0.1)",
+    dot: "#FBBF24"
   },
   intervention_required: { 
     label: "Alerta", 
-    color: "text-rose-400", 
-    bg: "bg-rose-400/10",
-    dot: "bg-rose-400"
+    color: "#F87171", 
+    bg: "rgba(248, 113, 113, 0.1)",
+    dot: "#F87171"
   },
   circuit_open: { 
     label: "Alerta", 
-    color: "text-rose-400", 
-    bg: "bg-rose-400/10",
-    dot: "bg-rose-400"
+    color: "#F87171", 
+    bg: "rgba(248, 113, 113, 0.1)",
+    dot: "#F87171"
   },
   suspended: { 
     label: "Pausado", 
-    color: "text-slate-400", 
-    bg: "bg-slate-400/10",
-    dot: "bg-slate-400"
+    color: "#6B7272", 
+    bg: "rgba(107, 114, 114, 0.1)",
+    dot: "#6B7272"
   },
 };
 
@@ -88,33 +88,46 @@ export function AgentsTable({ agents, onRowClick, onPauseResume }: AgentsTablePr
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden">
+    <div 
+      className="backdrop-blur-sm overflow-hidden"
+      style={{ 
+        backgroundColor: 'rgba(26, 29, 29, 0.4)', 
+        border: '1px solid #3D4141',
+        borderRadius: 'var(--radius-card)'
+      }}
+    >
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/10 bg-white/5">
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+            <tr 
+              className="border-b"
+              style={{ 
+                borderColor: '#3D4141', 
+                backgroundColor: 'rgba(43, 46, 46, 0.3)'
+              }}
+            >
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>
                 ID
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>
                 Nombre
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>
                 Tipo
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>
                 Estado
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>
                 Confianza
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>
                 Riesgo
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>
                 Tarea Actual
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>
                 Acciones
               </th>
             </tr>
@@ -146,7 +159,10 @@ export function AgentsTable({ agents, onRowClick, onPauseResume }: AgentsTablePr
                   )}
                 >
                   <td className="px-4 py-3">
-                    <span className="font-mono text-sm text-slate-400">
+                    <span 
+                      className="font-mono text-sm"
+                      style={{ color: '#6B7272', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                    >
                       {agent.id.replace('AGT-', '#')}
                     </span>
                   </td>
@@ -155,68 +171,84 @@ export function AgentsTable({ agents, onRowClick, onPauseResume }: AgentsTablePr
                       <span className="font-medium text-white">{agent.name}</span>
                       <button
                         onClick={() => toggleExpand(agent.id)}
-                        className="p-1 rounded hover:bg-white/10 transition-colors lg:hidden"
+                        className="p-1 hover:bg-white/10 transition-colors lg:hidden"
+                        style={{ borderRadius: 'var(--radius-inner)' }}
                       >
                         {isExpanded ? (
-                          <ChevronUp className="w-4 h-4 text-slate-400" />
+                          <ChevronUp className="w-4 h-4" style={{ color: '#A8AFAF' }} />
                         ) : (
-                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                          <ChevronDown className="w-4 h-4" style={{ color: '#A8AFAF' }} />
                         )}
                       </button>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className="inline-flex px-2 py-1 rounded-lg text-xs font-medium"
+                      className="inline-flex px-2 py-1 text-xs font-medium"
                       style={{
-                        backgroundColor: TYPE_COLORS[agent.type] + "20",
-                        color: TYPE_COLORS[agent.type],
+                        backgroundColor: TYPE_COLORS[agent.type].bg,
+                        color: TYPE_COLORS[agent.type].text,
+                        borderRadius: 'var(--radius-inner)'
                       }}
                     >
                       {TYPE_LABELS[agent.type]}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={cn(
-                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-                      status.bg,
-                      status.color
-                    )}>
-                      <span className={cn("w-1.5 h-1.5 rounded-full", status.dot)} />
+                    <span 
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium"
+                      style={{
+                        backgroundColor: status.bg,
+                        color: status.color,
+                        borderRadius: '9999px'
+                      }}
+                    >
+                      <span 
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: status.dot }}
+                      />
                       {status.label}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <span className={cn(
-                        "font-mono font-medium",
-                        confidence > 90 ? "text-emerald-400" : 
-                        confidence >= 80 ? "text-amber-400" : "text-rose-400"
-                      )}>
+                      <span 
+                        className="font-medium"
+                        style={{ 
+                          color: confidence > 90 ? '#34D399' : confidence >= 80 ? '#FBBF24' : '#F87171',
+                          fontFamily: 'var(--font-jetbrains-mono), monospace'
+                        }}
+                      >
                         {confidence}%
                       </span>
                       <div className="flex items-center text-xs">
                         {trendPositive ? (
-                          <ArrowUpRight className="w-3 h-3 text-emerald-400" />
+                          <ArrowUpRight className="w-3 h-3" style={{ color: '#34D399' }} />
                         ) : (
-                          <ArrowDownRight className="w-3 h-3 text-rose-400" />
+                          <ArrowDownRight className="w-3 h-3" style={{ color: '#F87171' }} />
                         )}
-                        <span className={trendPositive ? "text-emerald-400" : "text-rose-400"}>
+                        <span style={{ color: trendPositive ? '#34D399' : '#F87171' }}>
                           {Math.abs(trend * 100).toFixed(0)}%
                         </span>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={cn(
-                      "font-mono font-medium",
-                      risk > 50 ? "text-rose-400" : risk > 25 ? "text-amber-400" : "text-emerald-400"
-                    )}>
+                    <span 
+                      className="font-medium"
+                      style={{ 
+                        color: risk > 50 ? '#F87171' : risk > 25 ? '#FBBF24' : '#34D399',
+                        fontFamily: 'var(--font-jetbrains-mono), monospace'
+                      }}
+                    >
                       ${risk}K
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm text-slate-300 truncate max-w-[200px]">
+                    <p 
+                      className="text-sm truncate max-w-[200px]"
+                      style={{ color: '#A8AFAF' }}
+                    >
                       {agent.current_task.description}
                     </p>
                   </td>
@@ -224,19 +256,35 @@ export function AgentsTable({ agents, onRowClick, onPauseResume }: AgentsTablePr
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => onRowClick(agent)}
-                        className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                        className="p-2 hover:text-white transition-colors"
+                        style={{ 
+                          borderRadius: 'var(--radius-inner)',
+                          color: '#A8AFAF',
+                          '--hover-bg': 'rgba(168, 175, 175, 0.1)'
+                        } as React.CSSProperties}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(168, 175, 175, 0.1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         title="Ver detalles"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onPauseResume(agent.id)}
-                        className={cn(
-                          "p-2 rounded-lg transition-colors",
-                          isPaused 
-                            ? "hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400"
-                            : "hover:bg-rose-500/20 text-slate-400 hover:text-rose-400"
-                        )}
+                        className="p-2 transition-colors"
+                        style={{ 
+                          borderRadius: 'var(--radius-inner)',
+                          color: '#A8AFAF',
+                          '--hover-bg': isPaused ? 'rgba(52, 211, 153, 0.1)' : 'rgba(248, 113, 113, 0.1)',
+                          '--hover-color': isPaused ? '#34D399' : '#F87171'
+                        } as React.CSSProperties}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isPaused ? 'rgba(52, 211, 153, 0.1)' : 'rgba(248, 113, 113, 0.1)';
+                          e.currentTarget.style.color = isPaused ? '#34D399' : '#F87171';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#A8AFAF';
+                        }}
                         title={isPaused ? "Reanudar" : "Pausar"}
                       >
                         {isPaused ? (
@@ -256,7 +304,7 @@ export function AgentsTable({ agents, onRowClick, onPauseResume }: AgentsTablePr
 
       {/* Empty state */}
       {agents.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+        <div className="flex flex-col items-center justify-center py-12" style={{ color: '#6B7272' }}>
           <p className="text-lg">No hay agentes disponibles</p>
           <p className="text-sm mt-2">Los agentes aparecerán aquí cuando estén activos</p>
         </div>

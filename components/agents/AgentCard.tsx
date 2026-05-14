@@ -19,34 +19,34 @@ import { confidencePercent } from "@/lib/utils/confidenceUtils";
 import { cn } from "@/lib/utils";
 import type { Agent, AgentType, AgentStatus } from "@/types/agent";
 
-// Status configuration - ultra compact
+// Status configuration using design system colors
 const STATUS_CONFIG: Record<AgentStatus, { 
   dot: string;
-  glow: string;
+  color: string;
 }> = {
   idle: { 
-    dot: "bg-emerald-400",
-    glow: "shadow-emerald-400/30",
+    dot: "#34D399",
+    color: "var(--status-nominal)",
   },
   running: { 
-    dot: "bg-emerald-400",
-    glow: "shadow-emerald-400/40",
+    dot: "#34D399",
+    color: "var(--status-nominal)",
   },
   monitoring: { 
-    dot: "bg-amber-400",
-    glow: "shadow-amber-400/30",
+    dot: "#FBBF24",
+    color: "var(--status-warning)",
   },
   intervention_required: { 
-    dot: "bg-rose-500",
-    glow: "shadow-rose-500/40",
+    dot: "#F87171",
+    color: "var(--status-critical)",
   },
   circuit_open: { 
-    dot: "bg-rose-500",
-    glow: "shadow-rose-500/40",
+    dot: "#F87171",
+    color: "var(--status-critical)",
   },
   suspended: { 
-    dot: "bg-slate-500",
-    glow: "shadow-slate-500/20",
+    dot: "#6B7272",
+    color: "var(--status-offline)",
   },
 };
 
@@ -57,11 +57,11 @@ const TYPE_ICONS: Record<AgentType, typeof Building2> = {
   screening: Users,
 };
 
-const TYPE_COLORS: Record<AgentType, string> = {
-  sales: "text-amber-400 bg-amber-400/10 border-amber-400/20",
-  asset_mgmt: "text-blue-400 bg-blue-400/10 border-blue-400/20",
-  maintenance: "text-rose-400 bg-rose-400/10 border-rose-400/20",
-  screening: "text-violet-400 bg-violet-400/10 border-violet-400/20",
+const TYPE_COLORS: Record<AgentType, { text: string; bg: string; border: string }> = {
+  sales: { text: "#FBBF24", bg: "rgba(251, 191, 36, 0.1)", border: "rgba(251, 191, 36, 0.2)" },
+  asset_mgmt: { text: "#60A5FA", bg: "rgba(96, 165, 250, 0.1)", border: "rgba(96, 165, 250, 0.2)" },
+  maintenance: { text: "#F87171", bg: "rgba(248, 113, 113, 0.1)", border: "rgba(248, 113, 113, 0.2)" },
+  screening: { text: "#A78BFA", bg: "rgba(167, 139, 250, 0.1)", border: "rgba(167, 139, 250, 0.2)" },
 };
 
 interface AgentCardProps {
@@ -72,7 +72,7 @@ interface AgentCardProps {
   index?: number;
 }
 
-// Compact confidence indicator - just the number with color
+// Compact confidence indicator using design system colors
 const ConfidenceIndicator = memo(function ConfidenceIndicator({ 
   confidence,
   featured = false
@@ -80,37 +80,39 @@ const ConfidenceIndicator = memo(function ConfidenceIndicator({
   confidence: number;
   featured?: boolean;
 }) {
-  const colorClass = confidence > 90 
-    ? "text-emerald-400" 
+  const color = confidence > 90 
+    ? "#34D399" // --conf-high
     : confidence >= 80 
-      ? "text-amber-400" 
-      : "text-rose-400";
+      ? "#FBBF24" // --conf-mid
+      : "#F87171"; // --conf-low
   
-  const bgClass = confidence > 90 
-    ? "bg-emerald-400/10" 
+  const bgColor = confidence > 90 
+    ? "rgba(52, 211, 153, 0.1)" 
     : confidence >= 80 
-      ? "bg-amber-400/10" 
-      : "bg-rose-400/10";
+      ? "rgba(251, 191, 36, 0.1)" 
+      : "rgba(248, 113, 113, 0.1)";
 
   return (
     <div className={cn(
-      "flex items-center rounded-md",
-      featured ? "gap-2 px-2.5 py-1.5" : "gap-1.5 px-2 py-1",
-      bgClass
-    )}>
-      <Activity className={cn(featured ? "w-4 h-4" : "w-3 h-3", colorClass)} />
+      "flex items-center"
+    )} style={{
+      gap: featured ? '0.5rem' : '0.375rem',
+      padding: featured ? '0.375rem 0.625rem' : '0.25rem 0.5rem',
+      backgroundColor: bgColor,
+      borderRadius: 'var(--radius-inner)'
+    }}>
+      <Activity className={featured ? "w-4 h-4" : "w-3 h-3"} style={{ color }} />
       <span className={cn(
         "font-semibold tabular-nums",
-        featured ? "text-sm" : "text-xs",
-        colorClass
-      )}>
+        featured ? "text-sm" : "text-xs"
+      )} style={{ color, fontFamily: 'var(--font-jetbrains-mono), monospace' }}>
         {confidence}%
       </span>
     </div>
   );
 });
 
-// Icon action button - minimal
+// Icon action button using design system
 const IconButton = memo(function IconButton({
   icon: Icon,
   onClick,
@@ -122,21 +124,36 @@ const IconButton = memo(function IconButton({
   label: string;
   variant?: "ghost" | "primary" | "danger";
 }) {
-  const variants = {
-    ghost: "text-slate-400 hover:text-white hover:bg-white/10",
-    primary: "text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/20",
-    danger: "text-rose-400 hover:text-rose-300 hover:bg-rose-500/20"
+  const getStyles = () => {
+    switch (variant) {
+      case "primary":
+        return { color: '#D7FEFA', hoverBg: 'rgba(215, 254, 250, 0.1)' };
+      case "danger":
+        return { color: '#F87171', hoverBg: 'rgba(248, 113, 113, 0.1)' };
+      default:
+        return { color: '#A8AFAF', hoverBg: 'rgba(168, 175, 175, 0.1)' };
+    }
   };
+  
+  const styles = getStyles();
 
   return (
     <motion.button
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
-      className={cn(
-        "p-1.5 rounded-md transition-all duration-150",
-        variants[variant]
-      )}
+      className="p-1.5 transition-all duration-150 hover:text-white"
+      style={{ 
+        borderRadius: 'var(--radius-inner)',
+        color: styles.color,
+        '--hover-bg': styles.hoverBg
+      } as React.CSSProperties}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = styles.hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = 'transparent';
+      }}
       title={label}
     >
       <Icon className="w-3.5 h-3.5" />
@@ -158,7 +175,7 @@ export const AgentCard = memo(function AgentCard({
   const isPaused = agent.status === "suspended";
   const status = STATUS_CONFIG[agent.status];
   const TypeIcon = TYPE_ICONS[agent.type];
-  const typeStyle = TYPE_COLORS[agent.type];
+  const typeColor = TYPE_COLORS[agent.type];
   
   // Featured card shows more prominent styling
   const isFeatured = featured;
@@ -196,21 +213,17 @@ export const AgentCard = memo(function AgentCard({
       onHoverEnd={() => setIsHovered(false)}
       onClick={onClick}
       className={cn(
-        "relative group cursor-pointer",
-        "rounded-xl overflow-hidden",
-        isFeatured ? "bg-slate-800/60" : "bg-slate-900/40",
-        "backdrop-blur-xl",
-        "border",
-        isFeatured ? "border-white/[0.1]" : "border-white/[0.06]",
-        "hover:border-white/[0.15]",
-        isFeatured 
-          ? "shadow-[0_4px_20px_-8px_rgba(99,102,241,0.25),inset_0_1px_0_rgba(255,255,255,0.03)]"
-          : "shadow-[0_2px_8px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.02)]",
-        "hover:shadow-[0_12px_32px_-8px_rgba(99,102,241,0.2),0_4px_12px_-4px_rgba(0,0,0,0.3)]",
-        "hover:bg-slate-800/50",
-        "transition-all duration-300 ease-out",
-        isPaused && "opacity-50 saturate-50"
+        "relative group cursor-pointer overflow-hidden backdrop-blur-xl transition-all duration-300 ease-out",
+        isPaused && "opacity-50"
       )}
+      style={{
+        borderRadius: 'var(--radius-card)',
+        backgroundColor: isFeatured ? 'rgba(43, 46, 46, 0.6)' : 'rgba(26, 29, 29, 0.4)',
+        border: `1px solid ${isFeatured ? 'rgba(61, 65, 65, 0.5)' : '#3D4141'}`,
+        boxShadow: isFeatured 
+          ? '0 4px 20px -8px rgba(215, 254, 250, 0.15), inset 0 1px 0 rgba(255,255,255,0.03)'
+          : 'var(--shadow-card)'
+      }}
     >
       {/* Main row - horizontal layout, taller for featured */}
       <div className={cn(
@@ -223,18 +236,22 @@ export const AgentCard = memo(function AgentCard({
           <motion.div 
             animate={agent.status === "running" ? {
               boxShadow: [
-                "0 0 0 0 rgba(52, 211, 153, 0)",
-                isFeatured ? "0 0 0 6px rgba(52, 211, 153, 0.3)" : "0 0 0 4px rgba(52, 211, 153, 0.3)",
-                "0 0 0 0 rgba(52, 211, 153, 0)"
+                `0 0 0 0 ${status.color}00`,
+                isFeatured ? `0 0 0 6px ${status.color}4D` : `0 0 0 4px ${status.color}4D`,
+                `0 0 0 0 ${status.color}00`
               ]
             } : {}}
             transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
             className={cn(
               "rounded-full relative z-10",
-              isFeatured ? "w-2.5 h-2.5" : "w-2 h-2",
-              status.dot,
-              agent.status === "running" && (isFeatured ? "shadow-[0_0_12px_currentColor]" : "shadow-[0_0_8px_currentColor]")
+              isFeatured ? "w-2.5 h-2.5" : "w-2 h-2"
             )}
+            style={{
+              backgroundColor: status.dot,
+              boxShadow: agent.status === "running" 
+                ? (isFeatured ? `0 0 12px ${status.dot}` : `0 0 8px ${status.dot}`)
+                : undefined
+            }}
           />
           {/* Ambient glow ring */}
           {agent.status === "running" && (
@@ -245,37 +262,48 @@ export const AgentCard = memo(function AgentCard({
               }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
               className={cn(
-                "absolute inset-0 rounded-full",
-                isFeatured ? "-m-1.5" : "-m-1",
-                status.dot,
-                "blur-sm"
+                "absolute inset-0 rounded-full blur-sm",
+                isFeatured ? "-m-1.5" : "-m-1"
               )}
+              style={{ backgroundColor: status.dot }}
             />
           )}
         </div>
 
         {/* Type icon - glass badge, larger for featured */}
-        <div className={cn(
-          "rounded-lg flex items-center justify-center shrink-0",
-          isFeatured ? "w-10 h-10" : "w-8 h-8",
-          "bg-gradient-to-br from-white/[0.08] to-white/[0.02]",
-          "border border-white/[0.08]",
-          "shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
-          typeStyle.split(" ")[0]
-        )}>
-          <TypeIcon className={isFeatured ? "w-5 h-5" : "w-4 h-4"} />
+        <div 
+          className="flex items-center justify-center shrink-0"
+          style={{
+            width: isFeatured ? '2.5rem' : '2rem',
+            height: isFeatured ? '2.5rem' : '2rem',
+            borderRadius: 'var(--radius-inner)',
+            background: `linear-gradient(to bottom right, ${typeColor.bg}, rgba(255,255,255,0.02))`,
+            border: `1px solid ${typeColor.border}`,
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)'
+          }}
+        >
+          <TypeIcon 
+            className={isFeatured ? "w-5 h-5" : "w-4 h-4"} 
+            style={{ color: typeColor.text }}
+          />
         </div>
 
         {/* Name with subtle gradient text - larger for featured */}
         <div className="flex-1 min-w-0">
-          <h3 className={cn(
-            "font-medium text-white/90 truncate group-hover:text-white transition-colors",
-            isFeatured ? "text-base" : "text-sm"
-          )}>
+          <h3 
+            className={cn(
+              "font-medium truncate group-hover:text-white transition-colors",
+              isFeatured ? "text-base" : "text-sm"
+            )}
+            style={{ color: 'rgba(255,255,255,0.9)' }}
+          >
             {agent.name}
           </h3>
           {isFeatured && (
-            <p className="text-xs text-slate-500 mt-0.5 truncate">
+            <p 
+              className="text-xs mt-0.5 truncate"
+              style={{ color: '#6B7272' }}
+            >
               {agent.current_task.description}
             </p>
           )}
@@ -327,19 +355,37 @@ export const AgentCard = memo(function AgentCard({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-            className="overflow-hidden border-t border-white/[0.06]"
+            className="overflow-hidden"
+            style={{ borderTop: '1px solid rgba(61, 65, 65, 0.5)' }}
           >
-            <div className="px-3 py-2.5 bg-gradient-to-b from-white/[0.03] to-transparent">
+            <div 
+              className="px-3 py-2.5"
+              style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.03), transparent)' }}
+            >
               <div className="flex items-center justify-between gap-4">
-                <p className="text-[11px] text-slate-400 truncate flex-1 leading-relaxed">
+                <p 
+                  className="text-[11px] truncate flex-1 leading-relaxed"
+                  style={{ color: '#A8AFAF' }}
+                >
                   {agent.current_task.description}
                 </p>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-[10px] text-slate-500 font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">
+                  <span 
+                    className="text-[10px] font-mono px-1.5 py-0.5"
+                    style={{ 
+                      color: '#6B7272', 
+                      backgroundColor: 'rgba(255,255,255,0.04)',
+                      borderRadius: 'var(--radius-inner)',
+                      fontFamily: 'var(--font-jetbrains-mono), monospace'
+                    }}
+                  >
                     {agent.id.split("-").pop()}
                   </span>
-                  <span className="w-1 h-1 rounded-full bg-slate-600" />
-                  <span className="text-[10px] text-slate-500">
+                  <span 
+                    className="w-1 h-1 rounded-full"
+                    style={{ backgroundColor: '#3D4141' }}
+                  />
+                  <span className="text-[10px]" style={{ color: '#6B7272' }}>
                     {agent.metadata.region}
                   </span>
                 </div>
@@ -354,9 +400,10 @@ export const AgentCard = memo(function AgentCard({
         initial={{ opacity: 0 }}
         animate={{ opacity: isHovered ? 1 : 0 }}
         transition={{ duration: 0.3 }}
-        className="absolute inset-0 rounded-xl pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background: `radial-gradient(400px circle at 50% 0%, rgba(99,102,241,0.08), transparent 50%)`
+          borderRadius: 'var(--radius-card)',
+          background: `radial-gradient(400px circle at 50% 0%, rgba(215, 254, 250, 0.08), transparent 50%)`
         }}
       />
       
@@ -368,7 +415,10 @@ export const AgentCard = memo(function AgentCard({
           scaleX: isHovered ? 1 : 0.8
         }}
         transition={{ duration: 0.3 }}
-        className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent"
+        className="absolute top-0 left-4 right-4 h-px"
+        style={{
+          background: 'linear-gradient(to right, transparent, rgba(215, 254, 250, 0.3), transparent)'
+        }}
       />
     </motion.div>
   );
