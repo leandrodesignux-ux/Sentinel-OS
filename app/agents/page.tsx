@@ -226,7 +226,6 @@ export default function AgentsPage() {
             agents={gridAgents}
             onAgentClick={handleAgentClick}
             onPauseResume={handlePauseResume}
-            maxDisplay={8}
           />
         </motion.section>
 
