@@ -100,15 +100,7 @@ export default function AgentsPage() {
   }, [selectedAgent, agents, handlePauseResume]);
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg-void)' }}>
-      {/* Subtle dot pattern background */}
-      <div 
-        className="fixed inset-0 opacity-[0.02]"
-        style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-          backgroundSize: '24px 24px'
-        }}
-      />
+    <div className="min-h-screen bg-[#111414]">
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -120,7 +112,7 @@ export default function AgentsPage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             {/* Title */}
             <div>
-              <h1 className="text-3xl font-bold text-white mb-1">Mis Agentes</h1>
+              <h1 className="font-accent text-[22px] font-semibold text-white mb-1">Mis Agentes</h1>
               <p className="text-[#A8AFAF]">
                 {activeCount} activos de {agents.length} agentes
                 {alertCount > 0 && (
@@ -137,12 +129,12 @@ export default function AgentsPage() {
               <button
                 onClick={() => setAlertOnly(!alertOnly)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all",
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all border",
                   alertOnly
-                    ? "border bg-[#F87171]/10 text-[#F87171]"
-                    : "border bg-[#1A1D1D] text-[#A8AFAF] hover:bg-[#2B2E2E]"
+                    ? "bg-[#F87171]/15 text-[#F87171] border-[#F87171]/40"
+                    : "bg-[#2B2E2E] text-[#A8AFAF] border-[#3D4141] hover:text-white"
                 )}
-                style={{ borderRadius: 'var(--radius-inner)', borderColor: alertOnly ? 'rgba(248, 113, 113, 0.2)' : '#3D4141' }}
+                style={{ borderRadius: 'var(--radius-inner)' }}
               >
                 <AlertTriangle className="w-4 h-4" />
                 Solo alertas
@@ -163,10 +155,12 @@ export default function AgentsPage() {
                     "transition-all"
                   )}
                   style={{ 
-                    backgroundColor: '#1A1D1D', 
+                    backgroundColor: '#2B2E2E', 
                     borderRadius: 'var(--radius-inner)',
                     border: '1px solid #3D4141'
                   }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = '#4A5050'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = '#3D4141'}
                 />
               </div>
             </div>
@@ -181,15 +175,12 @@ export default function AgentsPage() {
                   key={tab.id}
                   onClick={() => setTypeFilter(tab.id)}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all whitespace-nowrap",
+                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all whitespace-nowrap border",
                     typeFilter === tab.id
-                      ? "bg-[#D7FEFA]/10 text-[#D7FEFA]"
-                      : "bg-[#1A1D1D] text-[#A8AFAF] hover:bg-[#2B2E2E] hover:text-white"
+                      ? "bg-[#D7FEFA]/10 text-[#D7FEFA] border-[#D7FEFA]/20"
+                      : "bg-[#2B2E2E] text-[#A8AFAF] border-[#3D4141] hover:text-white"
                   )}
-                  style={{ 
-                    borderRadius: 'var(--radius-inner)',
-                    border: `1px solid ${typeFilter === tab.id ? 'rgba(215, 254, 250, 0.2)' : '#3D4141'}`
-                  }}
+                  style={{ borderRadius: 'var(--radius-inner)' }}
                 >
                   <Icon className="w-4 h-4" />
                   {tab.label}
@@ -207,12 +198,12 @@ export default function AgentsPage() {
           className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide"
         >
           <div 
-            className="flex items-center gap-3 px-4 py-2.5 border backdrop-blur-sm shrink-0"
-            style={{ backgroundColor: '#1A1D1D', borderRadius: 'var(--radius-inner)', borderColor: '#3D4141' }}
+            className="flex items-center gap-3 px-4 py-2.5 border shrink-0"
+            style={{ backgroundColor: '#2B2E2E', borderRadius: 'var(--radius-inner)', borderColor: '#3D4141' }}
           >
             <div 
               className="w-8 h-8 flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(215, 254, 250, 0.1)', borderRadius: 'var(--radius-inner)' }}
+              style={{ backgroundColor: 'rgba(215, 254, 250, 0.15)', borderRadius: 'var(--radius-inner)' }}
             >
               <Bot className="w-4 h-4" style={{ color: '#D7FEFA' }} />
             </div>
@@ -223,12 +214,12 @@ export default function AgentsPage() {
           </div>
           
           <div 
-            className="flex items-center gap-3 px-4 py-2.5 border backdrop-blur-sm shrink-0"
-            style={{ backgroundColor: '#1A1D1D', borderRadius: 'var(--radius-inner)', borderColor: '#3D4141' }}
+            className="flex items-center gap-3 px-4 py-2.5 border shrink-0"
+            style={{ backgroundColor: '#2B2E2E', borderRadius: 'var(--radius-inner)', borderColor: '#3D4141' }}
           >
             <div 
               className="w-8 h-8 flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(52, 211, 153, 0.1)', borderRadius: 'var(--radius-inner)' }}
+              style={{ backgroundColor: 'rgba(52, 211, 153, 0.15)', borderRadius: 'var(--radius-inner)' }}
             >
               <Activity className="w-4 h-4" style={{ color: '#34D399' }} />
             </div>
@@ -239,17 +230,17 @@ export default function AgentsPage() {
           </div>
           
           <div 
-            className="flex items-center gap-3 px-4 py-2.5 border backdrop-blur-sm shrink-0"
+            className="flex items-center gap-3 px-4 py-2.5 border shrink-0"
             style={{ 
-              backgroundColor: alertCount > 0 ? 'rgba(248, 113, 113, 0.1)' : '#1A1D1D', 
+              backgroundColor: alertCount > 0 ? 'rgba(248, 113, 113, 0.15)' : '#2B2E2E', 
               borderRadius: 'var(--radius-inner)', 
-              borderColor: alertCount > 0 ? 'rgba(248, 113, 113, 0.2)' : '#3D4141'
+              borderColor: alertCount > 0 ? 'rgba(248, 113, 113, 0.4)' : '#3D4141'
             }}
           >
             <div 
               className="w-8 h-8 flex items-center justify-center"
               style={{ 
-                backgroundColor: alertCount > 0 ? 'rgba(248, 113, 113, 0.2)' : 'rgba(107, 114, 114, 0.2)', 
+                backgroundColor: alertCount > 0 ? 'rgba(248, 113, 113, 0.15)' : 'rgba(107, 114, 114, 0.15)', 
                 borderRadius: 'var(--radius-inner)' 
               }}
             >
@@ -267,12 +258,12 @@ export default function AgentsPage() {
           </div>
           
           <div 
-            className="flex items-center gap-3 px-4 py-2.5 border backdrop-blur-sm shrink-0"
-            style={{ backgroundColor: '#1A1D1D', borderRadius: 'var(--radius-inner)', borderColor: '#3D4141' }}
+            className="flex items-center gap-3 px-4 py-2.5 border shrink-0"
+            style={{ backgroundColor: '#2B2E2E', borderRadius: 'var(--radius-inner)', borderColor: '#3D4141' }}
           >
             <div 
               className="w-8 h-8 flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(107, 114, 114, 0.2)', borderRadius: 'var(--radius-inner)' }}
+              style={{ backgroundColor: 'rgba(107, 114, 114, 0.15)', borderRadius: 'var(--radius-inner)' }}
             >
               <Shield className="w-4 h-4" style={{ color: '#6B7272' }} />
             </div>
@@ -291,7 +282,7 @@ export default function AgentsPage() {
           className="mb-4"
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-medium uppercase tracking-wider" style={{ color: '#A8AFAF' }}>Agent Overview</h2>
+            <h2 className="text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>Agent Overview</h2>
             <div className="flex items-center gap-2">
               <span className="text-[10px] tabular-nums" style={{ color: '#6B7272' }}>
                 {filteredAgents.length} agents
@@ -334,7 +325,7 @@ export default function AgentsPage() {
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-xs font-medium uppercase tracking-wider" style={{ color: '#A8AFAF' }}>Fleet Details</h2>
+            <h2 className="text-xs font-medium uppercase tracking-wider" style={{ color: '#6B7272' }}>Fleet Details</h2>
             <span className="text-[10px] tabular-nums" style={{ color: '#6B7272' }}>{tableAgents.length} total</span>
           </div>
           
