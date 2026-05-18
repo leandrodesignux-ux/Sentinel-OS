@@ -607,14 +607,14 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
         {step >= 1 && (
           <motion.div
             key="split-layout"
-            className="fixed inset-0 flex"
+            className="fixed inset-0 flex flex-col md:flex-row"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
             {/* ── PANEL IZQUIERDO (40%) ── */}
             <motion.div
-              className="w-[40%] relative overflow-hidden"
+              className="hidden md:flex md:w-[40%] relative overflow-hidden flex-col"
               style={{ background: "var(--bg-void)" }}
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
@@ -664,14 +664,34 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
 
             {/* ── PANEL DERECHO (60%) ── */}
             <motion.div
-              className="w-[60%] flex flex-col"
+              className="w-full md:w-[60%] flex flex-col"
               style={{ background: "var(--bg-canvas)" }}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
+              {/* Mobile progress header — visible only on mobile */}
+              <div className="flex md:hidden items-center justify-between px-6 pt-6 pb-4 border-b border-[#3D4141]">
+                <SentinelLogo variant="isotipo" size="sm" />
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-[#D7FEFA] bg-[#2B2E2E] px-3 py-1 rounded-full font-medium">
+                    Paso {step} de 3
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3].map((s) => (
+                      <span
+                        key={s}
+                        className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${
+                          s <= step ? "bg-[#34D399]" : "bg-[#3D4141]"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* Content area for steps 1-3 */}
-              <div className="flex-1 flex items-center justify-center p-10">
+              <div className="flex-1 flex items-center justify-center p-6 md:p-10">
           <AnimatePresence mode="wait">
             {/* PASO 1: Configuración de Escudo */}
             {step === 1 && (
@@ -693,7 +713,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   Paso 1 de 3
                 </motion.p>
                 <motion.h2 
-                  className="text-[28px] font-semibold mb-2" 
+                  className="text-[22px] md:text-[28px] font-semibold mb-2" 
                   style={{ color: "var(--text-primary)" }}
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -823,7 +843,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   Paso 2 de 3
                 </motion.p>
                 <motion.h2 
-                  className="text-[28px] font-semibold mb-2" 
+                  className="text-[22px] md:text-[28px] font-semibold mb-2" 
                   style={{ color: "var(--text-primary)" }}
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -962,7 +982,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   Paso 3 de 3
                 </motion.p>
                 <motion.h2 
-                  className="text-[28px] font-semibold mb-2" 
+                  className="text-[22px] md:text-[28px] font-semibold mb-2" 
                   style={{ color: "var(--text-primary)" }}
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
