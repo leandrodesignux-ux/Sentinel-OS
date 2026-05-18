@@ -105,7 +105,14 @@ function MiniDonut({ running, monitoring, critical, total }: { running: number; 
   const criticalOffset = -(runningDash + monitoringDash);
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <motion.div
+        className="absolute inset-0 rounded-full pointer-events-none"
+        animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0, 0.4] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+        style={{ border: "1px solid #34D399" }}
+      />
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       {/* Track */}
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="#3D4141" strokeWidth={5} />
       {/* Running — green */}
@@ -140,6 +147,7 @@ function MiniDonut({ running, monitoring, critical, total }: { running: number; 
         {total}
       </text>
     </svg>
+    </div>
   );
 }
 
@@ -721,6 +729,18 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
     .filter((agent) => agent.status === "intervention_required" || agent.status === "circuit_open" || agent.status === "suspended")
     .sort((left, right) => right.economic_risk.amount - left.economic_risk.amount);
 
+  const [badgeCount, setBadgeCount] = useState(activeExceptions.length);
+  useEffect(() => {
+    setBadgeCount(activeExceptions.length);
+  }, [activeExceptions.length]);
+  useEffect(() => {
+    const cap = activeExceptions.length + 2;
+    const interval = setInterval(() => {
+      setBadgeCount(prev => prev < cap ? prev + 1 : prev);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [activeExceptions.length]);
+
   return (
     <section className="flex flex-col rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 h-full hover:border-[#4A5050] transition-colors duration-200">
       {/* Sticky Header */}
@@ -732,13 +752,17 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
               Recientes
               <ChevronDown className="h-3 w-3" />
             </button>
-            <motion.span
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className="rounded-full bg-[#F6F4D2]/10 border border-[#F6F4D2]/20 px-2.5 py-1 text-xs font-medium text-[#F6F4D2]"
-            >
-              {activeExceptions.length}
-            </motion.span>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={badgeCount}
+                className="rounded-full bg-[#F6F4D2]/10 border border-[#F6F4D2]/20 px-2.5 py-1 text-xs font-medium"
+                initial={{ scale: 1.3, color: "#F87171" }}
+                animate={{ scale: 1, color: "#F6F4D2" }}
+                transition={{ duration: 0.4 }}
+              >
+                {badgeCount}
+              </motion.span>
+            </AnimatePresence>
           </div>
         </div>
         <p className="text-sm text-[#A8AFAF] mt-1">Prioriza por impacto económico</p>
@@ -857,6 +881,20 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [showRiskBreakdown, setShowRiskBreakdown] = useState(false);
   const riskRef = useRef<HTMLDivElement>(null);
+  const [flashKey, setFlashKey] = useState(0);
+  const [flashedRate, setFlashedRate] = useState<string | null>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const base = agents.length > 0
+        ? 100 - (agents.filter(a => a.status === "intervention_required" || a.status === "circuit_open" || a.status === "suspended").length / agents.length) * 100
+        : 100;
+      const jitter = (Math.random() * 4 - 2);
+      setFlashedRate(`${Math.min(100, Math.max(0, base + jitter)).toFixed(1)}%`);
+      setFlashKey(k => k + 1);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [agents]);
 
   useEffect(() => {
     if (!showRiskBreakdown) return;
@@ -945,7 +983,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
       >
         {[
           { label: "Flota activa", value: `${agents.filter(a => a.status === "running" || a.status === "idle").length} / ${agents.length}`, color: "#34D399" },
-          { label: "Tasa autónoma", value: `${agents.length > 0 ? (100 - (agents.filter(a => a.status === "intervention_required" || a.status === "circuit_open" || a.status === "suspended").length / agents.length) * 100).toFixed(1) : "100.0"}%`, color: "#D7FEFA" },
+          { label: "Tasa autónoma", value: flashedRate ?? `${agents.length > 0 ? (100 - (agents.filter(a => a.status === "intervention_required" || a.status === "circuit_open" || a.status === "suspended").length / agents.length) * 100).toFixed(1) : "100.0"}%`, color: "#D7FEFA", flashKey },
           { label: "Alertas activas", value: `${agents.filter(a => a.status === "intervention_required" || a.status === "circuit_open").length}`, color: "#F87171" },
         ].map((pill) => (
           <div
@@ -954,7 +992,20 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
           >
             <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pill.color }} />
             <span className="text-[10px] text-[#6B7272] uppercase tracking-wider flex-1">{pill.label}</span>
-            <span className="font-mono text-sm font-semibold" style={{ color: pill.color }}>{pill.value}</span>
+            {"flashKey" in pill ? (
+              <motion.span
+                key={(pill as { flashKey: number }).flashKey}
+                className="font-mono text-sm font-semibold"
+                style={{ color: pill.color }}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {pill.value}
+              </motion.span>
+            ) : (
+              <span className="font-mono text-sm font-semibold" style={{ color: pill.color }}>{pill.value}</span>
+            )}
           </div>
         ))}
 
