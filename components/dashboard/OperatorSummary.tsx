@@ -79,6 +79,14 @@ function humanDescription(agent: Agent) {
   return "Necesita revisión antes de continuar";
 }
 
+// Sparkline data for KPI metrics (module scope — used by FleetHealthStrip and KpiCard)
+const sparklineData = {
+  escalation: [14, 12, 11, 9, 8.3],
+  autonomous: [88, 89, 90, 91, 91.7],
+  time: [5.1, 4.8, 4.5, 4.3, 4.2],
+  agents: [48, 47, 49, 47, 47],
+};
+
 // Subcomponent: Mini Donut SVG
 function MiniDonut({ running, monitoring, critical, total }: { running: number; monitoring: number; critical: number; total: number }) {
   const size = 40;
@@ -150,11 +158,13 @@ function FleetHealthStrip({ agents, hasMounted }: { agents: Agent[]; hasMounted?
   const autonomousRate = totalCount > 0 ? (100 - parseFloat(escalationRate)).toFixed(1) : "100.0";
   const tasksCompleted = agents.reduce((sum, a) => sum + (a.metadata?.exceptions_today || 0) * 12, 4750);
 
-  const metrics = [
-    { label: "Escalación", value: `${escalationRate}%` },
-    { label: "Autónomo", value: `${autonomousRate}%` },
-    { label: "MTTR", value: "4.2s" },
-    { label: "Tareas", value: tasksCompleted.toLocaleString() },
+  const [activeMetric, setActiveMetric] = useState<string | null>(null);
+
+  const metrics: { label: string; value: string; sparkline: number[]; trend: string; trendColor: string; meta: string }[] = [
+    { label: "Escalación", value: `${escalationRate}%`, sparkline: sparklineData.escalation, trend: "Tendencia: bajando ↓", trendColor: "#34D399", meta: "Meta operativa: <10%" },
+    { label: "Autónomo", value: `${autonomousRate}%`, sparkline: sparklineData.autonomous, trend: "Tendencia: subiendo ↑", trendColor: "#34D399", meta: "Meta operativa: >90%" },
+    { label: "MTTR", value: "4.2s", sparkline: sparklineData.time, trend: "Tendencia: mejorando ↓", trendColor: "#34D399", meta: "Meta operativa: <5s" },
+    { label: "Tareas", value: tasksCompleted.toLocaleString(), sparkline: sparklineData.agents, trend: "Tendencia: estable →", trendColor: "#D7FEFA", meta: "Acumulado del turno" },
   ];
 
   return (
@@ -189,12 +199,52 @@ function FleetHealthStrip({ agents, hasMounted }: { agents: Agent[]; hasMounted?
 
       {/* Metric pills */}
       <div className="flex items-center gap-2 flex-1">
-        {metrics.map((m) => (
-          <div key={m.label} className="flex flex-col items-center bg-[#3D4141] px-3 py-2 rounded-xl">
-            <span className="font-mono text-sm font-bold text-white">{m.value}</span>
-            <span className="text-[10px] text-[#6B7272] uppercase tracking-wide mt-0.5">{m.label}</span>
-          </div>
-        ))}
+        {metrics.map((m) => {
+          const isActive = activeMetric === m.label;
+          const chartData = m.sparkline.map((val, idx) => ({ idx, val }));
+          return (
+            <div key={m.label} className="relative">
+              <div
+                className={`flex flex-col items-center px-3 py-2 rounded-xl cursor-pointer transition-colors duration-150 ${
+                  isActive ? "bg-[#4A5050]" : "bg-[#3D4141] hover:bg-[#4A5050]"
+                }`}
+                onClick={() => setActiveMetric(isActive ? null : m.label)}
+              >
+                <span className="font-mono text-sm font-bold text-white">{m.value}</span>
+                <span className="text-[10px] text-[#6B7272] uppercase tracking-wide mt-0.5">{m.label}</span>
+              </div>
+
+              {/* Dropdown popover */}
+              <AnimatePresence>
+                {isActive && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 w-[180px] rounded-xl border border-[#4A5050] bg-[#1A1D1D] p-3 shadow-xl"
+                  >
+                    <p className="text-xs font-medium text-white mb-2">{m.label}</p>
+                    <LineChart width={156} height={48} data={chartData}>
+                      <Line
+                        type="monotone"
+                        dataKey="val"
+                        stroke="#D7FEFA"
+                        strokeWidth={1.5}
+                        dot={false}
+                        isAnimationActive={false}
+                      />
+                    </LineChart>
+                    <div className="mt-2 flex flex-col gap-0.5">
+                      <span className="text-[10px] font-medium" style={{ color: m.trendColor }}>{m.trend}</span>
+                      <span className="text-[10px] text-[#6B7272]">{m.meta}</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -388,14 +438,6 @@ const getContainerVariants = (hasMounted?: boolean) => ({
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.0, 0.0, 0.2, 1] as const } }
-};
-
-// Sparkline data for each KPI
-const sparklineData = {
-  escalation: [14, 12, 11, 9, 8.3],
-  autonomous: [88, 89, 90, 91, 91.7],
-  time: [5.1, 4.8, 4.5, 4.3, 4.2],
-  agents: [48, 47, 49, 47, 47],
 };
 
 // Subcomponent: KPI Card (for KpiCardsRow)
