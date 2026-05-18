@@ -75,8 +75,8 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
           <span>FLOTA DETENIDA</span>
         </div>
       )}
-      <main className="ml-0 md:ml-[240px] pt-[52px] md:pt-0 flex min-h-screen flex-col overflow-hidden bg-[#1A1D1D]">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#3D4141] bg-[#1A1D1D] px-6">
+      <main className="md:ml-[240px] ml-0 mt-[52px] md:mt-0 flex min-h-screen flex-col overflow-hidden bg-[#1A1D1D]">
+        <header className="hidden md:flex h-16 shrink-0 items-center justify-between border-b border-[#3D4141] bg-[#1A1D1D] px-6">
           {/* Left: breadcrumb + title */}
           <div className="flex items-center gap-2">
             <button className="p-1.5 rounded-lg hover:bg-[#2B2E2E] transition-colors">
