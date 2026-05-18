@@ -57,7 +57,7 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
   return (
     <div className="h-full flex flex-col gap-3 p-4 bg-transparent">
       {/* ROW 1 — Header */}
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         {/* Left: Title + Counter */}
         <div className="flex items-center gap-3">
           <h1 className="font-accent text-xl text-white">Mis agentes</h1>
@@ -67,12 +67,12 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
         </div>
 
         {/* Center: Type Tabs */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
           {typeTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setTypeFilter(tab.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[11px] md:text-xs font-medium transition-colors ${
                 typeFilter === tab.id
                   ? "bg-[#D7FEFA]/10 text-[#D7FEFA] border border-[#D7FEFA]/20"
                   : "bg-[#2B2E2E] text-[#A8AFAF] hover:text-white"
@@ -84,27 +84,27 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
         </div>
 
         {/* Right: Alert Toggle + Search */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 w-full md:w-auto">
           <button
             onClick={() => setAlertOnly(!alertOnly)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex-shrink-0 ${
               alertOnly
                 ? "bg-[#F87171]/15 text-[#F87171] border border-[#F87171]/40"
                 : "bg-[#2B2E2E] text-[#A8AFAF] hover:text-white"
             }`}
           >
             <AlertTriangle className="h-3.5 w-3.5" />
-            Solo con alerta
+            <span className="hidden md:inline">Solo con alerta</span>
           </button>
 
-          <div className="relative">
+          <div className="relative flex-1 md:flex-none">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7272]" />
             <input
               type="text"
               placeholder="Buscar agente..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-1.5 bg-[#2B2E2E] border border-[#3D4141] rounded-lg text-sm placeholder-[#6B7272] text-white focus:outline-none focus:border-[#4A5050] w-48"
+              className="pl-9 pr-3 py-1.5 bg-[#2B2E2E] border border-[#3D4141] rounded-lg text-sm placeholder-[#6B7272] text-white focus:outline-none focus:border-[#4A5050] w-full md:w-48"
             />
           </div>
         </div>
