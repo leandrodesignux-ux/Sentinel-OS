@@ -182,7 +182,7 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
   }, [motionVal, display, hasMounted]);
 
   return (
-    <section className="rounded-[20px] border border-[#3D4141] bg-[#2B2E2E] p-6 flex flex-col h-[340px]">
+    <section className="rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 flex flex-col h-[340px]">
       {/* Header with dropdown */}
       <div className="flex items-start justify-between mb-4">
         <div>
@@ -358,7 +358,7 @@ function KpiCard({
 
   return (
     <motion.div
-      className="flex flex-col bg-[#2B2E2E] border border-[#3D4141] rounded-[16px] p-5 flex-1 h-[160px] cursor-pointer"
+      className="flex flex-col border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] rounded-[16px] p-5 flex-1 h-[160px] cursor-pointer"
       variants={cardVariants}
       whileHover={{
         y: -2,
@@ -505,9 +505,11 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
   const maxImpact = activeExceptions[0]?.economic_risk.amount ?? 1;
 
   return (
-    <section className="flex flex-col rounded-[20px] border border-[#3D4141] bg-[#2B2E2E] p-6 h-full">
+    <section className="flex flex-col rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 h-full">
       {/* Sticky Header */}
-      <div className="sticky top-0 bg-[#2B2E2E] pb-3 pt-1 z-10">
+      <div
+        className="sticky top-0 bg-[#2B2E2E]/80 backdrop-blur-sm pb-3 pt-1 z-10"
+      >
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-white">Necesitan tu criterio ahora</h3>
           <motion.span
@@ -622,7 +624,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
 
   return (
     <motion.div
-      className="h-full min-h-0 overflow-y-auto bg-[#1A1D1D] px-6 py-6"
+      className="h-full min-h-0 overflow-y-auto bg-[#1A1D1D] px-8 py-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: hasMounted ? 1 : 0 }}
       transition={{ duration: 0.3 }}
@@ -661,15 +663,101 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
         <FleetHealthStrip agents={agents} hasMounted={hasMounted} />
       </motion.div>
 
-      {/* Fila 3: Grid principal 65/35 */}
-      <div className="grid gap-5" style={{ gridTemplateColumns: "1fr 380px" }}>
-        {/* Columna izquierda */}
+      {/* Fila 3: Top Stats Bar — 4 inline metric pills */}
+      <motion.div
+        className="mb-6 flex items-center gap-3"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: hasMounted ? 1 : 0, y: hasMounted ? 0 : -8 }}
+        transition={{ duration: 0.4, delay: 0.28 }}
+      >
+        {[
+          { label: "Flota activa", value: `${agents.filter(a => a.status === "running" || a.status === "idle").length} / ${agents.length}`, color: "#34D399" },
+          { label: "Tasa autónoma", value: `${agents.length > 0 ? (100 - (agents.filter(a => a.status === "intervention_required" || a.status === "circuit_open" || a.status === "suspended").length / agents.length) * 100).toFixed(1) : "100.0"}%`, color: "#D7FEFA" },
+          { label: "Riesgo acumulado", value: `$${agents.reduce((s, a) => s + (a.economic_risk?.amount ?? 0), 0).toLocaleString()}`, color: "#FBBF24" },
+          { label: "Alertas activas", value: `${agents.filter(a => a.status === "intervention_required" || a.status === "circuit_open").length}`, color: "#F87171" },
+        ].map((pill) => (
+          <div
+            key={pill.label}
+            className="flex items-center gap-3 rounded-[12px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] px-4 py-2.5 flex-1"
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: pill.color }}
+            />
+            <span className="text-[10px] text-[#6B7272] uppercase tracking-wider flex-1">{pill.label}</span>
+            <span
+              className="font-mono text-sm font-semibold"
+              style={{ color: pill.color }}
+            >{pill.value}</span>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Fila 4: Grid principal 3 columnas */}
+      <div className="grid gap-5" style={{ gridTemplateColumns: "240px 1fr 320px" }}>
+        {/* Columna izquierda — Sidebar stats */}
+        <motion.div
+          className="flex flex-col gap-4"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: hasMounted ? 1 : 0, x: hasMounted ? 0 : -20 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
+          {/* Fleet type breakdown */}
+          <div className="rounded-[16px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-4 flex flex-col gap-3">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-[#6B7272]">Por tipo</p>
+            {(["sales", "asset_mgmt", "maintenance", "screening"] as const).map((type) => {
+              const count = agents.filter(a => a.type === type).length;
+              const typeLabels: Record<string, string> = { sales: "Ventas", asset_mgmt: "Activos", maintenance: "Mant.", screening: "Eval." };
+              const typeColors: Record<string, string> = { sales: "#FBBF24", asset_mgmt: "#D7FEFA", maintenance: "#F87171", screening: "#A78BFA" };
+              const pct = agents.length > 0 ? (count / agents.length) * 100 : 0;
+              return (
+                <div key={type} className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[#A8AFAF]">{typeLabels[type]}</span>
+                    <span className="font-mono text-xs text-white">{count}</span>
+                  </div>
+                  <div className="h-1 rounded-full bg-[#3D4141] overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: typeColors[type] }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Status distribution */}
+          <div className="rounded-[16px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-4 flex flex-col gap-3">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-[#6B7272]">Por estado</p>
+            {([
+              { key: "running", label: "Trabajando", color: "#34D399" },
+              { key: "idle", label: "En espera", color: "#34D399" },
+              { key: "monitoring", label: "Observando", color: "#FBBF24" },
+              { key: "intervention_required", label: "Alerta", color: "#F87171" },
+            ] as { key: string; label: string; color: string }[]).map((s) => (
+              <div key={s.key} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
+                  <span className="text-xs text-[#A8AFAF]">{s.label}</span>
+                </div>
+                <span className="font-mono text-xs text-white">{agents.filter(a => a.status === s.key).length}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Clock card */}
+          <div className="rounded-[16px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-4 flex flex-col gap-1">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-[#6B7272]">Tiempo operativo</p>
+            <span className="font-mono text-lg font-bold text-[#D7FEFA]">{formatTime(time)}</span>
+            <span className="text-xs text-[#6B7272]">6h sin interrupciones</span>
+          </div>
+        </motion.div>
+
+        {/* Columna central — main content */}
         <div className="flex flex-col gap-5">
           {/* HeroActivityCard — delay 0.3s */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: hasMounted ? 1 : 0, y: hasMounted ? 0 : 20 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
+            transition={{ duration: 0.4, delay: 0.35 }}
           >
             <HeroActivityCard hasMounted={hasMounted} />
           </motion.div>
