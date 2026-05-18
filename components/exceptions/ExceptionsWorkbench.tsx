@@ -46,7 +46,7 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: {
             initial={{ opacity: 0, y: -12, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8 }}
-            className="fixed top-5 right-6 z-50 flex items-center gap-2.5 rounded-2xl bg-[#2B2E2E] border border-[#3D4141] px-4 py-3 shadow-lg"
+            className="fixed top-5 left-3 right-3 md:left-auto md:right-6 md:w-auto z-50 flex items-center gap-2.5 rounded-2xl bg-[#2B2E2E] border border-[#3D4141] px-4 py-3 shadow-lg"
           >
             <div className="h-6 w-6 rounded-full bg-[#34D399]/20 flex items-center justify-center">
               <CheckCircle className="h-3.5 w-3.5 text-[#34D399]" />
@@ -66,7 +66,7 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center gap-1.5 mb-6 flex-wrap md:flex-nowrap">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -77,7 +77,8 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: {
                 : "bg-transparent border border-[#3D4141] text-[#A8AFAF] hover:bg-[#2B2E2E]"
             }`}
           >
-            {tab.label}
+            <span className="md:hidden">{tab.id === "todas" ? "Todas" : tab.id === "pendiente" ? "Pendiente" : "Seguimiento"}</span>
+            <span className="hidden md:inline">{tab.label}</span>
             <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
               activeTab === tab.id
                 ? "bg-[#D7FEFA]/20 text-[#D7FEFA]"
@@ -99,7 +100,7 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: {
           <p className="text-[13px] text-[#6B7272]">No hay excepciones en esta categoría</p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <AnimatePresence>
             {filtered.map((agent, i) => (
               <motion.div
