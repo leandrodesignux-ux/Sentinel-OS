@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Bell, Bot, Building2, ChevronDown, Clock, Home, Pause, Timer, TrendingUp, Users, Wrench, Zap } from "lucide-react";
+import { ArrowRight, Bell, Bot, Building2, ChevronDown, Clock, Home, Pause, Settings, Timer, TrendingUp, Users, Wrench, Zap } from "lucide-react";
 import { Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { economicImpactK } from "@/lib/utils/riskUtils";
@@ -52,6 +52,62 @@ function humanDescription(agent: Agent) {
   return "Necesita revisión antes de continuar";
 }
 
+// Subcomponent: Mini Donut SVG
+function MiniDonut({ running, monitoring, critical, total }: { running: number; monitoring: number; critical: number; total: number }) {
+  const size = 40;
+  const r = 15;
+  const cx = size / 2;
+  const cy = size / 2;
+  const circumference = 2 * Math.PI * r;
+  const safe = Math.max(total, 1);
+
+  const runningDash = (running / safe) * circumference;
+  const monitoringDash = (monitoring / safe) * circumference;
+  const criticalDash = (critical / safe) * circumference;
+
+  const runningOffset = 0;
+  const monitoringOffset = -runningDash;
+  const criticalOffset = -(runningDash + monitoringDash);
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
+      {/* Track */}
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#3D4141" strokeWidth={5} />
+      {/* Running — green */}
+      {running > 0 && (
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#34D399" strokeWidth={5}
+          strokeDasharray={`${runningDash} ${circumference}`}
+          strokeDashoffset={runningOffset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${cx} ${cy})`}
+        />
+      )}
+      {/* Monitoring — yellow */}
+      {monitoring > 0 && (
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#FBBF24" strokeWidth={5}
+          strokeDasharray={`${monitoringDash} ${circumference}`}
+          strokeDashoffset={monitoringOffset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${cx} ${cy})`}
+        />
+      )}
+      {/* Critical — red */}
+      {critical > 0 && (
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#F87171" strokeWidth={5}
+          strokeDasharray={`${criticalDash} ${circumference}`}
+          strokeDashoffset={criticalOffset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${cx} ${cy})`}
+        />
+      )}
+      {/* Center count */}
+      <text x={cx} y={cy + 4} textAnchor="middle" fontSize="10" fontWeight="700" fill="#FFFFFF" fontFamily="monospace">
+        {total}
+      </text>
+    </svg>
+  );
+}
+
 // Subcomponent: Fleet Health Strip (Nivel 1)
 function FleetHealthStrip({ agents, hasMounted }: { agents: Agent[]; hasMounted?: boolean }) {
   const runningCount = agents.filter((a) => a.status === "running").length;
@@ -62,19 +118,20 @@ function FleetHealthStrip({ agents, hasMounted }: { agents: Agent[]; hasMounted?
   ).length;
   const totalCount = agents.length;
 
-  // Calculate percentages
-  const runningPercent = totalCount > 0 ? (runningCount / totalCount) * 100 : 0;
-  const monitoringPercent = totalCount > 0 ? (monitoringCount / totalCount) * 100 : 0;
-  const criticalPercent = totalCount > 0 ? (criticalCount / totalCount) * 100 : 0;
-
-  // Calculate metrics
   const activeCount = runningCount + idleCount;
   const escalationRate = totalCount > 0 ? ((criticalCount / totalCount) * 100).toFixed(1) : "0.0";
   const autonomousRate = totalCount > 0 ? (100 - parseFloat(escalationRate)).toFixed(1) : "100.0";
   const tasksCompleted = agents.reduce((sum, a) => sum + (a.metadata?.exceptions_today || 0) * 12, 4750);
 
+  const metrics = [
+    { label: "Escalación", value: `${escalationRate}%` },
+    { label: "Autónomo", value: `${autonomousRate}%` },
+    { label: "MTTR", value: "4.2s" },
+    { label: "Tareas", value: tasksCompleted.toLocaleString() },
+  ];
+
   return (
-    <div className="relative flex items-center gap-6 bg-[#2B2E2E] border border-[#3D4141] rounded-[16px] px-5 py-3 hover:border-[#4A5050] transition-colors duration-200">
+    <div className="relative flex items-center gap-4 bg-[#2B2E2E] border border-[#3D4141] rounded-[16px] px-5 py-4 hover:border-[#4A5050] transition-colors duration-200">
       {/* Scan effect overlay */}
       <motion.div
         className="absolute inset-0 rounded-[16px] pointer-events-none"
@@ -86,76 +143,31 @@ function FleetHealthStrip({ agents, hasMounted }: { agents: Agent[]; hasMounted?
         animate={{ backgroundPosition: "-200% 0" }}
         transition={{ duration: 1.2, ease: "linear", delay: 0.2 }}
       />
-      {/* Dot + Counter */}
-      <div className="flex items-center gap-2.5 shrink-0">
-        <div className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
-        <span className="text-sm font-semibold text-white">
-          {activeCount} <span className="text-[#6B7272] font-normal">activos de {totalCount}</span>
-        </span>
-      </div>
 
-      {/* Progress Bar */}
-      <div className="flex-1 h-1.5 rounded-full bg-[#3D4141] overflow-hidden relative">
-        {/* Running segment - green */}
-        <motion.div
-          className="absolute left-0 top-0 h-full bg-[#34D399] rounded-full"
-          initial={{ width: "0%" }}
-          animate={{ width: `${runningPercent}%` }}
-          transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
-        />
-        {/* Monitoring segment - yellow */}
-        <motion.div
-          className="absolute top-0 h-full bg-[#FBBF24] rounded-full"
-          initial={{ width: "0%" }}
-          animate={{ width: `${monitoringPercent}%`, left: `${runningPercent}%` }}
-          transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
-        />
-        {/* Critical segment - red */}
-        <motion.div
-          className="absolute top-0 h-full bg-[#F87171] rounded-full"
-          initial={{ width: "0%" }}
-          animate={{
-            width: `${criticalPercent}%`,
-            left: `${runningPercent + monitoringPercent}%`,
-          }}
-          transition={{ duration: 1.2, ease: "easeOut", delay: 0.7 }}
-        />
+      {/* Mini Donut */}
+      <MiniDonut running={runningCount + idleCount} monitoring={monitoringCount} critical={criticalCount} total={totalCount} />
+
+      {/* Active label */}
+      <div className="flex flex-col shrink-0">
+        <span className="text-sm font-semibold text-white">{activeCount} <span className="text-[#6B7272] font-normal">activos</span></span>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className="flex items-center gap-1 text-[10px] text-[#6B7272]"><span className="h-1.5 w-1.5 rounded-full bg-[#34D399]" />{runningCount + idleCount}</span>
+          <span className="flex items-center gap-1 text-[10px] text-[#6B7272]"><span className="h-1.5 w-1.5 rounded-full bg-[#FBBF24]" />{monitoringCount}</span>
+          <span className="flex items-center gap-1 text-[10px] text-[#6B7272]"><span className="h-1.5 w-1.5 rounded-full bg-[#F87171]" />{criticalCount}</span>
+        </div>
       </div>
 
       {/* Separator */}
-      <div className="w-px h-6 bg-[#3D4141]" />
+      <div className="w-px h-8 bg-[#3D4141] mx-1" />
 
-      {/* Metric 1: Escalation Rate */}
-      <div className="flex flex-col items-end shrink-0">
-        <span className="text-sm font-mono font-bold text-white">{escalationRate}%</span>
-        <span className="text-[10px] text-[#6B7272] uppercase tracking-wide">Escalación</span>
-      </div>
-
-      {/* Separator */}
-      <div className="w-px h-6 bg-[#3D4141]" />
-
-      {/* Metric 2: Autonomous Rate */}
-      <div className="flex flex-col items-end shrink-0">
-        <span className="text-sm font-mono font-bold text-white">{autonomousRate}%</span>
-        <span className="text-[10px] text-[#6B7272] uppercase tracking-wide">Autónomo</span>
-      </div>
-
-      {/* Separator */}
-      <div className="w-px h-6 bg-[#3D4141]" />
-
-      {/* Metric 3: MTTR */}
-      <div className="flex flex-col items-end shrink-0">
-        <span className="text-sm font-mono font-bold text-white">4.2s</span>
-        <span className="text-[10px] text-[#6B7272] uppercase tracking-wide">MTTR</span>
-      </div>
-
-      {/* Separator */}
-      <div className="w-px h-6 bg-[#3D4141]" />
-
-      {/* Metric 4: Tasks Completed */}
-      <div className="flex flex-col items-end shrink-0">
-        <span className="text-sm font-mono font-bold text-white">{tasksCompleted.toLocaleString()}</span>
-        <span className="text-[10px] text-[#6B7272] uppercase tracking-wide">tareas</span>
+      {/* Metric pills */}
+      <div className="flex items-center gap-2 flex-1">
+        {metrics.map((m) => (
+          <div key={m.label} className="flex flex-col items-center bg-[#3D4141] px-3 py-2 rounded-xl">
+            <span className="font-mono text-sm font-bold text-white">{m.value}</span>
+            <span className="text-[10px] text-[#6B7272] uppercase tracking-wide mt-0.5">{m.label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -665,16 +677,32 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
         animate={{ opacity: hasMounted ? 1 : 0, y: hasMounted ? 0 : -10 }}
         transition={{ duration: 0.4, delay: 0 }}
       >
+        {/* Left: two-line greeting */}
         <div>
+          <p className="text-sm text-[#A8AFAF] mb-0.5">¡Bienvenido de vuelta!</p>
           <h1 className="text-2xl font-semibold text-white">
-            Buenos días, <span className="text-[#D7FEFA]">Operador Vega</span>
+            Operador <span className="text-[#D7FEFA]">Vega</span>
           </h1>
-          <p className="mt-1 text-sm text-[#A8AFAF]">
-            {todayLabel()} · Tu flota lleva 6 horas trabajando sin interrupciones
+          <p className="mt-1 text-xs text-[#6B7272]">
+            {todayLabel()}
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="font-mono text-sm text-[#6B7272]">{formatTime(time)}</span>
+
+        {/* Right: clock chip + bell + settings + pause */}
+        <div className="flex items-center gap-3">
+          {/* Live clock chip */}
+          <span className="font-mono text-xs text-[#A8AFAF] bg-[#2B2E2E] border border-[#3D4141] px-3 py-1 rounded-full">
+            {formatTime(time)}
+          </span>
+          {/* Bell icon */}
+          <button className="flex items-center justify-center w-8 h-8 rounded-full bg-[#2B2E2E] border border-[#3D4141] text-[#6B7272] hover:text-white hover:border-[#4A5050] transition-colors">
+            <Bell className="h-4 w-4" />
+          </button>
+          {/* Settings icon */}
+          <button className="flex items-center justify-center w-8 h-8 rounded-full bg-[#2B2E2E] border border-[#3D4141] text-[#6B7272] hover:text-white hover:border-[#4A5050] transition-colors">
+            <Settings className="h-4 w-4" />
+          </button>
+          {/* Pause fleet */}
           <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#F87171]/40 text-[#F87171] bg-[#F87171]/5 hover:bg-[#F87171]/10 transition-colors text-sm font-medium">
             <Pause className="h-4 w-4" />
             Pausar flota
