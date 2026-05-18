@@ -209,7 +209,7 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
     : "0";
 
   return (
-    <section className="rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 flex flex-col h-[340px]">
+    <section className="rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 flex flex-col h-[340px] hover:border-[#4A5050] transition-colors duration-200">
       {/* Top row: title left + pill toggle right */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-semibold text-white">Trabajo completado</h3>
@@ -243,6 +243,7 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
           >
             {animatedValue}
           </motion.span>
+          <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse flex-shrink-0 mb-1" />
           <span className="text-sm text-[#A8AFAF]">tareas autónomas</span>
         </div>
 
@@ -400,13 +401,19 @@ function KpiCard({
 
   return (
     <motion.div
-      className="relative flex flex-row items-center gap-3 border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] rounded-[12px] px-3 py-3 flex-1 h-[88px] cursor-pointer overflow-hidden"
+      className="relative flex flex-row items-center gap-3 border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] rounded-[12px] px-3 py-3 flex-1 h-[88px] cursor-pointer overflow-hidden hover:border-[#4A5050] transition-colors duration-200"
       variants={cardVariants}
       whileHover={{ y: -1, boxShadow: "0 6px 24px rgba(0,0,0,0.3)" }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      style={{ borderColor: "#3D4141" }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = accentColor + "40"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#3D4141"; }}
+      style={{ borderColor: "#3D4141", transition: "border-color 0.2s, box-shadow 0.2s" }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = accentColor + "40";
+        e.currentTarget.style.boxShadow = `0 0 0 1px ${accentColor}40, 0 4px 20px ${accentColor}14`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "#3D4141";
+        e.currentTarget.style.boxShadow = "none";
+      }}
     >
       {/* Left accent bar */}
       <div
@@ -552,7 +559,7 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
     .sort((left, right) => right.economic_risk.amount - left.economic_risk.amount);
 
   return (
-    <section className="flex flex-col rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 h-full">
+    <section className="flex flex-col rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 h-full hover:border-[#4A5050] transition-colors duration-200">
       {/* Sticky Header */}
       <div className="sticky top-0 bg-[#2B2E2E]/80 backdrop-blur-sm pb-3 pt-1 z-10">
         <div className="flex items-center justify-between">
@@ -599,7 +606,7 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
               variants={itemVariants}
               whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              className="flex items-center gap-3 py-3 px-1 cursor-pointer border-b border-[#3D4141] last:border-b-0"
+              className="flex items-center gap-3 py-3 px-1 cursor-pointer border-b border-[#3D4141] last:border-b-0 transition-all duration-200"
               onClick={onViewExceptions}
             >
               {/* Avatar icon — 36px rounded-full */}
@@ -634,16 +641,13 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
         })}
       </motion.div>
 
-      {/* CTA Button */}
-      <motion.button
-        whileHover={{ x: 3 }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      {/* Connect CTA — full width */}
+      <button
         onClick={onViewExceptions}
-        className="mt-4 flex items-center gap-2 text-sm font-medium text-[#F6F4D2] hover:text-[#EDEBBF] transition-colors"
+        className="mt-4 w-full bg-[#34D399] text-black font-semibold rounded-xl py-2.5 hover:bg-[#2EBB85] transition-colors text-sm"
       >
-        Revisar y aprobar
-        <ArrowRight className="h-3.5 w-3.5" />
-      </motion.button>
+        Conectar y resolver
+      </button>
     </section>
   );
 }
