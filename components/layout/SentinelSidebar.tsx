@@ -39,12 +39,16 @@ function NavigationGroup({ title, sections, activeSection, exceptionCount, onSec
               key={section.id}
               onClick={() => onSectionChange(section.id)}
               className={cn(
-                "relative flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-all",
+                "relative overflow-hidden flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-all",
                 active
-                  ? "bg-[#2B2E2E] border border-[#D7FEFA]/30 text-[#D7FEFA] font-medium"
-                  : "text-[#A8AFAF] hover:bg-[#2B2E2E] border border-transparent"
+                  ? "bg-[#2B2E2E] text-[#D7FEFA] font-medium"
+                  : "text-[#A8AFAF] hover:bg-[#2B2E2E]"
               )}
             >
+              {/* Left active indicator bar */}
+              {active && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#D7FEFA] rounded-full" />
+              )}
               <span className="flex items-center gap-3">
                 <Icon className="h-4 w-4" style={{ color: active ? "#D7FEFA" : "#6B7272" }} />
                 {section.label}
@@ -83,19 +87,21 @@ export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCou
         <p className="ml-9 text-[10px] text-[#6B7272]">by Leandro Balbián</p>
       </div>
 
-      <div className="mx-2 mb-5 rounded-xl border border-[#3D4141] bg-[#2B2E2E] px-3 py-2">
+      <div className="mx-2 mb-5 rounded-xl border border-[#3D4141] bg-[#2B2E2E] px-3 py-2.5">
+        {/* Top row: dot + number + label */}
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-[#34D399]" />
-          <span className="text-sm font-bold text-[#D7FEFA]">
-            {nominalCount}
-          </span>
-          <span className="text-[11px] text-[#6B7272]">
-            agentes activos
-          </span>
+          <span className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-[#34D399]" />
+          <span className="text-sm font-bold text-white">{nominalCount}</span>
+          <span className="text-[11px] text-[#6B7272]">activos</span>
+          <span className="ml-auto text-[10px] text-[#6B7272]">/ 12</span>
         </div>
-        <p className="ml-4 mt-0.5 text-[11px] text-[#6B7272]">
-          de 12 en tu flota
-        </p>
+        {/* Mini progress bar */}
+        <div className="mt-2 h-1 w-full rounded-full bg-[#3D4141] overflow-hidden">
+          <div
+            className="h-full rounded-full bg-[#34D399] transition-all duration-700"
+            style={{ width: `${Math.min((nominalCount / 12) * 100, 100)}%` }}
+          />
+        </div>
       </div>
 
       <NavigationGroup title="Principal" sections={mainSections} activeSection={activeSection} exceptionCount={exceptionCount} onSectionChange={onSectionChange} />
@@ -107,14 +113,16 @@ export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCou
       </div>
 
       <div className="mt-auto pt-4 border-t border-[#3D4141]">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F6F4D2]/10 text-xs font-bold text-[#F6F4D2]">
-            V
+        <div className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-[#2B2E2E] transition-colors cursor-pointer">
+          {/* Avatar with online dot */}
+          <div className="relative flex-shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F6F4D2]/10 text-xs font-bold text-[#F6F4D2]">
+              V
+            </div>
+            <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-[#34D399] ring-2 ring-[#1A1D1D]" />
           </div>
           <div>
-            <p className="text-sm font-medium text-white">
-              Operador Vega
-            </p>
+            <p className="text-sm font-medium text-white">Operador Vega</p>
             <p className="text-xs text-[#6B7272]">Turno activo</p>
             <p className="text-[10px] text-[#6B7272]">Portfolio · Leandro Balbián</p>
           </div>
