@@ -594,6 +594,8 @@ function getImpactColor(amount: number): string {
 
 // Subcomponent: Exceptions Panel (Nivel 2)
 function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Agent[]; onViewExceptions: () => void; hasMounted?: boolean }) {
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
   const activeExceptions = agents
     .filter((agent) => agent.status === "intervention_required" || agent.status === "circuit_open" || agent.status === "suspended")
     .sort((left, right) => right.economic_risk.amount - left.economic_risk.amount);
@@ -640,6 +642,8 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
           };
           const avatarColor = typeColors[agent.type] || "#6B7272";
 
+          const isHovered = hoveredId === agent.id;
+
           return (
             <motion.div
               key={agent.id}
@@ -648,6 +652,8 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
               className="flex items-center gap-3 py-3 px-1 cursor-pointer border-b border-[#3D4141] last:border-b-0 transition-all duration-200"
               onClick={onViewExceptions}
+              onMouseEnter={() => setHoveredId(agent.id)}
+              onMouseLeave={() => setHoveredId(null)}
             >
               {/* Avatar icon — 36px rounded-full */}
               <div
@@ -666,16 +672,46 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
                 <p className="mt-0.5 truncate text-xs text-[#A8AFAF]">{humanDescription(agent)}</p>
               </div>
 
-              {/* Economic impact pill */}
-              <span
-                className="flex-shrink-0 px-2 py-0.5 rounded-full font-mono text-sm font-bold"
-                style={{
-                  backgroundColor: impactColor + "1A",
-                  color: impactColor,
-                }}
-              >
-                ${economicImpactK(agent)}K
-              </span>
+              {/* Right: pill when idle, action buttons when hovered */}
+              <div className="flex-shrink-0 flex items-center gap-1.5">
+                <AnimatePresence mode="wait">
+                  {isHovered ? (
+                    <motion.div
+                      key="actions"
+                      className="flex items-center gap-1.5"
+                      initial={{ opacity: 0, x: 8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 8 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onViewExceptions(); }}
+                        className="bg-[#34D399]/15 text-[#34D399] px-2 py-1 rounded-lg text-[10px] font-medium hover:bg-[#34D399]/25 transition-colors"
+                      >
+                        Aprobar
+                      </button>
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-[#3D4141] text-[#6B7272] px-2 py-1 rounded-lg text-[10px] hover:bg-[#4A5050] transition-colors"
+                      >
+                        Ignorar
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.span
+                      key="pill"
+                      className="px-2 py-0.5 rounded-full font-mono text-sm font-bold"
+                      style={{ backgroundColor: impactColor + "1A", color: impactColor }}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -8 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      ${economicImpactK(agent)}K
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.div>
           );
         })}
