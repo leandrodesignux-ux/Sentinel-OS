@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Bell, Bot, Building2, ChevronDown, Clock, Home, Pause, Settings, Timer, TrendingUp, Users, Wrench, Zap } from "lucide-react";
+import { ArrowRight, Bell, Bot, Building2, ChevronDown, Clock, Home, Pause, Settings, Timer, TrendingUp, Users, Wrench, X, Zap } from "lucide-react";
 import { Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { economicImpactK } from "@/lib/utils/riskUtils";
@@ -853,6 +853,8 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
 export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[]; onViewExceptions: () => void }) {
   const [time, setTime] = useState(new Date());
   const [hasMounted, setHasMounted] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
@@ -968,14 +970,30 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
               const typeLabels: Record<string, string> = { sales: "Ventas", asset_mgmt: "Activos", maintenance: "Mant.", screening: "Eval." };
               const typeColors: Record<string, string> = { sales: "#FBBF24", asset_mgmt: "#D7FEFA", maintenance: "#F87171", screening: "#A78BFA" };
               const pct = agents.length > 0 ? (count / agents.length) * 100 : 0;
+              const isActive = typeFilter === type;
+              const color = typeColors[type];
+              // TODO: wire typeFilter to actual data filtering downstream
               return (
-                <div key={type} className="flex flex-col gap-1">
+                <div
+                  key={type}
+                  className="flex flex-col gap-1 cursor-pointer rounded-lg px-2 -mx-2 py-1 transition-colors duration-150"
+                  style={isActive ? { border: `1px solid ${color}30`, background: `${color}08` } : {}}
+                  onClick={() => setTypeFilter(isActive ? null : type)}
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-[#A8AFAF]">{typeLabels[type]}</span>
-                    <span className="font-mono text-xs text-white">{count}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-mono text-xs text-white">{count}</span>
+                      {isActive && <X className="h-3 w-3" style={{ color }} />}
+                    </div>
                   </div>
                   <div className="h-1 rounded-full bg-[#3D4141] overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: typeColors[type] }} />
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: color }}
+                      animate={{ width: typeFilter && !isActive ? "0%" : `${pct}%` }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    />
                   </div>
                 </div>
               );
@@ -990,15 +1008,39 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
               { key: "idle", label: "En espera", color: "#34D399" },
               { key: "monitoring", label: "Observando", color: "#FBBF24" },
               { key: "intervention_required", label: "Alerta", color: "#F87171" },
-            ] as { key: string; label: string; color: string }[]).map((s) => (
-              <div key={s.key} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
-                  <span className="text-xs text-[#A8AFAF]">{s.label}</span>
+            ] as { key: string; label: string; color: string }[]).map((s) => {
+              const isActive = statusFilter === s.key;
+              const count = agents.filter(a => a.status === s.key).length;
+              const pct = agents.length > 0 ? (count / agents.length) * 100 : 0;
+              // TODO: wire statusFilter to actual data filtering downstream
+              return (
+                <div
+                  key={s.key}
+                  className="flex flex-col gap-1 cursor-pointer rounded-lg px-2 -mx-2 py-1 transition-colors duration-150"
+                  style={isActive ? { border: `1px solid ${s.color}30`, background: `${s.color}08` } : {}}
+                  onClick={() => setStatusFilter(isActive ? null : s.key)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
+                      <span className="text-xs text-[#A8AFAF]">{s.label}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="font-mono text-xs text-white">{count}</span>
+                      {isActive && <X className="h-3 w-3" style={{ color: s.color }} />}
+                    </div>
+                  </div>
+                  <div className="h-1 rounded-full bg-[#3D4141] overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: s.color }}
+                      animate={{ width: statusFilter && !isActive ? "0%" : `${pct}%` }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    />
+                  </div>
                 </div>
-                <span className="font-mono text-xs text-white">{agents.filter(a => a.status === s.key).length}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Clock card */}
