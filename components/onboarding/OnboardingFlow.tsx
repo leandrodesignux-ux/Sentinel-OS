@@ -134,7 +134,7 @@ function StepButton({
     return (
       <motion.button
         disabled
-        className="mt-8 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold cursor-not-allowed"
+        className="mt-4 md:mt-8 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold cursor-not-allowed"
         style={{
           background: "var(--bg-elevated)",
           color: "var(--text-muted)",
@@ -151,7 +151,7 @@ function StepButton({
   if (step === 3 && showSuccessProp) {
     return (
       <motion.button
-        className="mt-8 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold"
+        className="mt-4 md:mt-8 w-full flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[14px] font-semibold"
         style={{
           background: "var(--status-nominal)",
           color: "#FFFFFF",
@@ -168,7 +168,7 @@ function StepButton({
 
   // READY / LOADING states
   return (
-    <div className="relative mt-8">
+    <div className="relative mt-4 md:mt-8">
       <motion.button
         onClick={onClick}
         disabled={isLoading}
@@ -863,7 +863,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
 
                 {/* Selector de tipo de agente */}
                 <motion.div 
-                  className="grid grid-cols-2 gap-3 mb-5"
+                  className="grid grid-cols-2 gap-2 md:gap-3 mb-5"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 3 * 0.08, duration: 0.35, ease: "easeOut" }}
@@ -886,7 +886,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                           ],
                         } : {}}
                         transition={{ duration: 0.4 }}
-                        className="flex flex-col items-start p-4 rounded-xl border transition-all text-left"
+                        className="flex flex-col items-start p-3 md:p-4 rounded-xl border transition-all text-left"
                         style={{
                           background: isSelected ? "var(--bg-surface)" : "var(--bg-surface)",
                           borderColor: isSelected ? "var(--accent-teal)" : "var(--bg-border)",
@@ -902,13 +902,13 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                         }}
                       >
                         <div
-                          className="h-9 w-9 rounded-lg flex items-center justify-center mb-2"
+                          className="h-8 w-8 md:h-9 md:w-9 rounded-lg flex items-center justify-center mb-1.5 md:mb-2"
                           style={{ background: type.bg }}
                         >
                           <Icon className="h-4 w-4" style={{ color: type.color }} />
                         </div>
-                        <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{type.label}</p>
-                        <p className="text-[11px] mt-0.5" style={{ color: "var(--text-secondary)" }}>{type.desc}</p>
+                        <p className="text-[12px] md:text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{type.label}</p>
+                        <p className="text-[10px] md:text-[11px] mt-0.5" style={{ color: "var(--text-secondary)" }}>{type.desc}</p>
                       </motion.button>
                     );
                   })}
@@ -1002,7 +1002,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
 
                 {/* Slider */}
                 <motion.div 
-                  className="rounded-2xl border p-6 mb-6"
+                  className="rounded-2xl border p-4 md:p-6 mb-4 md:mb-6"
                   style={{
                     background: "var(--bg-surface)",
                     borderColor: "var(--bg-border)",
@@ -1029,25 +1029,25 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                     }}
                   />
                   <div className="flex justify-between mt-3 text-[11px]" style={{ color: "var(--text-muted)" }}>
-                    <span>50% — Más supervisión</span>
-                    <span>95% — Más autonomía</span>
+                    <span className="flex flex-col"><span className="font-mono">50%</span><span>Más supervisión</span></span>
+                    <span className="flex flex-col items-end"><span className="font-mono">95%</span><span>Más autonomía</span></span>
                   </div>
                 </motion.div>
 
                 {/* Info cards */}
                 <motion.div 
-                  className="grid grid-cols-2 gap-3 mb-8"
+                  className="grid grid-cols-2 gap-2 mb-6"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 4 * 0.08, duration: 0.35, ease: "easeOut" }}
                 >
-                  <div className="rounded-xl p-3 border" style={{ background: "rgba(52, 211, 153, 0.15)", borderColor: "rgba(52, 211, 153, 0.3)" }}>
+                  <div className="rounded-xl p-2.5 md:p-3 border" style={{ background: "rgba(52, 211, 153, 0.15)", borderColor: "rgba(52, 211, 153, 0.3)" }}>
                     <p className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: "var(--status-nominal)" }}>
                       Por encima de {threshold}%
                     </p>
                     <p className="text-[12px]" style={{ color: "var(--text-primary)" }}>El agente actúa automáticamente</p>
                   </div>
-                  <div className="rounded-xl p-3 border" style={{ background: "rgba(251, 191, 36, 0.15)", borderColor: "rgba(251, 191, 36, 0.3)" }}>
+                  <div className="rounded-xl p-2.5 md:p-3 border" style={{ background: "rgba(251, 191, 36, 0.15)", borderColor: "rgba(251, 191, 36, 0.3)" }}>
                     <p className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: "var(--status-warning)" }}>
                       Por debajo de {threshold}%
                     </p>
