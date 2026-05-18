@@ -176,7 +176,7 @@ function FleetHealthStrip({ agents, hasMounted }: { agents: Agent[]; hasMounted?
   ];
 
   return (
-    <div className="relative flex items-center gap-4 bg-[#2B2E2E] border border-[#3D4141] rounded-[16px] px-5 py-4 hover:border-[#4A5050] transition-colors duration-200">
+    <div className="relative flex items-center gap-4 bg-[#2B2E2E] border border-[#3D4141] rounded-[16px] px-3 py-3 md:px-5 md:py-4 hover:border-[#4A5050] transition-colors duration-200">
       {/* Scan effect overlay */}
       <motion.div
         className="absolute inset-0 rounded-[16px] pointer-events-none"
@@ -206,19 +206,19 @@ function FleetHealthStrip({ agents, hasMounted }: { agents: Agent[]; hasMounted?
       <div className="w-px h-8 bg-[#3D4141] mx-1" />
 
       {/* Metric pills */}
-      <div className="flex items-center gap-2 flex-1">
+      <div className="flex items-center gap-1.5 md:gap-2 flex-1 flex-wrap">
         {metrics.map((m) => {
           const isActive = activeMetric === m.label;
           const chartData = m.sparkline.map((val, idx) => ({ idx, val }));
           return (
             <div key={m.label} className="relative">
               <div
-                className={`flex flex-col items-center px-3 py-2 rounded-xl cursor-pointer transition-colors duration-150 ${
+                className={`flex flex-col items-center px-2 py-1.5 md:px-3 md:py-2 rounded-xl cursor-pointer transition-colors duration-150 ${
                   isActive ? "bg-[#4A5050]" : "bg-[#3D4141] hover:bg-[#4A5050]"
                 }`}
                 onClick={() => setActiveMetric(isActive ? null : m.label)}
               >
-                <span className="font-mono text-sm font-bold text-white">{m.value}</span>
+                <span className="font-mono text-xs md:text-sm font-bold text-white">{m.value}</span>
                 <span className="text-[10px] text-[#6B7272] uppercase tracking-wide mt-0.5">{m.label}</span>
               </div>
 
@@ -296,7 +296,7 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
     : "0";
 
   return (
-    <section className="rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 flex flex-col h-[340px] hover:border-[#4A5050] transition-colors duration-200">
+    <section className="rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 flex flex-col h-[280px] md:h-[340px] hover:border-[#4A5050] transition-colors duration-200">
       {/* Top row: title left + pill toggle right */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-semibold text-white">Trabajo completado</h3>
@@ -323,7 +323,7 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
         <div className="flex items-baseline gap-2">
           <motion.span
             className="font-mono font-bold text-[#D7FEFA] leading-none"
-            style={{ fontSize: "52px" }}
+            style={{ fontSize: "clamp(36px, 8vw, 52px)" }}
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
@@ -497,7 +497,7 @@ function KpiCard({
 
   return (
     <motion.div
-      className="relative flex flex-col border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] rounded-[12px] flex-1 min-h-[88px] cursor-pointer overflow-hidden hover:border-[#4A5050] transition-colors duration-200"
+      className="relative flex flex-col border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] rounded-[12px] flex-1 min-h-[80px] md:min-h-[88px] cursor-pointer overflow-hidden hover:border-[#4A5050] transition-colors duration-200"
       variants={cardVariants}
       whileHover={{ y: -1, boxShadow: "0 6px 24px rgba(0,0,0,0.3)" }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -534,7 +534,7 @@ function KpiCard({
         <div className="flex items-center gap-2 mt-0.5">
           <motion.span
             className="font-mono font-bold leading-none text-white"
-            style={{ fontSize: "24px" }}
+            style={{ fontSize: "clamp(18px, 4vw, 24px)" }}
           >
             {display}
           </motion.span>
@@ -630,7 +630,7 @@ function KpiCardsRow({ onViewExceptions, hasMounted }: { onViewExceptions: () =>
 
   return (
     <motion.div
-      className="grid grid-cols-4 gap-2 items-start"
+      className="grid grid-cols-2 gap-2 md:grid-cols-4 items-start"
       variants={getContainerVariants(hasMounted)}
       initial="hidden"
       animate="visible"
@@ -742,7 +742,7 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
   }, [activeExceptions.length]);
 
   return (
-    <section className="flex flex-col rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 h-full hover:border-[#4A5050] transition-colors duration-200">
+    <section className="flex flex-col rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-4 md:p-6 h-full hover:border-[#4A5050] transition-colors duration-200">
       {/* Sticky Header */}
       <div className="sticky top-0 bg-[#2B2E2E]/80 backdrop-blur-sm pb-3 pt-1 z-10">
         <div className="flex items-center justify-between">
@@ -795,7 +795,7 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
               variants={itemVariants}
               whileHover={{ backgroundColor: "rgba(255,255,255,0.03)" }}
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              className="flex items-center gap-3 py-3 px-1 cursor-pointer border-b border-[#3D4141] last:border-b-0 transition-all duration-200"
+              className="flex items-center gap-3 py-3 px-1 min-h-[56px] cursor-pointer border-b border-[#3D4141] last:border-b-0 transition-all duration-200"
               onClick={onViewExceptions}
               onMouseEnter={() => setHoveredId(agent.id)}
               onMouseLeave={() => setHoveredId(null)}
@@ -865,7 +865,7 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
       {/* Connect CTA — full width */}
       <button
         onClick={onViewExceptions}
-        className="mt-4 w-full bg-[#34D399] text-black font-semibold rounded-xl py-2.5 hover:bg-[#2EBB85] transition-colors text-sm"
+        className="mt-4 w-full bg-[#34D399] text-black font-semibold rounded-xl py-2.5 hover:bg-[#2EBB85] transition-colors text-base md:text-sm"
       >
         Conectar y resolver
       </button>
@@ -1088,7 +1088,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
           transition={{ duration: 0.4, delay: 0.3 }}
         >
           {/* Fleet type breakdown */}
-          <div className="rounded-[16px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-4 flex flex-col gap-3">
+          <div className="rounded-[16px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-3 md:p-4 flex flex-col gap-2">
             <p className="text-[10px] font-medium uppercase tracking-wider text-[#6B7272]">Por tipo</p>
             {(["sales", "asset_mgmt", "maintenance", "screening"] as const).map((type) => {
               const count = agents.filter(a => a.type === type).length;
@@ -1126,7 +1126,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
           </div>
 
           {/* Status distribution */}
-          <div className="rounded-[16px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-4 flex flex-col gap-3">
+          <div className="rounded-[16px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-3 md:p-4 flex flex-col gap-2">
             <p className="text-[10px] font-medium uppercase tracking-wider text-[#6B7272]">Por estado</p>
             {([
               { key: "running", label: "Trabajando", color: "#34D399" },
@@ -1169,7 +1169,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
           </div>
 
           {/* Clock card */}
-          <div className="rounded-[16px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-4 flex flex-col gap-1">
+          <div className="rounded-[16px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-3 md:p-4 flex flex-col gap-1">
             <p className="text-[10px] font-medium uppercase tracking-wider text-[#6B7272]">Tiempo operativo</p>
             <span className="font-mono text-lg font-bold text-[#D7FEFA]">{formatTime(time)}</span>
             <span className="text-xs text-[#6B7272]">6h sin interrupciones</span>
