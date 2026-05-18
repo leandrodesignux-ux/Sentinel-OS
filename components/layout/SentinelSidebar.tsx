@@ -152,7 +152,7 @@ export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCou
       {/* ── MOBILE TOP BAR ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between bg-[#1A1D1D] border-b border-[#3D4141] px-4 py-3">
         <SentinelLogo variant="isotipo" size="sm" />
-        <span className="text-sm font-medium text-white">{activeSectionLabel}</span>
+        <span className="text-sm font-medium text-white truncate max-w-[140px]">{activeSectionLabel}</span>
         <button
           onClick={() => setMobileOpen(true)}
           className="p-1.5 rounded-lg hover:bg-[#2B2E2E] transition-colors"

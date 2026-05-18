@@ -70,7 +70,7 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
     <TooltipProvider>
       {showOnboarding && <OnboardingFlow onComplete={() => setShowOnboarding(false)} />}
       {emergencyHalt.active && (
-        <div className="fixed left-3 top-[72px] z-40 flex w-[196px] items-center gap-2 rounded-data border border-[#F87171]/30 bg-[#F87171]/15 px-3 py-2 font-display text-xs text-[#F87171]">
+        <div className="fixed left-3 top-[58px] right-3 md:right-auto md:w-[196px] z-40 flex items-center gap-2 rounded-data border border-[#F87171]/30 bg-[#F87171]/15 px-3 py-2 font-display text-xs text-[#F87171]">
           <span className="h-2 w-2 animate-status-pulse rounded-full bg-[#F87171]" />
           <span>FLOTA DETENIDA</span>
         </div>
@@ -122,7 +122,7 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
           </div>
         </header>
 
-        <section className="bg-[#1A1D1D] min-h-0 flex-1 overflow-y-auto p-4">
+        <section className="bg-[#1A1D1D] min-h-0 flex-1 overflow-y-auto px-3 py-3 md:p-4">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
