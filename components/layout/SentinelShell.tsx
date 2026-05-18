@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Bell, ChevronLeft, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { EmergencyStop } from "@/components/controls/EmergencyStop";
@@ -76,16 +77,47 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
       )}
       <main className="ml-[240px] flex min-h-screen flex-col overflow-hidden bg-[#1A1D1D]">
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#3D4141] bg-[#1A1D1D] px-6">
-          <div>
-            <h2 className="text-xl font-semibold text-white">
-              {sectionTitles[activeSection]}
-            </h2>
-            <p className="mt-0.5 text-xs text-[#A8AFAF]">
-              {sectionSubtitles[activeSection]}
-            </p>
+          {/* Left: breadcrumb + title */}
+          <div className="flex items-center gap-2">
+            <button className="p-1.5 rounded-lg hover:bg-[#2B2E2E] transition-colors">
+              <ChevronLeft className="h-4 w-4 text-[#6B7272]" />
+            </button>
+            <span className="text-[#3D4141] select-none">·</span>
+            <div>
+              <h2 className="text-xl font-semibold text-white leading-tight">
+                {sectionTitles[activeSection]}
+              </h2>
+              <p className="text-xs text-[#A8AFAF]">
+                {sectionSubtitles[activeSection]}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-white font-mono">{formatTime(now)}</span>
+
+          {/* Right: icon buttons + clock chip + emergency */}
+          <div className="flex items-center gap-2">
+            {/* Bell with critical badge */}
+            <div className="relative">
+              <button className="p-2 rounded-lg hover:bg-[#2B2E2E] transition-colors text-[#6B7272] hover:text-[#A8AFAF]">
+                <Bell className="h-4 w-4" />
+              </button>
+              {hasCriticalAgents && (
+                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#F87171]" />
+              )}
+            </div>
+            {/* Settings */}
+            <button className="p-2 rounded-lg hover:bg-[#2B2E2E] transition-colors text-[#6B7272] hover:text-[#A8AFAF]">
+              <Settings className="h-4 w-4" />
+            </button>
+            {/* User avatar */}
+            <button className="flex items-center justify-center h-8 w-8 rounded-full bg-[#F6F4D2]/10 text-[#F6F4D2] text-xs font-bold hover:bg-[#F6F4D2]/20 transition-colors">
+              V
+            </button>
+            {/* Divider */}
+            <div className="w-px h-5 bg-[#3D4141] mx-1" />
+            {/* Clock chip */}
+            <span className="font-mono text-xs bg-[#2B2E2E] px-3 py-1.5 rounded-lg text-[#A8AFAF] border border-[#3D4141]">
+              {formatTime(now)}
+            </span>
             {hasCriticalAgents && <EmergencyStop />}
           </div>
         </header>
