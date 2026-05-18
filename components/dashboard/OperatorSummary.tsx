@@ -407,6 +407,9 @@ function KpiCard({
   Icon,
   sparklineData: sparkline,
   sparklineColor,
+  detailStats,
+  isExpanded,
+  onToggle,
 }: {
   label: string;
   value: string;
@@ -416,6 +419,9 @@ function KpiCard({
   Icon: typeof Zap;
   sparklineData: number[];
   sparklineColor: string;
+  detailStats: { label: string; value: string }[];
+  isExpanded: boolean;
+  onToggle: (label: string) => void;
 }) {
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -441,20 +447,23 @@ function KpiCard({
 
   return (
     <motion.div
-      className="relative flex flex-row items-center gap-3 border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] rounded-[12px] px-3 py-3 flex-1 h-[88px] cursor-pointer overflow-hidden hover:border-[#4A5050] transition-colors duration-200"
+      className="relative flex flex-col border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] rounded-[12px] flex-1 min-h-[88px] cursor-pointer overflow-hidden hover:border-[#4A5050] transition-colors duration-200"
       variants={cardVariants}
       whileHover={{ y: -1, boxShadow: "0 6px 24px rgba(0,0,0,0.3)" }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      style={{ borderColor: "#3D4141", transition: "border-color 0.2s, box-shadow 0.2s" }}
+      style={{ borderColor: isExpanded ? accentColor + "40" : "#3D4141", transition: "border-color 0.2s, box-shadow 0.2s" }}
+      onClick={() => onToggle(label)}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = accentColor + "40";
         e.currentTarget.style.boxShadow = `0 0 0 1px ${accentColor}40, 0 4px 20px ${accentColor}14`;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "#3D4141";
-        e.currentTarget.style.boxShadow = "none";
+        e.currentTarget.style.borderColor = isExpanded ? accentColor + "40" : "#3D4141";
+        e.currentTarget.style.boxShadow = isExpanded ? `0 0 0 1px ${accentColor}40, 0 4px 20px ${accentColor}14` : "none";
       }}
     >
+      {/* Main row */}
+      <div className="flex flex-row items-center gap-3 px-3 py-3">
       {/* Left accent bar */}
       <div
         className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[12px]"
@@ -503,29 +512,75 @@ function KpiCard({
         </div>
       </div>
 
-      {/* Sparkline right */}
-      <div className="flex-shrink-0">
-        <LineChart width={60} height={32} data={chartData}>
-          <Line
-            type="monotone"
-            dataKey="val"
-            stroke={sparklineColor}
-            strokeWidth={1.5}
-            dot={false}
-            isAnimationActive={true}
-            animationDuration={800}
-          />
-        </LineChart>
+        {/* Sparkline right */}
+        <div className="flex-shrink-0">
+          <LineChart width={60} height={32} data={chartData}>
+            <Line
+              type="monotone"
+              dataKey="val"
+              stroke={sparklineColor}
+              strokeWidth={1.5}
+              dot={false}
+              isAnimationActive={true}
+              animationDuration={800}
+            />
+          </LineChart>
+        </div>
       </div>
+
+      {/* Expandable detail panel */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            {/* Full-width sparkline */}
+            <div className="px-3 pb-1">
+              <LineChart width={220} height={60} data={chartData} style={{ width: "100%" }}>
+                <Line
+                  type="monotone"
+                  dataKey="val"
+                  stroke={accentColor}
+                  strokeWidth={1.5}
+                  dot={false}
+                  isAnimationActive={true}
+                  animationDuration={600}
+                />
+              </LineChart>
+            </div>
+            {/* Divider */}
+            <div className="mx-3 h-px bg-[#3D4141]" />
+            {/* Mini stats */}
+            <div className="px-3 py-2 flex flex-col gap-1">
+              {detailStats.map((s) => (
+                <div key={s.label} className="flex items-center justify-between">
+                  <span className="text-[10px] text-[#A8AFAF]">{s.label}</span>
+                  <span className="font-mono text-[10px] font-semibold" style={{ color: accentColor }}>{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
 // Subcomponent: KPI Cards Row (Nivel 4)
 function KpiCardsRow({ onViewExceptions, hasMounted }: { onViewExceptions: () => void; hasMounted?: boolean }) {
+  const [expandedKpi, setExpandedKpi] = useState<string | null>(null);
+
+  function handleToggle(label: string) {
+    setExpandedKpi((prev) => (prev === label ? null : label));
+  }
+
   return (
     <motion.div
-      className="grid grid-cols-4 gap-2"
+      className="grid grid-cols-4 gap-2 items-start"
       variants={getContainerVariants(hasMounted)}
       initial="hidden"
       animate="visible"
@@ -539,6 +594,12 @@ function KpiCardsRow({ onViewExceptions, hasMounted }: { onViewExceptions: () =>
         Icon={Zap}
         sparklineData={sparklineData.escalation}
         sparklineColor="#34D399"
+        isExpanded={expandedKpi === "Piloto automático"}
+        onToggle={handleToggle}
+        detailStats={[
+          { label: "Promedio 7d", value: "11.2%" },
+          { label: "Meta", value: "<10%" },
+        ]}
       />
       <KpiCard
         label="Sin intervención"
@@ -549,6 +610,12 @@ function KpiCardsRow({ onViewExceptions, hasMounted }: { onViewExceptions: () =>
         Icon={Bot}
         sparklineData={sparklineData.autonomous}
         sparklineColor="#34D399"
+        isExpanded={expandedKpi === "Sin intervención"}
+        onToggle={handleToggle}
+        detailStats={[
+          { label: "Promedio 7d", value: "90.4%" },
+          { label: "Meta", value: ">90%" },
+        ]}
       />
       <KpiCard
         label="Tiempo decisión"
@@ -559,6 +626,12 @@ function KpiCardsRow({ onViewExceptions, hasMounted }: { onViewExceptions: () =>
         Icon={Timer}
         sparklineData={sparklineData.time}
         sparklineColor="#D7FEFA"
+        isExpanded={expandedKpi === "Tiempo decisión"}
+        onToggle={handleToggle}
+        detailStats={[
+          { label: "Promedio 7d", value: "4.8s" },
+          { label: "Meta", value: "<5s" },
+        ]}
       />
       <KpiCard
         label="Agentes activos"
@@ -569,6 +642,12 @@ function KpiCardsRow({ onViewExceptions, hasMounted }: { onViewExceptions: () =>
         Icon={Users}
         sparklineData={sparklineData.agents}
         sparklineColor="#F6F4D2"
+        isExpanded={expandedKpi === "Agentes activos"}
+        onToggle={handleToggle}
+        detailStats={[
+          { label: "Promedio 7d", value: "46 / 50" },
+          { label: "En revisión", value: "3" },
+        ]}
       />
     </motion.div>
   );
