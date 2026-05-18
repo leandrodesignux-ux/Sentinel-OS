@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Bell, Bot, Building2, ChevronDown, Clock, Home, Pause, Settings, Timer, TrendingUp, Users, Wrench, X, Zap } from "lucide-react";
 import { Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
@@ -855,6 +855,19 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
   const [hasMounted, setHasMounted] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [showRiskBreakdown, setShowRiskBreakdown] = useState(false);
+  const riskRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showRiskBreakdown) return;
+    function handleMouseDown(e: MouseEvent) {
+      if (riskRef.current && !riskRef.current.contains(e.target as Node)) {
+        setShowRiskBreakdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [showRiskBreakdown]);
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
@@ -933,24 +946,85 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
         {[
           { label: "Flota activa", value: `${agents.filter(a => a.status === "running" || a.status === "idle").length} / ${agents.length}`, color: "#34D399" },
           { label: "Tasa autónoma", value: `${agents.length > 0 ? (100 - (agents.filter(a => a.status === "intervention_required" || a.status === "circuit_open" || a.status === "suspended").length / agents.length) * 100).toFixed(1) : "100.0"}%`, color: "#D7FEFA" },
-          { label: "Riesgo acumulado", value: `$${agents.reduce((s, a) => s + (a.economic_risk?.amount ?? 0), 0).toLocaleString()}`, color: "#FBBF24" },
           { label: "Alertas activas", value: `${agents.filter(a => a.status === "intervention_required" || a.status === "circuit_open").length}`, color: "#F87171" },
         ].map((pill) => (
           <div
             key={pill.label}
             className="flex items-center gap-3 rounded-[12px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] px-4 py-2.5 flex-1"
           >
-            <span
-              className="h-1.5 w-1.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: pill.color }}
-            />
+            <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pill.color }} />
             <span className="text-[10px] text-[#6B7272] uppercase tracking-wider flex-1">{pill.label}</span>
-            <span
-              className="font-mono text-sm font-semibold"
-              style={{ color: pill.color }}
-            >{pill.value}</span>
+            <span className="font-mono text-sm font-semibold" style={{ color: pill.color }}>{pill.value}</span>
           </div>
         ))}
+
+        {/* Riesgo acumulado — interactive pill with breakdown popover */}
+        {(() => {
+          const totalRisk = agents.reduce((s, a) => s + (a.economic_risk?.amount ?? 0), 0);
+          const typeColors: Record<string, string> = { sales: "#FBBF24", asset_mgmt: "#D7FEFA", maintenance: "#F87171", screening: "#A78BFA" };
+          const typeLabels: Record<string, string> = { sales: "Ventas", asset_mgmt: "Activos", maintenance: "Mant.", screening: "Eval." };
+          const byType = (["sales", "asset_mgmt", "maintenance", "screening"] as const).map((type) => ({
+            type,
+            label: typeLabels[type],
+            color: typeColors[type],
+            amount: agents.filter(a => a.type === type).reduce((s, a) => s + (a.economic_risk?.amount ?? 0), 0),
+          }));
+          return (
+            <div ref={riskRef} className="relative flex-1">
+              <div
+                className={`flex items-center gap-3 rounded-[12px] border backdrop-blur-sm bg-white/[0.02] px-4 py-2.5 cursor-pointer transition-colors ${
+                  showRiskBreakdown ? "border-[#FBBF24]/40 bg-[#FBBF24]/5" : "border-[#3D4141] hover:border-[#4A5050]"
+                }`}
+                onClick={() => setShowRiskBreakdown((v) => !v)}
+              >
+                <span className="h-1.5 w-1.5 rounded-full flex-shrink-0 bg-[#FBBF24]" />
+                <span className="text-[10px] text-[#6B7272] uppercase tracking-wider flex-1">Riesgo acumulado</span>
+                <span className="font-mono text-sm font-semibold text-[#FBBF24]">${totalRisk.toLocaleString()}</span>
+              </div>
+
+              <AnimatePresence>
+                {showRiskBreakdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.18 }}
+                    className="absolute top-full left-0 mt-2 z-50 w-full min-w-[220px] rounded-xl border border-[#4A5050] bg-[#1A1D1D] p-4 shadow-2xl"
+                  >
+                    <p className="text-xs font-semibold text-white mb-3">Desglose de riesgo</p>
+                    <div className="flex flex-col gap-2.5">
+                      {byType.map((row) => (
+                        <div key={row.type}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] text-[#A8AFAF]">{row.label}</span>
+                            <span className="font-mono text-xs" style={{ color: row.color }}>
+                              ${row.amount.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="h-0.5 rounded-full bg-[#3D4141] overflow-hidden">
+                            <motion.div
+                              className="h-full rounded-full"
+                              style={{ backgroundColor: row.color }}
+                              initial={{ width: 0 }}
+                              animate={{ width: totalRisk > 0 ? `${(row.amount / totalRisk) * 100}%` : "0%" }}
+                              transition={{ duration: 0.4, ease: "easeOut" }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={onViewExceptions}
+                      className="mt-3 text-[10px] text-[#D7FEFA] cursor-pointer hover:underline"
+                    >
+                      Ver auditoría completa →
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })()}
       </motion.div>
 
       {/* Fila 4: Grid principal 3 columnas */}
