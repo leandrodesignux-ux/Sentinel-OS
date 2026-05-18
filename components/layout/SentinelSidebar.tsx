@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, BookOpen, ClipboardList, LayoutDashboard, Settings, Users } from "lucide-react";
-import { motion } from "framer-motion";
+import { Bell, BookOpen, ClipboardList, LayoutDashboard, Menu, Settings, Users, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { SentinelLogo } from "@/components/brand/SentinelLogo";
@@ -73,29 +74,23 @@ function NavigationGroup({ title, sections, activeSection, exceptionCount, onSec
   );
 }
 
-export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCount = 38 }: { activeSection: SentinelSection; nominalCount?: number; exceptionCount?: number; fleetStopped?: boolean }) {
-  const router = useRouter();
+const allSections = [...mainSections, ...managementSections, ...systemSections];
 
-  function onSectionChange(section: SentinelSection) {
-    router.push(`/?section=${section}`);
-  }
-
+function SidebarContent({ activeSection, nominalCount, exceptionCount, onSectionChange }: { activeSection: SentinelSection; nominalCount: number; exceptionCount: number; onSectionChange: (s: SentinelSection) => void }) {
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col bg-[#1A1D1D] border-r border-[#3D4141] px-6 py-6">
+    <>
       <div className="mb-6 flex flex-col gap-1 px-2">
         <SentinelLogo variant="isotipo" size="sm" hoverAnimation={true} />
         <p className="ml-9 text-[10px] text-[#6B7272]">by Leandro Balbián</p>
       </div>
 
       <div className="mx-2 mb-5 rounded-xl border border-[#3D4141] bg-[#2B2E2E] px-3 py-2.5">
-        {/* Top row: dot + number + label */}
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-[#34D399]" />
           <span className="text-sm font-bold text-white">{nominalCount}</span>
           <span className="text-[11px] text-[#6B7272]">activos</span>
           <span className="ml-auto text-[10px] text-[#6B7272]">/ 12</span>
         </div>
-        {/* Mini progress bar */}
         <div className="mt-2 h-1 w-full rounded-full bg-[#3D4141] overflow-hidden">
           <div
             className="h-full rounded-full bg-[#34D399] transition-all duration-700"
@@ -114,7 +109,6 @@ export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCou
 
       <div className="mt-auto pt-4 border-t border-[#3D4141]">
         <div className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-[#2B2E2E] transition-colors cursor-pointer">
-          {/* Avatar with online dot */}
           <div className="relative flex-shrink-0">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F6F4D2]/10 text-xs font-bold text-[#F6F4D2]">
               V
@@ -128,6 +122,84 @@ export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCou
           </div>
         </div>
       </div>
-    </aside>
+    </>
+  );
+}
+
+export function SentinelSidebar({ activeSection, nominalCount = 47, exceptionCount = 38 }: { activeSection: SentinelSection; nominalCount?: number; exceptionCount?: number; fleetStopped?: boolean }) {
+  const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  function onSectionChange(section: SentinelSection) {
+    router.push(`/?section=${section}`);
+    setMobileOpen(false);
+  }
+
+  const activeSectionLabel = allSections.find((s) => s.id === activeSection)?.label ?? "";
+
+  return (
+    <>
+      {/* ── DESKTOP SIDEBAR ── */}
+      <aside className="hidden md:flex fixed inset-y-0 left-0 z-30 w-[240px] flex-col bg-[#1A1D1D] border-r border-[#3D4141] px-6 py-6">
+        <SidebarContent
+          activeSection={activeSection}
+          nominalCount={nominalCount}
+          exceptionCount={exceptionCount}
+          onSectionChange={onSectionChange}
+        />
+      </aside>
+
+      {/* ── MOBILE TOP BAR ── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between bg-[#1A1D1D] border-b border-[#3D4141] px-4 py-3">
+        <SentinelLogo variant="isotipo" size="sm" />
+        <span className="text-sm font-medium text-white">{activeSectionLabel}</span>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-1.5 rounded-lg hover:bg-[#2B2E2E] transition-colors"
+        >
+          <Menu className="h-5 w-5 text-[#A8AFAF]" />
+        </button>
+      </div>
+
+      {/* ── MOBILE DRAWER + BACKDROP ── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="md:hidden fixed inset-0 z-30 bg-black/50"
+            />
+
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="md:hidden fixed inset-y-0 left-0 z-40 w-[280px] bg-[#1A1D1D] border-r border-[#3D4141] flex flex-col px-6 py-6"
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-[#2B2E2E] transition-colors"
+              >
+                <X className="h-5 w-5 text-[#A8AFAF]" />
+              </button>
+
+              <SidebarContent
+                activeSection={activeSection}
+                nominalCount={nominalCount}
+                exceptionCount={exceptionCount}
+                onSectionChange={onSectionChange}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
