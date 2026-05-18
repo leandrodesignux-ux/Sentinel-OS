@@ -117,9 +117,9 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
       </div>
 
       {/* ROW 3 — Agent Grid + Detail Panel */}
-      <div className="flex-1 flex flex-row gap-3 min-h-0">
+      <div className="flex-1 flex flex-col md:flex-row gap-3 min-h-0">
         {/* Left: Agent Grid */}
-        <div className="flex-[2] overflow-y-auto min-h-0 pr-1">
+        <div className="flex-1 md:flex-[2] overflow-y-auto min-h-0 md:pr-1">
           <AgentGrid
             agents={agents}
             searchQuery={searchQuery}
@@ -127,10 +127,12 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
           />
         </div>
 
-        {/* Right: Detail Panel */}
-        <div className="flex-[1] min-h-0 overflow-y-auto" style={{ minWidth: '280px', maxWidth: '320px' }}>
-          <AgentDetailPanel agent={selectedAgent} />
-        </div>
+        {/* Right: Detail Panel — hidden on mobile when no agent selected */}
+        {selectedAgent && (
+          <div className="w-full md:flex-1 md:min-h-0 md:overflow-y-auto md:max-w-[320px]">
+            <AgentDetailPanel agent={selectedAgent} />
+          </div>
+        )}
       </div>
 
     </div>
