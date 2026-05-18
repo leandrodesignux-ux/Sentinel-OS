@@ -919,14 +919,14 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
 
   return (
     <motion.div
-      className="h-full min-h-0 overflow-y-auto bg-[#1A1D1D] px-8 py-8"
+      className="h-full min-h-0 overflow-y-auto bg-[#1A1D1D] px-4 py-4 md:px-8 md:py-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: hasMounted ? 1 : 0 }}
       transition={{ duration: 0.3 }}
     >
       {/* Fila 1: Header — delay 0s */}
       <motion.header
-        className="flex items-center justify-between mb-6"
+        className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4 md:mb-6"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: hasMounted ? 1 : 0, y: hasMounted ? 0 : -10 }}
         transition={{ duration: 0.4, delay: 0 }}
@@ -943,7 +943,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
         </div>
 
         {/* Right: clock chip + bell + settings + pause */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Live clock chip */}
           <span className="font-mono text-xs text-[#A8AFAF] bg-[#2B2E2E] border border-[#3D4141] px-3 py-1 rounded-full">
             {formatTime(time)}
@@ -959,7 +959,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
           {/* Pause fleet */}
           <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#F87171]/40 text-[#F87171] bg-[#F87171]/5 hover:bg-[#F87171]/10 transition-colors text-sm font-medium">
             <Pause className="h-4 w-4" />
-            Pausar flota
+            <span className="hidden sm:inline">Pausar flota</span>
           </button>
         </div>
       </motion.header>
@@ -976,7 +976,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
 
       {/* Fila 3: Top Stats Bar — 4 inline metric pills */}
       <motion.div
-        className="mb-6 flex items-center gap-3"
+        className="mb-4 md:mb-6 grid grid-cols-2 gap-2 md:flex md:items-center md:gap-3"
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: hasMounted ? 1 : 0, y: hasMounted ? 0 : -8 }}
         transition={{ duration: 0.4, delay: 0.28 }}
@@ -988,7 +988,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
         ].map((pill) => (
           <div
             key={pill.label}
-            className="flex items-center gap-3 rounded-[12px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] px-4 py-2.5 flex-1"
+            className="flex items-center gap-3 rounded-[12px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] px-4 py-2.5 md:flex-1"
           >
             <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pill.color }} />
             <span className="text-[10px] text-[#6B7272] uppercase tracking-wider flex-1">{pill.label}</span>
@@ -1079,10 +1079,10 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
       </motion.div>
 
       {/* Fila 4: Grid principal 3 columnas */}
-      <div className="grid gap-5" style={{ gridTemplateColumns: "240px 1fr 320px" }}>
+      <div className="grid gap-4 md:gap-5 grid-cols-1 md:grid-cols-[240px_1fr_320px]">
         {/* Columna izquierda — Sidebar stats */}
         <motion.div
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-4 order-2 md:order-1"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: hasMounted ? 1 : 0, x: hasMounted ? 0 : -20 }}
           transition={{ duration: 0.4, delay: 0.3 }}
@@ -1177,7 +1177,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
         </motion.div>
 
         {/* Columna central — main content */}
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 order-1 md:order-2">
           {/* HeroActivityCard — delay 0.3s */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1199,6 +1199,7 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
 
         {/* Columna derecha — ExceptionsPanel delay 0.25s */}
         <motion.div
+          className="order-3"
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: hasMounted ? 1 : 0, x: hasMounted ? 0 : 30 }}
           transition={{ duration: 0.4, delay: 0.25 }}
