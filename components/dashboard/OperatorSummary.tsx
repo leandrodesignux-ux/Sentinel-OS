@@ -349,7 +349,6 @@ const sparklineData = {
 function KpiCard({
   label,
   value,
-  subtitle,
   badge,
   accentColor,
   Icon,
@@ -358,13 +357,15 @@ function KpiCard({
 }: {
   label: string;
   value: string;
-  subtitle: string;
+  subtitle?: string;
   badge?: string;
   accentColor: string;
   Icon: typeof Zap;
   sparklineData: number[];
   sparklineColor: string;
 }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+
   const numericStr = value.replace(/[^0-9.]/g, '');
   const numeric = parseFloat(numericStr) || 0;
   const suffix = value.replace(/[0-9.]/g, '');
@@ -387,45 +388,65 @@ function KpiCard({
 
   return (
     <motion.div
-      className="flex flex-col border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] rounded-[16px] p-5 flex-1 h-[160px] cursor-pointer"
+      className="relative flex flex-row items-center gap-3 border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] rounded-[12px] px-3 py-3 flex-1 h-[88px] cursor-pointer overflow-hidden"
       variants={cardVariants}
-      whileHover={{
-        y: -2,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-      }}
+      whileHover={{ y: -1, boxShadow: "0 6px 24px rgba(0,0,0,0.3)" }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      style={{
-        borderColor: "#3D4141",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = accentColor + "40";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "#3D4141";
-      }}
+      style={{ borderColor: "#3D4141" }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = accentColor + "40"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#3D4141"; }}
     >
-      {/* Header with icon */}
-      <div className="flex items-center gap-2 mb-3">
-        <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: accentColor + "14" }} // 8% opacity
-        >
-          <Icon className="h-4 w-4" style={{ color: accentColor }} />
-        </div>
-        <p className="text-[10px] font-medium uppercase tracking-wider text-[#6B7272]">{label}</p>
+      {/* Left accent bar */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[12px]"
+        style={{ backgroundColor: accentColor }}
+      />
+
+      {/* Icon */}
+      <div
+        className="w-8 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0 ml-1"
+        style={{ backgroundColor: accentColor + "14" }}
+      >
+        <Icon className="h-4 w-4" style={{ color: accentColor }} />
       </div>
 
-      {/* Animated number */}
-      <motion.p
-        className="font-mono font-bold leading-none text-white mb-2"
-        style={{ fontSize: "32px" }}
-      >
-        {display}
-      </motion.p>
+      {/* Center: label + value */}
+      <div className="flex flex-col flex-1 min-w-0">
+        <p className="text-[10px] font-medium uppercase tracking-wider text-[#6B7272] truncate">{label}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <motion.span
+            className="font-mono font-bold leading-none text-white"
+            style={{ fontSize: "24px" }}
+          >
+            {display}
+          </motion.span>
+          {/* Badge dot with hover tooltip */}
+          {badge && (
+            <div
+              className="relative"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              <span
+                className="h-2 w-2 rounded-full block flex-shrink-0"
+                style={{ backgroundColor: accentColor }}
+              />
+              {showTooltip && (
+                <div
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 whitespace-nowrap rounded-lg border border-[#3D4141] bg-[#1A1D1D] px-2 py-1 text-[10px] font-medium z-50"
+                  style={{ color: accentColor }}
+                >
+                  {badge}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
-      {/* Sparkline micro-chart */}
-      <div className="mb-3">
-        <LineChart width={40} height={20} data={chartData}>
+      {/* Sparkline right */}
+      <div className="flex-shrink-0">
+        <LineChart width={60} height={32} data={chartData}>
           <Line
             type="monotone"
             dataKey="val"
@@ -437,19 +458,6 @@ function KpiCard({
           />
         </LineChart>
       </div>
-
-      {/* Description */}
-      <p className="text-[11px] text-[#A8AFAF] leading-relaxed mb-3 flex-1">{subtitle}</p>
-
-      {/* Divider */}
-      <div className="h-px bg-[#3D4141] mb-3" />
-
-      {/* Badge */}
-      {badge && (
-        <span className="text-[10px] font-medium" style={{ color: accentColor }}>
-          {badge}
-        </span>
-      )}
     </motion.div>
   );
 }
@@ -458,7 +466,7 @@ function KpiCard({
 function KpiCardsRow({ onViewExceptions, hasMounted }: { onViewExceptions: () => void; hasMounted?: boolean }) {
   return (
     <motion.div
-      className="grid grid-cols-4 gap-3"
+      className="grid grid-cols-4 gap-2"
       variants={getContainerVariants(hasMounted)}
       initial="hidden"
       animate="visible"
