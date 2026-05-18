@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Bell, Bot, Building2, ChevronDown, Clock, Home, Pause, Settings, Timer, TrendingUp, Users, Wrench, Zap } from "lucide-react";
 import { Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { economicImpactK } from "@/lib/utils/riskUtils";
 import type { Agent } from "@/types/agent";
 
@@ -15,6 +15,33 @@ const activityData = [
   { hora: "-40m", resueltas: 8, nuevas: 4 },
   { hora: "-20m", resueltas: 10, nuevas: 6 },
   { hora: "ahora", resueltas: 12, nuevas: 4 },
+];
+
+const activityDataHoy = [
+  { hora: "-600m", resueltas: 5, nuevas: 2 },
+  { hora: "-540m", resueltas: 8, nuevas: 3 },
+  { hora: "-480m", resueltas: 12, nuevas: 5 },
+  { hora: "-420m", resueltas: 16, nuevas: 6 },
+  { hora: "-360m", resueltas: 21, nuevas: 8 },
+  { hora: "-300m", resueltas: 26, nuevas: 9 },
+  { hora: "-240m", resueltas: 30, nuevas: 11 },
+  { hora: "-180m", resueltas: 35, nuevas: 13 },
+  { hora: "-120m", resueltas: 38, nuevas: 14 },
+  { hora: "-100m", resueltas: 40, nuevas: 15 },
+  { hora: "-80m", resueltas: 42, nuevas: 16 },
+  { hora: "-60m", resueltas: 44, nuevas: 17 },
+  { hora: "-20m", resueltas: 46, nuevas: 17 },
+  { hora: "ahora", resueltas: 48, nuevas: 18 },
+];
+
+const activityDataTodo = [
+  { hora: "-7d", resueltas: 80, nuevas: 30 },
+  { hora: "-6d", resueltas: 120, nuevas: 44 },
+  { hora: "-5d", resueltas: 160, nuevas: 55 },
+  { hora: "-4d", resueltas: 195, nuevas: 63 },
+  { hora: "-3d", resueltas: 230, nuevas: 72 },
+  { hora: "-2d", resueltas: 268, nuevas: 82 },
+  { hora: "hoy", resueltas: 310, nuevas: 90 },
 ];
 
 const typeIcons = {
@@ -201,9 +228,11 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
     { id: "todo" as const, label: "Todo" },
   ];
 
-  const lastEntry = activityData[activityData.length - 1];
-  const totalResueltas = activityData.reduce((s, d) => s + d.resueltas, 0);
-  const totalNuevas = activityData.reduce((s, d) => s + d.nuevas, 0);
+  const currentData = activeTab === "2h" ? activityData : activeTab === "hoy" ? activityDataHoy : activityDataTodo;
+
+  const lastEntry = currentData[currentData.length - 1];
+  const totalResueltas = currentData.reduce((s, d) => s + d.resueltas, 0);
+  const totalNuevas = currentData.reduce((s, d) => s + d.nuevas, 0);
   const tasa = totalResueltas + totalNuevas > 0
     ? ((totalResueltas / (totalResueltas + totalNuevas)) * 100).toFixed(0)
     : "0";
@@ -265,8 +294,17 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
 
       {/* Chart fills remaining space */}
       <div className="flex-1 min-h-0">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2 }}
+            style={{ width: "100%", height: "100%" }}
+          >
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={activityData} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
+          <AreaChart data={currentData} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
             <defs>
               <linearGradient id="gradNominal" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#34D399" stopOpacity={0.15} />
@@ -334,6 +372,8 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
             />
           </AreaChart>
         </ResponsiveContainer>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </section>
   );
