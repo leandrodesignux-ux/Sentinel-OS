@@ -163,6 +163,8 @@ function FleetHealthStrip({ agents, hasMounted }: { agents: Agent[]; hasMounted?
 
 // Subcomponent: Hero Activity Card (Nivel 3)
 function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
+  const [activeTab, setActiveTab] = useState<"2h" | "hoy" | "todo">("2h");
+
   // Hero number animation (0 → 12) with delay 600ms
   const motionVal = useMotionValue(0);
   const spring = useSpring(motionVal, { stiffness: 50, damping: 15 });
@@ -181,35 +183,75 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
     };
   }, [motionVal, display, hasMounted]);
 
+  const tabs = [
+    { id: "2h" as const, label: "Últimas 2h" },
+    { id: "hoy" as const, label: "Hoy" },
+    { id: "todo" as const, label: "Todo" },
+  ];
+
+  const lastEntry = activityData[activityData.length - 1];
+  const totalResueltas = activityData.reduce((s, d) => s + d.resueltas, 0);
+  const totalNuevas = activityData.reduce((s, d) => s + d.nuevas, 0);
+  const tasa = totalResueltas + totalNuevas > 0
+    ? ((totalResueltas / (totalResueltas + totalNuevas)) * 100).toFixed(0)
+    : "0";
+
   return (
     <section className="rounded-[20px] border border-[#3D4141] backdrop-blur-sm bg-white/[0.02] p-6 flex flex-col h-[340px]">
-      {/* Header with dropdown */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-base font-semibold text-white">Trabajo completado hoy</h3>
-          <p className="mt-1 text-sm text-[#A8AFAF]">El sistema resuelve la mayoría sin interrumpirte</p>
+      {/* Top row: title left + pill toggle right */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-white">Trabajo completado</h3>
+        {/* Pill toggle */}
+        <div className="flex items-center gap-1 rounded-full border border-[#3D4141] bg-[#1A1D1D] p-0.5">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-3 py-1 rounded-full text-[10px] font-medium transition-colors ${
+                activeTab === tab.id
+                  ? "bg-[#34D399]/20 text-[#34D399]"
+                  : "text-[#6B7272] hover:text-[#A8AFAF]"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-        <button className="flex items-center gap-1 text-xs text-[#6B7272] hover:text-[#A8AFAF] transition-colors">
-          Últimas 2 horas
-          <ChevronDown className="h-3.5 w-3.5" />
-        </button>
       </div>
 
-      {/* Hero number with animation */}
-      <div className="mb-4 flex items-baseline gap-3">
-        <motion.span
-          className="text-[64px] font-mono font-bold text-[#D7FEFA] leading-none"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        >
-          {animatedValue}
-        </motion.span>
-        <span className="text-sm text-[#A8AFAF]">tareas completadas sin tu intervención</span>
+      {/* Hero KPI top-left */}
+      <div className="mb-3">
+        <div className="flex items-baseline gap-2">
+          <motion.span
+            className="font-mono font-bold text-[#D7FEFA] leading-none"
+            style={{ fontSize: "52px" }}
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          >
+            {animatedValue}
+          </motion.span>
+          <span className="text-sm text-[#A8AFAF]">tareas autónomas</span>
+        </div>
+
+        {/* Secondary metric row */}
+        <div className="mt-2 flex items-center gap-4">
+          {[
+            { label: "NUEVAS", value: String(lastEntry.nuevas), color: "#FBBF24" },
+            { label: "RESUELTAS", value: String(lastEntry.resueltas), color: "#34D399" },
+            { label: "TASA", value: `${tasa}%`, color: "#D7FEFA" },
+          ].map((stat) => (
+            <div key={stat.label} className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: stat.color }} />
+              <span className="font-mono text-sm font-semibold" style={{ color: stat.color }}>{stat.value}</span>
+              <span className="text-[10px] text-[#6B7272] uppercase tracking-wider">{stat.label}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Chart with 220px height */}
-      <div className="flex-1" style={{ height: 220, minHeight: 220 }}>
+      {/* Chart fills remaining space */}
+      <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={activityData} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
             <defs>
@@ -245,7 +287,11 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
                 boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
               }}
               labelStyle={{ color: "#6B7272", marginBottom: 4 }}
-              itemStyle={{ color: "#FFFFFF", fontFamily: "monospace" }}
+              itemStyle={{ fontFamily: "monospace" }}
+              formatter={(value, name) => [
+                <span key={String(name)} style={{ color: name === "Resueltas" ? "#34D399" : "#FBBF24", fontFamily: "monospace" }}>{String(value)}</span>,
+                name,
+              ]}
             />
             <Area
               type="monotone"
@@ -275,23 +321,6 @@ function HeroActivityCard({ hasMounted }: { hasMounted?: boolean }) {
             />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
-
-      {/* Custom legend */}
-      <div className="mt-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5 text-xs text-[#A8AFAF]">
-            <span className="h-2 w-2 rounded-full bg-[#34D399]" />
-            Resueltas
-          </span>
-          <span className="flex items-center gap-1.5 text-xs text-[#A8AFAF]">
-            <span className="h-2 w-2 rounded-full bg-[#FBBF24]" />
-            Nuevas
-          </span>
-        </div>
-        <button className="text-xs text-[#F6F4D2] hover:text-[#EDEBBF] transition-colors">
-          Ver historial →
-        </button>
       </div>
     </section>
   );
