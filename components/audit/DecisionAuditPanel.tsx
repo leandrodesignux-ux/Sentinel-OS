@@ -66,10 +66,10 @@ export function DecisionAuditPanel({ agents }: { agents: Agent[] }) {
   const Icon = selected ? typeIcons[selected.type] : Building2;
 
   return (
-    <div className="flex h-full gap-4 overflow-hidden">
+    <div className="flex flex-col md:flex-row h-full gap-4 overflow-hidden">
 
       {/* ── LISTA LATERAL ── */}
-      <aside className="w-[300px] flex-shrink-0 flex flex-col bg-[#2B2E2E] rounded-[20px] border border-[#3D4141] overflow-hidden">
+      <aside className="w-full md:w-[300px] md:flex-shrink-0 flex flex-col bg-[#2B2E2E] rounded-[20px] border border-[#3D4141] overflow-hidden max-h-[280px] md:max-h-none">
         <div className="p-4 border-b border-[#3D4141]">
           <h3 className="text-[15px] font-semibold text-white mb-3">Agentes con actividad</h3>
           <div className="flex items-center gap-2 bg-[#1A1D1D] rounded-xl px-3 py-2 border border-[#3D4141]">
@@ -79,7 +79,7 @@ export function DecisionAuditPanel({ agents }: { agents: Agent[] }) {
               className="flex-1 bg-transparent text-[13px] text-white placeholder:text-[#6B7272] outline-none" />
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-2">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-2">
           {filtered.map((agent) => {
             const AIcon = typeIcons[agent.type];
             const ac = typeColors[agent.type];
@@ -118,7 +118,7 @@ export function DecisionAuditPanel({ agents }: { agents: Agent[] }) {
       </aside>
 
       {/* ── PANEL DERECHO ── */}
-      <div className="flex-1 overflow-y-auto space-y-4">
+      <div className="flex-1 min-w-0 overflow-y-auto space-y-4">
         {selected && (
           <AnimatePresence mode="wait">
             <motion.div key={selected.id}
