@@ -131,7 +131,7 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
   useEffect(() => () => setOverlay(false), []);
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[55fr_45fr] gap-4 overflow-hidden">
+    <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[55fr_45fr] gap-4 overflow-hidden">
       {overlay && (
         <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
           <Loader2 className="h-10 w-10 animate-spin text-red-500" />
@@ -166,7 +166,7 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
                     </div>
                     <span className="text-xs px-2 py-1 rounded-full font-medium border" style={{ background: status.bg, color: status.color, borderColor: status.color.replace('text-', '').replace('[', '').replace(']', '') + '/20' }}>{status.label}</span>
                   </div>
-                  <div className="flex gap-1.5">
+                  <div className="flex flex-wrap gap-1.5">
                     {cbLevels.map((item) => (
                       <button key={item.level} onClick={() => confirmCB(agent, item.level)} className={cn("flex-1 rounded-lg py-1.5 text-[10px] font-medium border transition-colors", activeLevel === item.level ? item.tone : "border-[#3D4141] bg-[#1A1D1D] text-[#6B7272] hover:bg-[#333737] hover:text-[#A8AFAF]")}>
                         {item.label}
@@ -230,11 +230,11 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="rounded-xl bg-[#1A1D1D] border border-[#3D4141] p-3 text-center">
               <p className="text-2xl font-bold text-white">{affectedAgents.length}</p>
-              <p className="text-xs text-[#6B7272]">agentes se detendrán</p>
+              <p className="text-xs text-[#6B7272] leading-tight">agentes se detendrán</p>
             </div>
             <div className="rounded-xl bg-[#1A1D1D] border border-[#3D4141] p-3 text-center">
               <p className="text-2xl font-bold text-white">{activeTasks}</p>
-              <p className="text-xs text-[#6B7272]">tareas en pausa</p>
+              <p className="text-xs text-[#6B7272] leading-tight">tareas en pausa</p>
             </div>
           </div>
           
