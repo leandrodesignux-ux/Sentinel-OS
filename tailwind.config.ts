@@ -8,7 +8,7 @@ const config: Config = {
       fontFamily: {
         body: ["var(--font-inter)", "Inter", "sans-serif"],
         display: ["var(--font-jetbrains-mono)", "JetBrains Mono", "monospace"],
-        accent: ["var(--font-space-grotesk)", "Space Grotesk", "sans-serif"],
+        accent: ["var(--font-space-grotesk, \"Space Grotesk\")", "Space Grotesk", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

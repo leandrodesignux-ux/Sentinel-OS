@@ -3,21 +3,42 @@
 import { useEffect, useState } from "react";
 import { Bell, ChevronLeft, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { EmergencyStop } from "@/components/controls/EmergencyStop";
-import { ControlsSection } from "@/components/controls/ControlsSection";
-import { DecisionAuditPanel } from "@/components/audit/DecisionAuditPanel";
-import { DocsSection } from "@/components/docs/DocsSection";
-import { OperatorSummary } from "@/components/dashboard/OperatorSummary";
-import { ExceptionsWorkbench } from "@/components/exceptions/ExceptionsWorkbench";
-import { FleetMapSection } from "@/components/fleet/FleetMapSection";
-import { AgentsView } from "@/components/dashboard/AgentsView";
 import type { SentinelSection } from "@/components/layout/SentinelSidebar";
-import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAgentSimulation } from "@/lib/hooks/useAgentSimulation";
 import { useAgentStore } from "@/store/agentStore";
 
+const OperatorSummary = dynamic(
+  () => import("@/components/dashboard/OperatorSummary").then((m) => ({ default: m.OperatorSummary })),
+  { ssr: false }
+);
+const AgentsView = dynamic(
+  () => import("@/components/dashboard/AgentsView").then((m) => ({ default: m.AgentsView })),
+  { ssr: false }
+);
+const ExceptionsWorkbench = dynamic(
+  () => import("@/components/exceptions/ExceptionsWorkbench").then((m) => ({ default: m.ExceptionsWorkbench })),
+  { ssr: false }
+);
+const DecisionAuditPanel = dynamic(
+  () => import("@/components/audit/DecisionAuditPanel").then((m) => ({ default: m.DecisionAuditPanel })),
+  { ssr: false }
+);
+const ControlsSection = dynamic(
+  () => import("@/components/controls/ControlsSection").then((m) => ({ default: m.ControlsSection })),
+  { ssr: false }
+);
+const DocsSection = dynamic(
+  () => import("@/components/docs/DocsSection").then((m) => ({ default: m.DocsSection })),
+  { ssr: false }
+);
+const OnboardingFlow = dynamic(
+  () => import("@/components/onboarding/OnboardingFlow").then((m) => ({ default: m.OnboardingFlow })),
+  { ssr: false }
+);
 const sectionTitles: Record<SentinelSection, string> = {
   resumen: "Panel principal",
   flota: "Mis agentes",
