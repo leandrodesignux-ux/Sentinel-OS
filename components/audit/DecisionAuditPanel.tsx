@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { AlertTriangle, Building2, DollarSign, Home, LayoutGrid, Search, Shield, Users, Wrench } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAgentStore } from "@/store/agentStore";
@@ -53,7 +53,7 @@ function minutesAgo(ts: string) {
   return Math.max(0, Math.floor((Date.now() - new Date(ts).getTime()) / 60000));
 }
 
-export function DecisionAuditPanel({ agents }: { agents: Agent[] }) {
+function DecisionAuditPanelInner({ agents }: { agents: Agent[] }) {
   const [query, setQuery] = useState("");
   const [localId, setLocalId] = useState<string | null>(null);
   const selectedAgentId = useAgentStore((s) => s.selectedAgentId);
@@ -235,3 +235,5 @@ export function DecisionAuditPanel({ agents }: { agents: Agent[] }) {
     </div>
   );
 }
+
+export const DecisionAuditPanel = memo(DecisionAuditPanelInner);

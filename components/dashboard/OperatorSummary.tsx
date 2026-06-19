@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, memo } from "react";
 import { ArrowRight, Bell, Bot, Building2, ChevronDown, Clock, Home, Pause, Settings, Timer, TrendingUp, Users, Wrench, X, Zap } from "lucide-react";
 import { Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
@@ -874,7 +874,7 @@ function ExceptionsPanel({ agents, onViewExceptions, hasMounted }: { agents: Age
 }
 
 // Main Component
-export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[]; onViewExceptions: () => void }) {
+function OperatorSummaryInner({ agents, onViewExceptions }: { agents: Agent[]; onViewExceptions: () => void }) {
   const [time, setTime] = useState(new Date());
   const [hasMounted, setHasMounted] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
@@ -1210,3 +1210,5 @@ export function OperatorSummary({ agents, onViewExceptions }: { agents: Agent[];
     </motion.div>
   );
 }
+
+export const OperatorSummary = memo(OperatorSummaryInner);

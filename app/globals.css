@@ -117,3 +117,20 @@ body {
 
 /* Fondo dark mode para html/body */
 html, body { background: var(--bg-canvas); color: var(--text-primary); }
+
+/* GPU layer hints for infinite animations */
+.animate-status-pulse,
+.animate-critical-breach,
+.animate-signal-blink,
+.animate-pulse-red {
+  will-change: opacity, transform;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

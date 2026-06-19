@@ -1,11 +1,12 @@
 "use client";
 
+import { memo } from "react";
 import { Eye } from "lucide-react";
 import { AgentGrid } from "@/components/fleet/AgentGrid";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Agent } from "@/types/agent";
 
-export function FleetMonitor({ agents }: { agents: Agent[] }) {
+function FleetMonitorInner({ agents }: { agents: Agent[] }) {
   return (
     <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-data border border-[#3D4141] bg-[#1A1D1D] p-3">
       <div className="mb-3 flex items-center justify-between">
@@ -24,3 +25,5 @@ export function FleetMonitor({ agents }: { agents: Agent[] }) {
     </section>
   );
 }
+
+export const FleetMonitor = memo(FleetMonitorInner);

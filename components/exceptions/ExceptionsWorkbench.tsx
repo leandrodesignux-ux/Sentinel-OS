@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
 import { ExceptionCard } from "@/components/exceptions/ExceptionCard";
@@ -9,7 +9,7 @@ import type { Agent } from "@/types/agent";
 
 type Tab = "todas" | "pendiente" | "seguimiento";
 
-export function ExceptionsWorkbench({ agents, onOpenAudit }: {
+function ExceptionsWorkbenchInner({ agents, onOpenAudit }: {
   agents: Agent[];
   onOpenAudit: (agentId: string) => void;
 }) {
@@ -124,3 +124,5 @@ export function ExceptionsWorkbench({ agents, onOpenAudit }: {
     </div>
   );
 }
+
+export const ExceptionsWorkbench = memo(ExceptionsWorkbenchInner);

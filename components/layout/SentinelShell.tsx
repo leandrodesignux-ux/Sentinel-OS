@@ -57,14 +57,22 @@ const sectionSubtitles: Record<SentinelSection, string> = {
   docs: "El proceso detrás de Sentinel OS — de problema a producto",
 };
 
-function formatTime(date: Date) {
-  return date.toLocaleTimeString("es-ES", { hour12: false });
+function HeaderClock() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <span className="font-mono text-xs bg-[#2B2E2E] px-3 py-1.5 rounded-lg text-[#A8AFAF] border border-[#3D4141]">
+      {now.toLocaleTimeString("es-ES", { hour12: false })}
+    </span>
+  );
 }
 
 export function SentinelShell({ initialSection }: { initialSection: SentinelSection }) {
   const [activeSection, setActiveSection] = useState<SentinelSection>(initialSection);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [now, setNow] = useState(() => new Date());
   const router = useRouter();
   const agents = useAgentStore((state) => state.agents);
   const selectAgent = useAgentStore((state) => state.selectAgent);
@@ -78,10 +86,6 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
   useEffect(() => {
     setActiveSection(initialSection);
   }, [initialSection]);
-  useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(interval);
-  }, []);
   useEffect(() => {
     if (typeof window === "undefined") return;
     const completed = localStorage.getItem("sentinel:onboardingCompleted");
@@ -150,9 +154,7 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
             {/* Divider */}
             <div className="w-px h-5 bg-[#3D4141] mx-1" />
             {/* Clock chip */}
-            <span className="font-mono text-xs bg-[#2B2E2E] px-3 py-1.5 rounded-lg text-[#A8AFAF] border border-[#3D4141]">
-              {formatTime(now)}
-            </span>
+            <HeaderClock />
             {hasCriticalAgents && <EmergencyStop />}
           </div>
         </header>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, memo } from "react";
 import { AlertTriangle, Building2, CheckCircle2, Home, Loader2, Power, Search, Users, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAgentStore, type CircuitBreakerLevel, type EmergencyScope } from "@/store/agentStore";
@@ -49,7 +49,7 @@ const scenarios = [
   { id: "retry_storm", label: "Agente gastando presupuesto de más 💸", description: "Un agente de mantenimiento gasta mucho más de lo normal", color: "#F04438", action: "activateRetryStormScenario" },
 ];
 
-export function ControlsSection({ agents }: { agents: Agent[] }) {
+function ControlsSectionInner({ agents }: { agents: Agent[] }) {
   const [query, setQuery] = useState("");
   const [pendingBreaker, setPendingBreaker] = useState<{ agent: Agent; level: CircuitBreakerLevel } | null>(null);
   const [scope, setScope] = useState<EmergencyScope>("all");
@@ -301,3 +301,5 @@ export function ControlsSection({ agents }: { agents: Agent[] }) {
     </div>
   );
 }
+
+export const ControlsSection = memo(ControlsSectionInner);

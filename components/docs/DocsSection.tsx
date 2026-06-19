@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { motion } from "framer-motion";
 import { Copy, Check, FileCode, Settings, Activity } from "lucide-react";
 
@@ -45,7 +45,7 @@ const impact = [
   },
 ];
 
-export function DocsSection() {
+function DocsSectionInner() {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -236,3 +236,5 @@ export function DocsSection() {
     </div>
   );
 }
+
+export const DocsSection = memo(DocsSectionInner);

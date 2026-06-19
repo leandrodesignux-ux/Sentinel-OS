@@ -43,16 +43,23 @@ function scenarioSource(mode: SimulationConfig["scenarioMode"]) {
 }
 
 export function useAgentSimulation(config: SimulationConfig) {
-  const { agents, updateAgent, addException, triggerCascade } = useAgentStore();
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const tickInterval = config.tickInterval ?? 2000;
+  const volatility = config.volatility;
+  const scenarioMode = config.scenarioMode;
+
+  // Use refs to access store imperatively, avoiding re-runs of the effect
+  const storeApi = useRef(useAgentStore);
 
   const simulateTick = useCallback(() => {
+    const { agents, updateAgent, addException, triggerCascade } = storeApi.current.getState();
+
     agents.forEach((agent) => {
       if (agent.status === "suspended" || agent.status === "circuit_open") return;
 
-      const complexTaskMultiplier = agent.dependencies.length > 3 || agent.economic_risk.amount > 50000 ? 1.45 : 1;
-      const drift = (Math.random() - 0.48) * volatilityScale[config.volatility] * complexTaskMultiplier;
+      const complexTaskMultiplier =
+        agent.dependencies.length > 3 || agent.economic_risk.amount > 50000 ? 1.45 : 1;
+      const drift = (Math.random() - 0.48) * volatilityScale[volatility] * complexTaskMultiplier;
       const newConfidence = Math.max(0.5, Math.min(1, agent.confidence_score + drift));
       const shouldEscalate = evaluateExceptionLogic(agent, newConfidence);
 
@@ -72,20 +79,16 @@ export function useAgentSimulation(config: SimulationConfig) {
       });
     });
 
-    const source = scenarioSource(config.scenarioMode);
-
+    const source = scenarioSource(scenarioMode);
     if (source) {
-      triggerCascade(source, config.scenarioMode === "storm" ? 0.09 : 0.15);
+      triggerCascade(source, scenarioMode === "storm" ? 0.09 : 0.15);
     }
-  }, [agents, updateAgent, addException, triggerCascade, config.scenarioMode, config.volatility]);
+  }, [volatility, scenarioMode]);
 
   useEffect(() => {
     tickRef.current = setInterval(simulateTick, tickInterval);
-
     return () => {
-      if (tickRef.current) {
-        clearInterval(tickRef.current);
-      }
+      if (tickRef.current) clearInterval(tickRef.current);
     };
   }, [simulateTick, tickInterval]);
 }

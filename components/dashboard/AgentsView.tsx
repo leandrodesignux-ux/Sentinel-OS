@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import { Search, AlertTriangle } from "lucide-react";
 import { AgentGrid } from "@/components/fleet/AgentGrid";
 import { AgentDetailPanel } from "@/components/fleet/AgentDetailPanel";
@@ -17,7 +17,7 @@ const typeTabs: { id: AgentType | "all"; label: string }[] = [
   { id: "screening", label: "Eval." },
 ];
 
-export function AgentsView({ agents }: { agents: Agent[] }) {
+function AgentsViewInner({ agents }: { agents: Agent[] }) {
   // State
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<AgentType | "all">("all");
@@ -138,3 +138,5 @@ export function AgentsView({ agents }: { agents: Agent[] }) {
     </div>
   );
 }
+
+export const AgentsView = memo(AgentsViewInner);
