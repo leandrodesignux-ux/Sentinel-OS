@@ -2,39 +2,46 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Building2, Check, Home, Users, Wrench, ChevronRight, Lock } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useAgentStore } from "@/store/agentStore";
 import type { AgentType } from "@/types/agent";
 import { SentinelLogo } from "@/components/brand/SentinelLogo";
 
-// Custom hook for typewriter effect
+// Custom hook for typewriter effect — writes directly to the DOM ref,
+// so the parent component does NOT re-render on every character.
 function useTypewriter(
   value: string,
+  targetRef: React.RefObject<HTMLInputElement | null>,
+  onValueWrite: (v: string) => void,
   onComplete: () => void,
   delay: number = 800,
   charInterval: number = 45
 ) {
-  const [displayValue, setDisplayValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const userInteracted = useRef(false);
   const hasStarted = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const onCompleteRef = useRef(onComplete);
+  const onValueWriteRef = useRef(onValueWrite);
 
-  // Mantiene la referencia actualizada sin añadirla a deps de useCallback
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  }, [onComplete]);
+  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+  useEffect(() => { onValueWriteRef.current = onValueWrite; }, [onValueWrite]);
 
   const startTyping = useCallback(() => {
-    // Guardia: solo ejecuta una vez por montaje
     if (userInteracted.current || hasStarted.current) return;
     hasStarted.current = true;
 
+    // Respect reduced motion: write instantly, no animation
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      onValueWriteRef.current(value);
+      if (targetRef.current) targetRef.current.value = value;
+      onCompleteRef.current();
+      return;
+    }
+
     timeoutRef.current = setTimeout(() => {
       if (userInteracted.current) return;
-
       setIsTyping(true);
       let currentIndex = 0;
 
@@ -46,39 +53,45 @@ function useTypewriter(
         }
 
         if (currentIndex <= value.length) {
-          setDisplayValue(value.slice(0, currentIndex));
+          const slice = value.slice(0, currentIndex);
+          // Write DIRECTLY to the input DOM — no React re-render
+          if (targetRef.current) {
+            targetRef.current.value = slice;
+          }
           currentIndex++;
         } else {
           if (intervalRef.current) clearInterval(intervalRef.current);
           setIsTyping(false);
+          // Sync the React state ONCE at the end
+          onValueWriteRef.current(value);
           onCompleteRef.current();
         }
       }, charInterval);
     }, delay);
-  }, [value, delay, charInterval]); // onComplete ya NO está en deps
+  }, [value, delay, charInterval, targetRef]);
 
   const cancelTyping = useCallback(() => {
     userInteracted.current = true;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (intervalRef.current) clearInterval(intervalRef.current);
+    // Sync whatever is currently in the DOM so the state is never stale
+    const currentValue = targetRef.current?.value ?? "";
+    onValueWriteRef.current(currentValue);
     setIsTyping(false);
-  }, []);
+  }, [targetRef]);
 
-  // Reset hasStarted cuando cambia el value (al cambiar de step)
   useEffect(() => {
     hasStarted.current = false;
     userInteracted.current = false;
-    setDisplayValue("");
-  }, [value]);
+    if (targetRef.current) targetRef.current.value = "";
+  }, [value, targetRef]);
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+  useEffect(() => () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
   }, []);
 
-  return { displayValue, isTyping, startTyping, cancelTyping, userInteracted };
+  return { isTyping, startTyping, cancelTyping, userInteracted };
 }
 
 const steps = [
@@ -111,13 +124,10 @@ function StepButton({
   showSuccess?: boolean;
 }) {
   const [hasPulsed, setHasPulsed] = useState(false);
-  const [showShimmer, setShowShimmer] = useState(false);
 
   useEffect(() => {
     if (isReady && !hasPulsed) {
       setHasPulsed(true);
-      setShowShimmer(true);
-      setTimeout(() => setShowShimmer(false), 600);
     }
   }, [isReady, hasPulsed]);
 
@@ -215,19 +225,6 @@ function StepButton({
         ) : (
           buttonText
         )}
-
-        {/* Shimmer effect */}
-        {showShimmer && (
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
-            }}
-            initial={{ x: -200, opacity: 0 }}
-            animate={{ x: 400, opacity: [0, 0.3, 0] }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-          />
-        )}
       </motion.button>
     </div>
   );
@@ -299,6 +296,7 @@ function VerticalStepper({ currentStep }: { currentStep: number }) {
 }
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
+  const prefersReducedMotion = useReducedMotion();
   const [step, setStep] = useState(0);
   const [showIntro, setShowIntro] = useState(true);
   const [operatorName, setOperatorName] = useState("");
@@ -306,48 +304,73 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [selectedAgentType, setSelectedAgentType] = useState<AgentType | null>(null);
   const [agentName, setAgentName] = useState("");
   const [threshold, setThreshold] = useState(50);
+  const thresholdMV = useMotionValue(50);
+  const thresholdDisplay = useTransform(thresholdMV, (v) => `${Math.round(v)}%`);
   const [highlightedCard, setHighlightedCard] = useState<string | null>(null);
   const [ctaReady, setCtaReady] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const operatorInputRef = useRef<HTMLInputElement | null>(null);
+  const signatureInputRef = useRef<HTMLInputElement | null>(null);
+  const agentNameInputRef = useRef<HTMLInputElement | null>(null);
+  const rangeRef = useRef<HTMLInputElement | null>(null);
 
   const updateAgent = useAgentStore((s) => s.updateAgent);
   const agents = useAgentStore((s) => s.agents);
 
   // Typewriter for Step 1 - Operator Name
   const {
-    displayValue: operatorNameTyped,
     isTyping: isTypingOperator,
     startTyping: startOperatorTyping,
     cancelTyping: cancelOperatorTyping,
     userInteracted: operatorInteracted,
-  } = useTypewriter("Operador Vega", () => {
-    // Start signature typing 300ms after operator name completes
-    setTimeout(() => startSignatureTyping(), 300);
-  }, 800, 45);
+  } = useTypewriter(
+    "Operador Vega",
+    operatorInputRef,
+    setOperatorName,
+    () => {
+      // Start signature typing 300ms after operator name completes
+      setTimeout(() => startSignatureTyping(), 300);
+    },
+    800,
+    45
+  );
 
   // Typewriter for Step 1 - Signature
   const {
-    displayValue: signatureTyped,
     isTyping: isTypingSignature,
     startTyping: startSignatureTyping,
     cancelTyping: cancelSignatureTyping,
     userInteracted: signatureInteracted,
-  } = useTypewriter("SOS-7734-ALPHA", () => {
-    // CTA animation ready
-    setCtaReady(true);
-  }, 0, 45);
+  } = useTypewriter(
+    "SOS-7734-ALPHA",
+    signatureInputRef,
+    setSignature,
+    () => {
+      // CTA animation ready
+      setCtaReady(true);
+    },
+    0,
+    45
+  );
 
   // Typewriter for Step 2 - Agent Name
   const {
-    displayValue: agentNameTyped,
     isTyping: isTypingAgent,
     startTyping: startAgentTyping,
     cancelTyping: cancelAgentTyping,
     userInteracted: agentInteracted,
-  } = useTypewriter("Marco el de Ventas", () => {
-    setCtaReady(true);
-  }, 800, 45);
+  } = useTypewriter(
+    "Marco el de Ventas",
+    agentNameInputRef,
+    setAgentName,
+    () => {
+      setCtaReady(true);
+    },
+    800,
+    45
+  );
 
   // Effect for Step 1 typing
   useEffect(() => {
@@ -377,57 +400,53 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
     }
   }, [step, startAgentTyping]);
 
-  // Effect for Step 3 - animate slider from 50 to 75
+  // Effect for Step 3 - animate slider from 50 to 75 using Framer Motion
   useEffect(() => {
-    if (step === 3) {
-      setCtaReady(false);
-      setThreshold(50);
-      const startTime = performance.now();
-      const duration = 1200;
-      const startValue = 50;
-      const endValue = 75;
+    if (step !== 3) return;
+    setCtaReady(false);
+    setThreshold(50);
+    thresholdMV.set(50);
+    if (rangeRef.current) {
+      rangeRef.current.value = "50";
+      rangeRef.current.style.background =
+        `linear-gradient(to right, var(--brand) 0%, var(--bg-border) 0%)`;
+    }
 
-      const animateSlider = (currentTime: number) => {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        // Ease-out function
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentValue = Math.round(startValue + (endValue - startValue) * easeOut);
-        setThreshold(currentValue);
+    if (prefersReducedMotion) {
+      setThreshold(75);
+      thresholdMV.set(75);
+      if (rangeRef.current) {
+        rangeRef.current.value = "75";
+        rangeRef.current.style.background =
+          `linear-gradient(to right, var(--brand) 55.56%, var(--bg-border) 55.56%)`;
+      }
+      setCtaReady(true);
+      return;
+    }
 
-        if (progress < 1) {
-          requestAnimationFrame(animateSlider);
-        } else {
+    const timer = setTimeout(() => {
+      const controls = animate(thresholdMV, 75, {
+        duration: 1.2,
+        ease: [0.16, 1, 0.3, 1],
+        onUpdate: (v) => {
+          const val = Math.round(v);
+          if (rangeRef.current) {
+            rangeRef.current.value = String(val);
+            const pct = ((val - 50) / 45) * 100;
+            rangeRef.current.style.background =
+              `linear-gradient(to right, var(--brand) ${pct}%, var(--bg-border) ${pct}%)`;
+          }
+        },
+        onComplete: () => {
+          setThreshold(75);
           setCtaReady(true);
-        }
-      };
+        },
+      });
+      return () => controls.stop();
+    }, 800);
 
-      const timer = setTimeout(() => {
-        requestAnimationFrame(animateSlider);
-      }, 800);
-
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
-  // Update actual state with typed values
-  useEffect(() => {
-    if (step === 1 && !operatorInteracted.current) {
-      setOperatorName(operatorNameTyped);
-    }
-  }, [operatorNameTyped, step]);
-
-  useEffect(() => {
-    if (step === 1 && !signatureInteracted.current) {
-      setSignature(signatureTyped);
-    }
-  }, [signatureTyped, step]);
-
-  useEffect(() => {
-    if (step === 2 && !agentInteracted.current) {
-      setAgentName(agentNameTyped);
-    }
-  }, [agentNameTyped, step]);
+    return () => clearTimeout(timer);
+  }, [step, thresholdMV, prefersReducedMotion]);
 
   const handleDeployAgent = () => {
     if (!selectedAgentType || !agentName || isLoading) return;
@@ -467,7 +486,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
               backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
               backgroundBlendMode: "overlay",
             }}
-            exit={{ opacity: 0, scale: 1.05, filter: "blur(8px)" }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
           >
             {/* Animated Orbs */}
@@ -482,9 +501,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   height: 600,
                   background: "radial-gradient(circle, rgba(215,254,250,0.06) 0%, transparent 70%)",
                 }}
-                animate={{
-                  y: [-20, 20],
-                }}
+                animate={prefersReducedMotion ? undefined : { y: [-20, 20] }}
                 transition={{
                   duration: 6,
                   repeat: Infinity,
@@ -502,9 +519,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   height: 500,
                   background: "radial-gradient(circle, rgba(246,244,210,0.05) 0%, transparent 70%)",
                 }}
-                animate={{
-                  y: [20, -20],
-                }}
+                animate={prefersReducedMotion ? undefined : { y: [20, -20] }}
                 transition={{
                   duration: 8,
                   repeat: Infinity,
@@ -524,9 +539,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   y: "-50%",
                   background: "radial-gradient(circle, rgba(52,211,153,0.03) 0%, transparent 70%)",
                 }}
-                animate={{
-                  scale: [0.9, 1.1],
-                }}
+                animate={prefersReducedMotion ? undefined : { scale: [0.9, 1.1] }}
                 transition={{
                   duration: 10,
                   repeat: Infinity,
@@ -697,9 +710,9 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             {step === 1 && (
               <motion.div
                 key="step1"
-                initial={{ opacity: 0, x: 60, filter: "blur(4px)", scale: 1.02 }}
-                animate={{ opacity: 1, x: 0, filter: "blur(0px)", scale: 1 }}
-                exit={{ opacity: 0, x: -60, filter: "blur(4px)", scale: 0.97 }}
+                initial={{ opacity: 0, x: prefersReducedMotion ? 0 : 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: prefersReducedMotion ? 0 : -40 }}
                 transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="w-full max-w-md"
               >
@@ -743,6 +756,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                     </label>
                     <div className="relative">
                       <input
+                        ref={operatorInputRef}
                         type="text"
                         value={operatorName}
                         onChange={(e) => {
@@ -779,6 +793,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                     </label>
                     <div className="relative">
                       <input
+                        ref={signatureInputRef}
                         type="text"
                         value={signature}
                         onChange={(e) => {
@@ -827,9 +842,9 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             {step === 2 && (
               <motion.div
                 key="step2"
-                initial={{ opacity: 0, x: 60, filter: "blur(4px)", scale: 1.02 }}
-                animate={{ opacity: 1, x: 0, filter: "blur(0px)", scale: 1 }}
-                exit={{ opacity: 0, x: -60, filter: "blur(4px)", scale: 0.97 }}
+                initial={{ opacity: 0, x: prefersReducedMotion ? 0 : 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: prefersReducedMotion ? 0 : -40 }}
                 transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="w-full max-w-md"
               >
@@ -926,6 +941,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   </label>
                   <div className="relative">
                     <input
+                      ref={agentNameInputRef}
                       type="text"
                       value={agentName}
                       onChange={(e) => {
@@ -966,9 +982,9 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             {step === 3 && (
               <motion.div
                 key="step3"
-                initial={{ opacity: 0, x: 60, filter: "blur(4px)", scale: 1.02 }}
-                animate={{ opacity: 1, x: 0, filter: "blur(0px)", scale: 1 }}
-                exit={{ opacity: 0, x: -60, filter: "blur(4px)", scale: 0.97 }}
+                initial={{ opacity: 0, x: prefersReducedMotion ? 0 : 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: prefersReducedMotion ? 0 : -40 }}
                 transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="w-full max-w-md"
               >
@@ -1014,14 +1030,23 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                 >
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>Umbral de Confianza</span>
-                    <span className="text-[24px] font-bold font-mono" style={{ color: "var(--brand)" }}>{threshold}%</span>
+                    <motion.span className="text-[24px] font-bold font-mono" style={{ color: "var(--brand)" }}>
+                      {thresholdDisplay}
+                    </motion.span>
                   </div>
                   <input
+                    ref={rangeRef}
                     type="range"
                     min="50"
                     max="95"
                     value={threshold}
-                    onChange={(e) => setThreshold(Number(e.target.value))}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setThreshold(val);
+                      thresholdMV.set(val);
+                      e.target.style.background =
+                        `linear-gradient(to right, var(--brand) ${((val - 50) / 45) * 100}%, var(--bg-border) ${((val - 50) / 45) * 100}%)`;
+                    }}
                     className="w-full h-2 rounded-full appearance-none cursor-pointer"
                     style={{
                       background: `linear-gradient(to right, var(--brand) ${((threshold - 50) / 45) * 100}%, var(--bg-border) ${((threshold - 50) / 45) * 100}%)`,
