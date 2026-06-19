@@ -72,7 +72,7 @@ function HeaderClock() {
 
 export function SentinelShell({ initialSection }: { initialSection: SentinelSection }) {
   const [activeSection, setActiveSection] = useState<SentinelSection>(initialSection);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const router = useRouter();
   const agents = useAgentStore((state) => state.agents);
   const selectAgent = useAgentStore((state) => state.selectAgent);
@@ -86,11 +86,6 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
   useEffect(() => {
     setActiveSection(initialSection);
   }, [initialSection]);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const completed = localStorage.getItem("sentinel:onboardingCompleted");
-    if (!completed) setShowOnboarding(true);
-  }, []);
   function navigateSection(section: SentinelSection) {
     setActiveSection(section);
     router.push(`/?section=${section}`);
@@ -99,14 +94,7 @@ export function SentinelShell({ initialSection }: { initialSection: SentinelSect
   return (
     <TooltipProvider>
       {showOnboarding && (
-        <OnboardingFlow
-          onComplete={() => {
-            try {
-              localStorage.setItem("sentinel:onboardingCompleted", "1");
-            } catch {}
-            setShowOnboarding(false);
-          }}
-        />
+        <OnboardingFlow onComplete={() => setShowOnboarding(false)} />
       )}
       {emergencyHalt.active && (
         <div className="fixed left-3 top-[58px] right-3 md:right-auto md:w-[196px] z-40 flex items-center gap-2 rounded-data border border-[#F87171]/30 bg-[#F87171]/15 px-3 py-2 font-display text-xs text-[#F87171]">
