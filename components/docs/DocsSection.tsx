@@ -2,7 +2,7 @@
 
 import { useState, memo } from "react";
 import { motion } from "framer-motion";
-import { Copy, Check, FileCode, Settings, Activity } from "lucide-react";
+import { Copy, Check, FileCode, Settings, Activity, ExternalLink } from "lucide-react";
 
 const tools = [
   { name: "Figma", subtext: "Design System & Prototipado HF" },
@@ -126,6 +126,17 @@ function DocsSectionInner() {
               </svg>
               LINKEDIN
             </button>
+
+            {/* Portfolio button */}
+            <a
+              href="https://leandrobalbian.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 w-full bg-[#F6F4D2] hover:bg-[#EDEBBF] text-[#1A1D1D] font-semibold text-sm rounded-lg py-2.5 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <ExternalLink className="h-4 w-4" />
+              PORTFOLIO
+            </a>
 
             {/* Availability badge */}
             <div className="mt-3 bg-[#34D399]/10 border border-[#34D399]/20 rounded-lg px-3 py-2 text-center">
